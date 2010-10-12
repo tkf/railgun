@@ -37,13 +37,6 @@ def POINTER_nth(ct, n):
         return POINTER_nth(POINTER(ct), n-1)
 
 
-def as_2dim_pointer(arr, basetype):
-    ctp = POINTER(basetype)
-    ctpa = ctp * len(arr)
-    prow = [row.ctypes.data_as(ctp) for row in arr]
-    return ctpa(*prow)
-
-
 def as_ndim_pointer(arr, basetype, ndim):
     if ndim == 1:
         return arr.ctypes.data_as(POINTER(basetype))
@@ -59,12 +52,7 @@ def ctype_getter(arr):
         basetype = c_int
     elif arr.dtype == numpy.float:
         basetype = c_double
-    if arr.ndim == 1:
-        return arr.ctypes.data_as(POINTER(basetype))
-    elif arr.ndim == 2:
-        return as_2dim_pointer(arr, basetype)
-    else:
-        return as_ndim_pointer(arr, basetype, arr.ndim)
+    return as_ndim_pointer(arr, basetype, arr.ndim)
 
 
 def _gene_porp_scalar(key):
