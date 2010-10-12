@@ -6,12 +6,22 @@
 Welcome to RailGun's documentation!
 ===================================
 
+Installation::
+
+    easy_install railgun  # using setuptools
+    pip install railgun   # using pip
+
+
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
    tutorial
+
+RailGun's repository is http://bitbucket.org/tkf/railgun/.
+See samples in source code or
+`here <http://bitbucket.org/tkf/railgun/src/tip/samples/>`_.
 
 
 Indices and tables
