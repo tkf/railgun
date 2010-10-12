@@ -6,6 +6,25 @@
 Welcome to RailGun's documentation!
 ===================================
 
+If you want to write fast program for numerical simulations, you will
+always end up with writing it in C (or C++ or FORTRAN, these low-level
+languages). Although we have great python packages such as
+Numpy/Scipy, Pyrex, Cython, Psyco and so on, sometimes these are not
+enough.  On the other hand, writing code in C is stressful, especially
+things like allocating memory and read/write data which does not
+require speed so much. So, next thing you want is to call C function
+from python and let python do all these stuff (which python is good
+at!).  Using ctypes, this is very easy.
+
+But you may want to much easier way! RailGun automatically generates
+python class which load functions from C shared library, allocate
+consistent array, provide argument check in python side before the
+argument is passed to C function, and let you easily access to C
+variables via python. All you need to do is to follow certain coding
+style when you write C program so that RailGun can load functions
+automatically.
+
+
 Installation::
 
     easy_install railgun  # using setuptools
