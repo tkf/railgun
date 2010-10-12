@@ -1,1 +1,4 @@
-build/*.dmy
+syntax: glob
+build/
+dist/
+*.egg-info/
