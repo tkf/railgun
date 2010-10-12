@@ -109,9 +109,6 @@ def gene_cfpywrap(cfdec):
         choices_dict.update(allkwds)
         cfchoices = [choices_dict[k] for k in choiceskeyorder]
         cfname = cfdec.fnget(*cfchoices)
-        # check arguments validity
-        self._check_index_in_range(
-            [(a['aname'], a['cdt'], allkwds[a['aname']]) for a in cfdec.args])
         # set c-function arguments
         cargs_dict = {}
         for (k, v) in defaults_cargs.iteritems():
@@ -121,6 +118,9 @@ def gene_cfpywrap(cfdec):
                 cargs_dict[k] = eval(v)
         cargs_dict.update(allkwds)
         cargs = [cargs_dict[k] for k in cfkeyorder]
+        # check arguments validity
+        self._check_index_in_range(
+            [(a, cargs_dict[a['aname']]) for a in cfdec.args])
         # call c-function
         cfunc = self._cfunc_loaded_[cfname]
         rcode = cfunc(self._struct_p_, *cargs)
@@ -199,7 +199,7 @@ class BaseSimObject(object):
             istr = ', '.join(set(args) - self.indexset)
             raise ValueError ("index(es) {%s} doesn't exist" % istr)
         nums = [getattr(self, 'num_%s'%i) for i in args]
-        if len(nums) == 0:
+        if len(nums) == 1:
             return nums[0]
         else:
             return nums
@@ -220,27 +220,39 @@ class BaseSimObject(object):
         return self._idxset_
     indexset = property(_get_indexset)
 
-    def _check_index_in_range(self, aname_cdt_val_list):
+    def _check_index_in_range(self, arg_val_list):
         """
         Raise ValueError if index 'i' is bigger than 0 and less than num_'i'
 
-        An argument `aname_cdt_val_list` is list of tuple
-        (`aname`, `cdt`, `value`).
+        An argument `aname_cdt_val_list` is list of (`arg`, `value`)-pair.
 
         """
-        for (aname, cdt, val) in aname_cdt_val_list:
+        for (ag, val) in arg_val_list:
+            cdt = ag['cdt']
+            aname = ag['aname']
+            ixt = ag['ixt']
             if cdt in self.indexset:
                 idx = cdt
-                if val < 0:
+                if ixt == '<':
+                    lower_name = '1'
+                    lower_val = 1
+                    upper_name = 'num_%s+1' % idx
+                    upper_val = self.num(idx) + 1
+                else:
+                    lower_name = '0'
+                    lower_val = 0
+                    upper_name = 'num_%s' % idx
+                    upper_val = self.num(idx)
+                if val < lower_val:
                     raise ValueError (
-                        'index %s cannot bet less than 0 '
-                        'where value is %s=%d' % (idx, aname, val))
-                elif val >= self.num(idx):
+                        'index %s cannot bet less than %s '
+                        'where value is %s=%d'
+                        % (idx, lower_name, aname, val))
+                elif val >= upper_val:
                     raise ValueError (
-                        'index %(idx)s cannot bet larger than or equal to '
-                        'num_%(idx)s=%(num)d where value is %(name)s=%(val)d'
-                        % dict(idx=idx, num=self.num(idx),
-                               val=val, name=aname))
+                        'index %s cannot bet larger than or equal to '
+                        '%s=%d where value is %s=%d'
+                        % (idx, upper_name, upper_val, aname, val))
 
 
 class MetaSimObject(type):
