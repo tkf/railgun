@@ -93,7 +93,7 @@ def gene_cfpywrap(cfdec):
                               % (cfdec.fname,
                                  1 + len(keyorder),
                                  1 + len(args) + len(kwds)))
-        # multiple values
+        # check multiple values
         mval_args = set(keyorder[:len(args)]) & set(kwds)
         if mval_args:
             s = '{%s}' % ''.join(str(x) for x in mval_args)
@@ -109,6 +109,9 @@ def gene_cfpywrap(cfdec):
         choices_dict.update(allkwds)
         cfchoices = [choices_dict[k] for k in choiceskeyorder]
         cfname = cfdec.fnget(*cfchoices)
+        # check arguments validity
+        self._check_index_in_range(
+            [(a['aname'], a['cdt'], allkwds[a['aname']]) for a in cfdec.args])
         # set c-function arguments
         cargs_dict = {}
         for (k, v) in defaults_cargs.iteritems():
@@ -190,6 +193,17 @@ class BaseSimObject(object):
             else:
                 setattr(self, key, val)
 
+    def num(self, *args):
+        """Get size of array (num_'i') along given index ('i') """
+        if set(args) > self.indexset:
+            istr = ', '.join(set(args) - self.indexset)
+            raise ValueError ("index(es) {%s} doesn't exist" % istr)
+        nums = [getattr(self, 'num_%s'%i) for i in args]
+        if len(nums) == 0:
+            return nums[0]
+        else:
+            return nums
+
     def _set_cdata(self):
         self._cdata_ = {} # keep memory for arrays
         for (vname, parsed) in self._cmems_parsed_.iteritems():
@@ -200,6 +214,33 @@ class BaseSimObject(object):
                 self._cdata_[vname] = arr
                 self._struct_.__setattr__(vname, ctype_getter(arr))
                 ## setattr(self._struct_, vname, ctype_getter(arr))
+
+    def _get_indexset(self):
+        """Get set of index as a `set` of string"""
+        return self._idxset_
+    indexset = property(_get_indexset)
+
+    def _check_index_in_range(self, aname_cdt_val_list):
+        """
+        Raise ValueError if index 'i' is bigger than 0 and less than num_'i'
+
+        An argument `aname_cdt_val_list` is list of tuple
+        (`aname`, `cdt`, `value`).
+
+        """
+        for (aname, cdt, val) in aname_cdt_val_list:
+            if cdt in self.indexset:
+                idx = cdt
+                if val < 0:
+                    raise ValueError (
+                        'index %s cannot bet less than 0 '
+                        'where value is %s=%d' % (idx, aname, val))
+                elif val >= self.num(idx):
+                    raise ValueError (
+                        'index %(idx)s cannot bet larger than or equal to '
+                        'num_%(idx)s=%(num)d where value is %(name)s=%(val)d'
+                        % dict(idx=idx, num=self.num(idx),
+                               val=val, name=aname))
 
 
 class MetaSimObject(type):
@@ -232,9 +273,12 @@ class MetaSimObject(type):
         cmems_default_array = dict(
             (parsed.vname, parsed.default) for parsed in cmems_parsed_list
             if parsed.default and parsed.ndim > 0)
+        idxset = set([vname[4:]  # len('num_') = 4
+                      for vname in cmems_parsed if vname.startswith('num_')])
         attrs['_cmems_parsed_'] = cmems_parsed
         attrs['_cmems_default_scalar_'] = cmems_default_scalar
         attrs['_cmems_default_array_'] = cmems_default_array
+        attrs['_idxset_'] = idxset
 
         ## set _struct_type_{,p_}
         fields = [(parsed.vname,
@@ -261,8 +305,6 @@ class MetaSimObject(type):
         for (vname, parsed) in cmems_parsed.iteritems():
             gene_prop = get_gene_prop(parsed.ndim)
             attrs[vname] = gene_prop(vname)
-        idxset = [vname[4:]  # len('num_') = 4
-                  for vname in cmems_parsed if vname.startswith('num_')]
 
         ## load c-functions
         cdll = numpy.ctypeslib.load_library(clibname, clibdir)
