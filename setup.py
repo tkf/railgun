@@ -1,4 +1,5 @@
 from setuptools import setup
+import railgun
 from railgun import __author__, __version__, __license__
 
 setup(
@@ -7,7 +8,7 @@ setup(
     packages=['railgun'],
     description=('ctypes utilities for faster and easier '
                  'simulation programming in C and Python'),
-    long_description=open('README.rst').read(),
+    long_description=railgun.__doc__,
     author=__author__,
     author_email='aka.tkf@gmail.com',
     url='http://bitbucket.org/tkf/railgun/src',
