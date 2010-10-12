@@ -12,7 +12,8 @@ Installation
 
 Usage
 -----
-See samples in ``samples/``.
+- Read `documentation <http://tkf.bitbucket.org/railgun-doc/index.html>`_.
+- See samples in ``samples/``.
 
 
 Requirement
