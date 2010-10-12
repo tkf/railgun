@@ -1,14 +1,13 @@
-RailGun --- Accelerate your simulation programing with "C on Rails"
-===================================================================
+RailGun: Accelerate your simulation programing with "C on Rails"
+================================================================
 
-..
 
-  Installation
-  ------------
-  ::
+Installation
+------------
+::
 
-      easy_install railgun  # using setuptools
-      pip install railgun   # using pip
+    easy_install railgun  # using setuptools
+    pip install railgun   # using pip
 
 
 Usage
@@ -23,4 +22,4 @@ This module only requires Numpy.
 
 License
 -------
-See LICENSE
+See LICENSE.
