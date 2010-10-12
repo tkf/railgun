@@ -22,8 +22,9 @@ class LinearODE(SimObject):
         'double x[s][d]',  # num_s x num_d array
         ]
     _cfuncs_ = [  # declaring functions to load
-        "x run(s s_end=num_s)"
+        "x run(s< s_end=num_s)"
         # argument `s_end` has index `s` type and default is `num_s`
+        # '<' means it is upper bound of the index so the range is [1, num_s]
         # this function returns member x
         ]
 
