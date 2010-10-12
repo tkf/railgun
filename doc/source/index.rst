@@ -8,7 +8,7 @@ Welcome to RailGun's documentation!
 
 If you want to write fast program for numerical simulations, you will
 always end up with writing it in C (or C++ or FORTRAN, these low-level
-languages). Although we have great python packages for (not only)
+languages). Although we have great python packages (not only) for
 numerical simulation such as Numpy/Scipy, Pyrex, Cython, Psyco and so
 on, sometimes these are not enough. On the other hand, writing code in
 C is stressful, especially things like allocating memory and

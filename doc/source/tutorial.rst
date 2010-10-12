@@ -7,8 +7,8 @@ How to write C program for RailGun
 RailGun requires your C program to have specific type of style.
 
 
-You need a `struct` which have the variables you can manipulate from python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C `struct` holds all variables which you can access from python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is an example of a `struct`:
 
@@ -29,10 +29,10 @@ get the value or set the value of a certain variable from python, you
 must add the variable to the `struct`.
 
 
-Functions used from python
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Functions called from python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you want to use some functions from python, the type function must
+If you want to use some functions from python, the function must
 take a pointer of the `struct` as first argument, like this:
 
 .. sourcecode:: c
@@ -123,8 +123,8 @@ Name of the class
       `int s_end=num_s` or `int s_start=0`.
 
 
-Loading several C functions at once: ``func_{key|c1,c2}``-notation
-------------------------------------------------------------------
+Loading several C functions at once: ``func_{key|c1,c2}``-notation (choices)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you have several C functions of *same type* such as:
 
@@ -146,7 +146,7 @@ as you see, you can specify method by option of the python function.
 
 
 Auto generated consistency check of argument
---------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can use name of the index as type of argument like this::
 
@@ -159,3 +159,33 @@ it to be in the range `(0, num_s]`. You can specify this with `<`
 like this::
 
   "run(s< s_end)"
+
+
+Using generated python class
+----------------------------
+
+This is how to create an instance::
+
+   lode = LinearODE(num_d=2)
+
+If you know your class has default values for all `num_*`, you
+can make an instance without `num_*`.
+
+Once you create an instance, you can change C variables in
+various ways::
+
+  lode.a = [[0, 1], [-1, 0]]
+  lode.x[0] = [1, 0]
+  lode.setv(a_0_0=-0.5)
+
+Note that `lode.setv(a_0_0=-0.5)` and `lode.a[0,0] = -0.5` are
+the same.
+
+Calling function is easy. Number of arguments are number of arguments
+of C function and number of "choice set". First arguments are used for
+C function and then last arguments are used for "choice set" if
+arguments are specified without keyword::
+
+  lode.run()
+  lode.run(10)
+  lode.run(s_end=10)
