@@ -1,4 +1,4 @@
-from nose.tools import ok_  #, raises, with_setup
+from nose.tools import ok_  # , raises, with_setup
 
 from tsutils import eq_
 from railgun.cfuncs import (
@@ -7,8 +7,11 @@ from railgun.cfuncs import (
 from railgun._helper import subdict
 
 
+def cor_arg(cdt, aname, default=None, ixt=None):
+    return dict(cdt=cdt, aname=aname, default=default, ixt=ixt)
+
 DATA_TEST_REGEX = dict(
-    RE_CFDEC_FUNC = (
+    RE_CFDEC_FUNC=(
         RE_CFDEC_FUNC, [
             ("ans func(a, b, c)",
              dict(ret="ans", fname="func", args="a, b, c")),
@@ -16,15 +19,16 @@ DATA_TEST_REGEX = dict(
              dict(ret=None, fname="func", args="a, b, c")),
             ("f()",
              dict(ret=None, fname="f", args='')),
-            ("int func(double a, int b=1)",
-             dict(ret="int", fname="func", args="double a, int b=1")),
+            ("int func(double a, int b=1, i< i0=num_i)",
+             dict(ret="int", fname="func",
+                  args="double a, int b=1, i< i0=num_i")),
             ("func_{k1|x,y,z}_{k2 | alpha, beta, gamma}(a, b, c)",
              dict(ret=None,
                   fname="func_{k1|x,y,z}_{k2 | alpha, beta, gamma}",
                   args="a, b, c")),
             ],
         ),
-    RE_CFDEC_CHOSET = (
+    RE_CFDEC_CHOSET=(
         RE_CFDEC_CHOSET, [
             ("{key | a, b, c }",
              dict(key='key', choices='a, b, c ')),
@@ -32,31 +36,26 @@ DATA_TEST_REGEX = dict(
              dict(key='key', choices='a,b,c')),
             ],
         ),
-    RE_CFDEC_ARG = (
+    RE_CFDEC_ARG=(
         RE_CFDEC_ARG, [
-            ("int a=1",
-             dict(cdt='int', aname='a', default='1')),
-            ("a=1",
-             dict(cdt=None, aname='a', default='1')),
-            ("int a",
-             dict(cdt='int', aname='a', default=None)),
-            ("a",
-             dict(cdt=None, aname='a', default=None)),
-            ("i a=1",
-             dict(cdt='i', aname='a', default='1')),
+            ("int a=1", cor_arg('int', 'a', '1' )),
+            ("a=1",     cor_arg(None,  'a', '1' )),
+            ("int a",   cor_arg('int', 'a')),
+            ("a",       cor_arg(None,  'a')),
+            ("i a=1",   cor_arg('i',   'a', '1' )),
+            ("i< a=1",  cor_arg('i',   'a', '1', '<')),
             ],
         ),
     )
 
 DATA_CFDEC_PARSE = [
     # (cfstr, correct, fnameargslist)
-    ("ans func(int a, i b=0, double c=2.0)",
+    ("ans func(int a, i< b=0, double c=2.0)",
      dict(ret="ans", fname="func",
-          args=[
-              dict(cdt='int', aname='a', default=None),
-              dict(cdt='i', aname='b', default='0'),
-              dict(cdt='double', aname='c', default='2.0'),
-              ],
+          args=[cor_arg('int', 'a'),
+                cor_arg('i', 'b', '0', '<'),
+                cor_arg('double', 'c', '2.0'),
+                ],
           choset=[
               ],
           ),
@@ -64,9 +63,8 @@ DATA_CFDEC_PARSE = [
      ),
     ("func_{k1|x,y,z}_{k2 | alpha, beta, gamma}(int i)",
      dict(ret=None, fname="func",
-          args=[
-              dict(cdt='int', aname='i', default=None),
-              ],
+          args=[cor_arg('int', 'i'),
+                ],
           choset=[
               dict(key='k1', choices=['x', 'y', 'z']),
               dict(key='k2', choices=['alpha', 'beta', 'gamma']),
@@ -86,8 +84,7 @@ def check_regex(regexname, regexobj, string, correct):
     else:
         ok_(correct is None,
             msg=("%s.match(%r) should not be None\n"
-                 "desired = %r" % (regexname, string, correct)
-                 ))
+                 "desired = %r" % (regexname, string, correct)))
 
 
 def test_regex():

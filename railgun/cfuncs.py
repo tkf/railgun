@@ -13,7 +13,8 @@ RE_CFDEC_CHOSET_SPLIT = re.compile(
     r"{[a-zA-Z]\w* *\| *[\w, ]+}",
     )  # matches "{key | a, b, c}", used for spliting function name
 RE_CFDEC_ARG = re.compile(
-    r"(?:(?P<cdt>[\w]*) )?(?P<aname>\w+)(?:=(?P<default>[\w\.]+))?",
+    r"(?:(?P<cdt>[\w]*)(?P<ixt><)? )?"
+    r"(?P<aname>\w+)(?:=(?P<default>[\w\.]+))?",
     )  # matches "int a=1" as "CDT NAME=DEFAULT"
 
 
