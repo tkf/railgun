@@ -44,6 +44,16 @@ def as_2dim_pointer(arr, basetype):
     return ctpa(*prow)
 
 
+def as_ndim_pointer(arr, basetype, ndim):
+    if ndim == 1:
+        return arr.ctypes.data_as(POINTER(basetype))
+    else:
+        ctp = POINTER_nth(basetype, ndim - 1)
+        ctpa = ctp * len(arr)
+        prow = [as_ndim_pointer(row, basetype, ndim - 1) for row in arr]
+        return ctpa(*prow)
+
+
 def ctype_getter(arr):
     if arr.dtype == numpy.int32:
         basetype = c_int
@@ -54,8 +64,7 @@ def ctype_getter(arr):
     elif arr.ndim == 2:
         return as_2dim_pointer(arr, basetype)
     else:
-        raise ValueError ("ctype_getter for ndim=%d is not implemented" %
-                          arr.ndim)
+        return as_ndim_pointer(arr, basetype, arr.ndim)
 
 
 def _gene_porp_scalar(key):
