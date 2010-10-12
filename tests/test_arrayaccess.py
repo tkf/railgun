@@ -4,10 +4,10 @@ from nose.tools import raises
 
 from railgun import SimObject, relpath
 
-LIST_IDX = list('ijk')
-LIST_NUM = [3, 5, 7]
+LIST_IDX = list('ijklm')
+LIST_NUM = [11, 7, 5, 3, 2]
 LIST_CDT = 'int', 'double'
-LIST_DIM = [1, 2, 3]
+LIST_DIM = range(1, 6)
 
 
 def get_str_get_array(cdt, dim):
@@ -45,20 +45,21 @@ def get_str_cddec(cdt, dim):
     args = ']['.join(LIST_IDX[:dim])
     return '%s %s%dd[%s]' % (cdt, cdt, dim, args)
 
+_CMEMBERS_ = (
+    ['num_%s = %d' % data for data in zip(LIST_IDX, LIST_NUM)] +
+    ['int ret_int', 'double ret_double'] +
+    [get_str_cddec(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM]
+    )
+_CFUNCS_ = [
+    get_str_get_array(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM
+    ]
+
 
 class ArrayAccess(SimObject):
     _clibname_ = 'arrayaccess.so'
     _clibdir_ = relpath('ext/build', __file__)
-
-    _cmembers_ = (
-        ['num_%s = %d' % data for data in zip(LIST_IDX, LIST_NUM)] +
-        ['int ret_int', 'double ret_double'] +
-        [get_str_cddec(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM]
-        )
-
-    _cfuncs_ = [
-        get_str_get_array(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM
-        ]
+    _cmembers_ = _CMEMBERS_
+    _cfuncs_ = _CFUNCS_
 
     def get_arr(self, cdt, dim):
         get = getattr(self, 'get_%s%dd' % (cdt, dim))
@@ -98,3 +99,12 @@ def test_arrayaccess():
     for cdt in LIST_CDT:
         for dim in LIST_DIM:
             yield (check_arrayaccess, cdt, dim)
+
+
+if __name__ == '__main__':
+    from pprint import pprint
+    print '_cfuncs_'
+    pprint(_CFUNCS_)
+    print
+    print '_cmembers_'
+    pprint(_CMEMBERS_)
