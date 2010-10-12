@@ -31,16 +31,19 @@ class LinearODE(SimObject):
 
 def main():
     lode = LinearODE(num_d=2)  # set num_d
-    lode.x[0] = [1, 0]  # access c-member via lode.VAR
+    lode.x[0] = [1, 0]  # access c-member "VAR" via lode.VAR
     lode.a = [[0, 1], [-1, 0]]
-    x = lode.run()
+    x1 = lode.run().copy()
+    lode.setv(a_0_0=-0.5)  # set lode.a[i][j]=v via lode.set(a_'i'_'j'=v)
+    x2 = lode.run().copy()
 
     import pylab
-    pylab.subplot(211)
-    pylab.plot(x[:,0])
-    pylab.plot(x[:,1])
-    pylab.subplot(212)
-    pylab.plot(x[:,0], x[:,1])
+    for (i, x) in enumerate([x1, x2]):
+        pylab.subplot(2, 2, 1 + i)
+        pylab.plot(x[:,0])
+        pylab.plot(x[:,1])
+        pylab.subplot(2, 2, 3 + i)
+        pylab.plot(x[:,0], x[:,1])
     pylab.show()
 
 
