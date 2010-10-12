@@ -22,7 +22,7 @@ Requirement
 This module only requires Numpy.
 """
 
-__author__  = "Takafumi Arakaki (aka.tkf@gmail.com)"
+__author__  = "Takafumi Arakaki"
 __version__ = "0.1.1"
 __license__ = "MIT License"
 
