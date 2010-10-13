@@ -1,6 +1,6 @@
 import numpy
 from numpy.testing import assert_equal
-from nose.tools import raises  # , ok_, with_setup
+from nose.tools import raises, ok_  # , with_setup
 
 from tsutils import eq_
 from railgun import SimObject, relpath
@@ -159,3 +159,11 @@ def test_instance_creation():
     yield (raises(ValueError)(check_instance_creation), dict(undefinedvar=0))
     yield (check_instance_creation, dict(num_i=0))
     yield (check_instance_creation, dict(num_i=1))
+
+
+def test_get():
+    vc = VectCalc()
+    for (v1, v2, v3) in [vc.get('v1', 'v2', 'v3'), vc.get('v1, v2, v3')]:
+        ok_(v1 is vc.v1)
+        ok_(v2 is vc.v2)
+        ok_(v3 is vc.v3)

@@ -290,11 +290,30 @@ class SimObject(object):
             else:
                 setattr(self, key, val)
 
+    def get(self, *args):
+        """
+        Get members obj.MEM by obj.get('MEM')
+
+        All these are equivalent::
+
+            (a, b, c) = (obj.a, obj.b, obj.c)
+            (a, b, c) = obj.get('a', 'b', 'c')
+            (a, b, c) = obj.get('a, b, c')
+
+        """
+        if len(args) == 1:
+            args = [a.strip() for a in args[0].split(',')]
+        mems = [getattr(self, a) for a in args]
+        if len(mems) == 1:
+            return mems[0]
+        else:
+            return mems
+
     def num(self, *args):
         """Get size of array (num_'i') along given index ('i') """
         if set(args) > self.indexset:
-            istr = ', '.join(set(args) - self.indexset)
-            raise ValueError ("index(es) {%s} doesn't exist" % istr)
+            istr = strset(set(args) - self.indexset)
+            raise ValueError ("index(es) %s doesn't exist" % istr)
         nums = [getattr(self, 'num_%s'%i) for i in args]
         if len(nums) == 1:
             return nums[0]
