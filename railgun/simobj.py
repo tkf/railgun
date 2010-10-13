@@ -164,7 +164,93 @@ def gene_array_alias(array_names, sep="_"):
     return array_alias
 
 
-class BaseSimObject(object):
+class MetaSimObject(type):
+
+    def __new__(cls, name, bases, attrs):
+        if not (set(['_clibname_', '_clibdir_',
+                     '_cmembers_', '_cfuncs_']) <= set(attrs)):
+            # DO NOT add BaseSimObject to bases here
+            # You will get::
+            #   TypeError: Error when calling the metaclass bases
+            #      Cannot create a consistent method resolution
+            #   order (MRO) for bases SimObject, BaseSimObject
+            return type.__new__(cls, name, bases, attrs)
+        clibdir = attrs['_clibdir_']
+        clibname = attrs['_clibname_']
+        cmembers = attrs['_cmembers_']
+        cfuncs = attrs['_cfuncs_']
+        cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
+        cfuncs_parsed = dict(
+            (parsed.fname, parsed) for parsed in cfuncs_parsed_list)
+        cmems_parsed_list = [cddec_parse(cdstr) for cdstr in cmembers]
+        cmems_parsed = dict(
+            (parsed.vname, parsed) for parsed in cmems_parsed_list)
+        cmems_default_scalar = dict(
+            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
+            if parsed.default and parsed.ndim == 0)
+        cmems_default_array = dict(
+            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
+            if parsed.default and parsed.ndim > 0)
+        idxset = set([vname[4:]  # len('num_') = 4
+                      for vname in cmems_parsed if vname.startswith('num_')])
+        attrs['_cmems_parsed_'] = cmems_parsed
+        attrs['_cmems_default_scalar_'] = cmems_default_scalar
+        attrs['_cmems_default_array_'] = cmems_default_array
+        attrs['_idxset_'] = idxset
+
+        ## set _struct_type_{,p_}
+        fields = [(parsed.vname,
+                   POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
+                  for parsed in cmems_parsed_list]
+        # don't use `cmems_parsed.iteritems()` above or
+        # order of c-members will be lost!
+        class StructClass(Structure):
+            _fields_ = fields
+        StructClass.__name__ = name + "Struct"
+        struct_type_p = POINTER(StructClass)
+        attrs.update(
+            _struct_type_ = StructClass,
+            _struct_type_p_ = struct_type_p,
+            )
+        array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
+                       if parsed.ndim > 0]
+        array_alias = gene_array_alias(array_names)
+        attrs['array_alias'] = staticmethod(array_alias)
+
+        ## set getter/setter
+        get_gene_prop = (
+            lambda ndim: (ndim > 0) and _gene_porp_array or _gene_porp_scalar)
+        for (vname, parsed) in cmems_parsed.iteritems():
+            gene_prop = get_gene_prop(parsed.ndim)
+            attrs[vname] = gene_prop(vname)
+
+        ## load c-functions
+        cdll = numpy.ctypeslib.load_library(clibname, clibdir)
+        cfunc_loaded = {}
+        attrs['_cdll_'] = cdll
+        attrs['_cfunc_loaded_'] = cfunc_loaded
+        def get_arg_ct(ag):
+            if ag['aname'] in idxset:
+                return c_int
+            elif ag['cdt'] in idxset:
+                return c_int
+            else:
+                return CDT2CTYPE[ag['cdt']]
+        for (fname, parsed) in cfuncs_parsed.iteritems():
+            for args in choice_combinations(parsed):
+                cfname = parsed.fnget(*args)
+                cf = cdll[CJOINSTR.join([name, cfname])]
+                cf.restype = c_int
+                cf.argtypes = (
+                    [struct_type_p] + map(get_arg_ct, parsed['args']))
+                cfunc_loaded[cfname] = cf
+            attrs[fname] = gene_cfpywrap(parsed)
+
+        return type.__new__(cls, name, bases, attrs)
+
+
+class SimObject(object):
+    __metaclass__ = MetaSimObject
 
     def __init__(self, **kwds):
         self._set_all(**kwds)
@@ -264,92 +350,3 @@ class BaseSimObject(object):
                         'index %s cannot bet larger than or equal to '
                         '%s=%d where value is %s=%d'
                         % (idx, upper_name, upper_val, aname, val))
-
-
-class MetaSimObject(type):
-
-    def __new__(cls, name, bases, attrs):
-        if not (set(['_clibname_', '_clibdir_',
-                     '_cmembers_', '_cfuncs_']) <= set(attrs)):
-            # DO NOT add BaseSimObject to bases here
-            # You will get::
-            #   TypeError: Error when calling the metaclass bases
-            #      Cannot create a consistent method resolution
-            #   order (MRO) for bases SimObject, BaseSimObject
-            return type.__new__(cls, name, bases, attrs)
-        clibdir = attrs['_clibdir_']
-        clibname = attrs['_clibname_']
-        cmembers = attrs['_cmembers_']
-        cfuncs = attrs['_cfuncs_']
-        cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
-        cfuncs_parsed = dict(
-            (parsed.fname, parsed) for parsed in cfuncs_parsed_list)
-        cmems_parsed_list = [cddec_parse(cdstr) for cdstr in cmembers]
-        cmems_parsed = dict(
-            (parsed.vname, parsed) for parsed in cmems_parsed_list)
-        cmems_default_scalar = dict(
-            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-            if parsed.default and parsed.ndim == 0)
-        cmems_default_array = dict(
-            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-            if parsed.default and parsed.ndim > 0)
-        idxset = set([vname[4:]  # len('num_') = 4
-                      for vname in cmems_parsed if vname.startswith('num_')])
-        attrs['_cmems_parsed_'] = cmems_parsed
-        attrs['_cmems_default_scalar_'] = cmems_default_scalar
-        attrs['_cmems_default_array_'] = cmems_default_array
-        attrs['_idxset_'] = idxset
-
-        ## set _struct_type_{,p_}
-        fields = [(parsed.vname,
-                   POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
-                  for parsed in cmems_parsed_list]
-        # don't use `cmems_parsed.iteritems()` above or
-        # order of c-members will be lost!
-        class StructClass(Structure):
-            _fields_ = fields
-        StructClass.__name__ = name + "Struct"
-        struct_type_p = POINTER(StructClass)
-        attrs.update(
-            _struct_type_ = StructClass,
-            _struct_type_p_ = struct_type_p,
-            )
-        array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
-                       if parsed.ndim > 0]
-        array_alias = gene_array_alias(array_names)
-        attrs['array_alias'] = staticmethod(array_alias)
-
-        ## set getter/setter
-        get_gene_prop = (
-            lambda ndim: (ndim > 0) and _gene_porp_array or _gene_porp_scalar)
-        for (vname, parsed) in cmems_parsed.iteritems():
-            gene_prop = get_gene_prop(parsed.ndim)
-            attrs[vname] = gene_prop(vname)
-
-        ## load c-functions
-        cdll = numpy.ctypeslib.load_library(clibname, clibdir)
-        cfunc_loaded = {}
-        attrs['_cdll_'] = cdll
-        attrs['_cfunc_loaded_'] = cfunc_loaded
-        def get_arg_ct(ag):
-            if ag['aname'] in idxset:
-                return c_int
-            elif ag['cdt'] in idxset:
-                return c_int
-            else:
-                return CDT2CTYPE[ag['cdt']]
-        for (fname, parsed) in cfuncs_parsed.iteritems():
-            for args in choice_combinations(parsed):
-                cfname = parsed.fnget(*args)
-                cf = cdll[CJOINSTR.join([name, cfname])]
-                cf.restype = c_int
-                cf.argtypes = (
-                    [struct_type_p] + map(get_arg_ct, parsed['args']))
-                cfunc_loaded[cfname] = cf
-            attrs[fname] = gene_cfpywrap(parsed)
-
-        return type.__new__(cls, name, (BaseSimObject,) + bases, attrs)
-
-
-class SimObject(object):
-    __metaclass__ = MetaSimObject
