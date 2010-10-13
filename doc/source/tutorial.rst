@@ -7,8 +7,8 @@ How to write C program for RailGun
 RailGun requires your C program to have specific type of style.
 
 
-C `struct` holds all variables which you can access from python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C `struct` holds all variables which can be access from python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This is an example of a `struct`:
 
@@ -29,8 +29,8 @@ get the value or set the value of a certain variable from python, you
 must add the variable to the `struct`.
 
 
-Functions called from python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Function for calling from python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you want to use some functions from python, the function must
 take a pointer of the `struct` as first argument, like this:
@@ -66,15 +66,15 @@ Here is an example:
 
 
 
-How to use your C functions from python using RailGun
------------------------------------------------------
+How to use your C functions from python
+---------------------------------------
 
 All you need to import from RailGun is these two::
 
   from railgun import SimObject, relpath
 
 To load our c function above, all you need to do is define a
-class!::
+class which inherit `railgun.SimObject`::
 
   class LinearODE(SimObject):
       _clibname_ = 'liblode.so'
@@ -88,8 +88,6 @@ class!::
           ]
       _cfuncs_ = ["x run(int s_end=num_s)"]
 
-This is very simple.
-
 Name of the class
     should be same as name of the C struct.
 `_clibname_`: a string
@@ -101,7 +99,7 @@ Name of the class
     `relpath('relative/path', __file__)`.
 `_cmembers_`: a list of string
     This is the definitions of your C variables.
-    **The order must the same as in C struct**.
+    **The order must be the same as in the C struct**.
     For the member named `num_*` you can omit `int`.
     You can set the default value as `double dt = 0.001`.
     Indices of C array have meaning. Size of the first axis of
@@ -110,8 +108,8 @@ Name of the class
     This is the definitions of your C functions which
     take the form `ret func_name(arg, ...)` where
 
-    - `ret` is the returned value of the function which you can.
-      You can leave it empty.
+    - `ret` is the returned value of the function which is a name
+      of C `struct` member. You can leave it empty.
     - `func_name` is the name of the C function(s).
       You don't need to write the name of the `struct`.
       The name of the `struct` will be automatically added.
@@ -142,23 +140,24 @@ Generated python function will be like this::
 
   NameOfStruct.func(a, b, meth='method1')
 
-as you see, you can specify method by option of the python function.
+as you see, you can specify "method" by option of the python function.
+The ``func_{key|c1,c2}``-notation called "choice set".
 
 
 Auto generated consistency check of argument
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can use name of the index as type of argument like this::
+You can use name of the index as a type of argument like this::
 
-  "run(s s_end)"
+  "run(s end)"
 
-so that `s_end` is always in the range `[0, num_s)`.
+so that `end` is always in the range `[0, num_s)`.
 
-But wait, `s_end` is an "upper bound" of the index. You want
+But wait, `end` is an "upper bound" of the index. You want
 it to be in the range `(0, num_s]`. You can specify this with `<`
 like this::
 
-  "run(s< s_end)"
+  "run(s< end)"
 
 
 Using generated python class
@@ -182,7 +181,7 @@ Note that `lode.setv(a_0_0=-0.5)` and `lode.a[0,0] = -0.5` are
 the same.
 
 Calling function is easy. Number of arguments are number of arguments
-of C function and number of "choice set". First arguments are used for
+of C function puls number of "choice set". First arguments are used for
 C function and then last arguments are used for "choice set" if
 arguments are specified without keyword::
 

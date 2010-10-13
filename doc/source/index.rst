@@ -16,8 +16,8 @@ read/write data which do not require speed so much. So, next thing you
 want is to call C function from python and let python do all these
 stuff (which python is good at!). Using ctypes, this is very easy.
 
-But you may want much easier way! RailGun automatically generates
-python class which load functions from C shared library, allocate
+But you may want much easier way! RailGun automatically generates a
+python class which loads functions from C shared library, allocate
 consistent arrays, provide argument checks at python side before the
 argument is passed to C function, and let you easily access C
 variables via python. All you need to do is to follow certain coding
