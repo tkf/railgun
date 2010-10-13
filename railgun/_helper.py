@@ -37,6 +37,7 @@ class HybridObj(object):
     >>> del obj.mykey
     >>> len(obj)
     0
+
     """
     def __init__(self, *args, **kwds):
         self.__dict__ = dict(*args, **kwds)
@@ -74,6 +75,7 @@ def subdict(d, *args):
     {'a': 1, 'b': 2}
     >>> subdict(d, 'a, b')
     {'a': 1, 'b': 2}
+
     """
     if len(args) == 1 and hasattr(args[0], 'find') and args[0].find(',') != -1:
         # args = ['a, b, c']
@@ -83,6 +85,28 @@ def subdict(d, *args):
         keys = args
 
     return dict([(k, d[k]) for k in keys])
+
+
+def valbykey(d, *args):
+    """
+    Get tuple of values of dictionary with specified keys.
+
+    Usage
+    >>> d = dict(a=1, b=2, d=3, e=4)
+    >>> valbykey(d, 'a', 'b')
+    (1, 2)
+    >>> valbykey(d, 'a, b')
+    (1, 2)
+
+    """
+    if len(args) == 1 and hasattr(args[0], 'find') and args[0].find(',') != -1:
+        # args = ['a, b, c']
+        keys = [k.strip() for k in args[0].split(',')]
+    else:
+        # args = ['a', 'b', 'c']
+        keys = args
+
+    return tuple([d[k] for k in keys])
 
 
 def iteralt(l1, l2):
@@ -124,7 +148,44 @@ def product(lists):
     ['A', 'x', 'v']
     >>> p[2]
     ['A', 'x', 'w']
+
     """
     return reduce(
         lambda prod, list: [x + [y] for x in prod for y in list],
         lists, [[]])
+
+
+def dict_override(default, override, addkeys=False):
+    """
+    Get a new dictionary with default values which is updated by `override`
+
+    >>> default = dict(a=1, b=2, c=3)
+    >>> newdict = dict_override(default, dict(c=100))
+    >>> newdict['c']
+    100
+    >>> newdict = dict_override(default, dict(a=100, D=0))
+    >>> valbykey(newdict, 'a, b, c')
+    (100, 2, 3)
+    >>> 'D' in newdict
+    False
+    >>> newdict = dict_override(default, dict(D=4), addkeys=True)
+    >>> valbykey(newdict, 'a, b, c, D')
+    (1, 2, 3, 4)
+    >>> newdict = dict_override(default, {})
+    >>> default is not newdict
+    True
+    >>> default == newdict
+    True
+
+    """
+    if not addkeys:
+        override = dict(
+            (k, v) for (k, v) in override.iteritems() if k in default)
+    copy = default.copy()
+    copy.update(override)
+    return copy
+
+
+def strset(s):
+    """Get string like '{a, b, c}' from iterative of string"""
+    return '{%s}' % ', '.join(s)
