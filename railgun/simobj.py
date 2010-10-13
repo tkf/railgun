@@ -4,6 +4,7 @@ import numpy
 
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
+from railgun._helper import dict_override, strset
 
 """
 SimObject, its metaclass (MetaSimObject), and helper functions
@@ -169,12 +170,25 @@ class BaseSimObject(object):
         self._set_all(**kwds)
 
     def _set_all(self, **kwds):
+        undefined_keywords = set(kwds) - set(self._cmems_parsed_)
+        if undefined_keywords:
+            raise ValueError (
+                "undefined keyword arguments: %s" % strset(undefined_keywords))
+        # allocate struct
         self._struct_ = self._struct_type_()
         self._struct_p_ = pointer(self._struct_)
-        self.setv(**self._cmems_default_scalar_)
-        self.setv(**kwds)
+        # set scalar variables including num_*
+        scalarvals = dict_override(
+            self._cmems_default_scalar_, kwds, addkeys=True)
+        numkeyset = set('num_%s' % i for i in self._idxset_)
+        num_lack = numkeyset - set(scalarvals)
+        if num_lack:
+            raise ValueError ("%s are mandatory" % strset(num_lack))
+        self.setv(**scalarvals)
+        # allocate C array data and set the defaults
         self._set_cdata()
-        self.setv(**self._cmems_default_array_)
+        self.setv(**dict_override(
+            self._cmems_default_array_, kwds, addkeys=True))
 
     def setv(self, **kwds):
         """
@@ -273,9 +287,6 @@ class MetaSimObject(type):
         cmems_parsed_list = [cddec_parse(cdstr) for cdstr in cmembers]
         cmems_parsed = dict(
             (parsed.vname, parsed) for parsed in cmems_parsed_list)
-        cmems_default_scalar = dict(
-            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-            if parsed.default and parsed.ndim == 0)
         cmems_default_scalar = dict(
             (parsed.vname, parsed.default) for parsed in cmems_parsed_list
             if parsed.default and parsed.ndim == 0)

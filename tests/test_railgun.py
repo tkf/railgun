@@ -1,6 +1,6 @@
 import numpy
 from numpy.testing import assert_equal
-from nose.tools import raises  #, ok_, with_setup
+from nose.tools import raises  # , ok_, with_setup
 
 from tsutils import eq_
 from railgun import SimObject, relpath
@@ -129,3 +129,33 @@ def test_check_argument_validity():
     yield (subvec_error, dict(i2=-1))
     yield (subvec_error, dict(i1=num_i + 1))
     yield (subvec_error, dict(i2=num_i + 1))
+
+
+def check_instance_creation(kwds):
+    class VectCalc(SimObject):
+        _clibname_ = 'vectclac.so'
+        _clibdir_ = relpath('ext/build', __file__)
+
+        _cmembers_ = [
+            'num_i',
+            'int v1[i] = 1',
+            'int v2[i] = 2',
+            'int v3[i]',
+            'int ans',
+            ]
+
+        _cfuncs_ = [
+            "vec_{op | plus, minus, times, divide}()",
+            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+            "fill_{vec | v1, v2, v3}(int s)",
+            "ans subvec_dot(i i1=0, i< i2=num_i)",
+            ]
+
+    VectCalc(**kwds)
+
+
+def test_instance_creation():
+    yield (raises(ValueError)(check_instance_creation), {})
+    yield (raises(ValueError)(check_instance_creation), dict(undefinedvar=0))
+    yield (check_instance_creation, dict(num_i=0))
+    yield (check_instance_creation, dict(num_i=1))
