@@ -141,7 +141,7 @@ Generated python function will be like this::
   NameOfStruct.func(a, b, meth='method1')
 
 as you see, you can specify "method" by option of the python function.
-The ``func_{key|c1,c2}``-notation called "choice set".
+The ``func_{key|c1,c2}``-notation is called "choice set".
 
 
 Auto generated consistency check of argument

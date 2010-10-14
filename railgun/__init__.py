@@ -23,7 +23,7 @@ This module only requires Numpy.
 """
 
 __author__  = "Takafumi Arakaki"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __license__ = "MIT License"
 
 import os
