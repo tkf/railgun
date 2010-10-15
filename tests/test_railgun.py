@@ -131,7 +131,7 @@ def test_check_argument_validity():
     yield (subvec_error, dict(i2=num_i + 1))
 
 
-def check_instance_creation(kwds):
+def check_init_wo_num(kwds):
     class VectCalc(SimObject):
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
@@ -154,11 +154,11 @@ def check_instance_creation(kwds):
     VectCalc(**kwds)
 
 
-def test_instance_creation():
-    yield (raises(ValueError)(check_instance_creation), {})
-    yield (raises(ValueError)(check_instance_creation), dict(undefinedvar=0))
-    yield (check_instance_creation, dict(num_i=0))
-    yield (check_instance_creation, dict(num_i=1))
+def test_init_wo_num():
+    """SimObject.__init__ should raise ValueError if num_* are not specified"""
+    yield (raises(ValueError)(check_init_wo_num), {})
+    yield (check_init_wo_num, dict(num_i=0))
+    yield (check_init_wo_num, dict(num_i=1))
 
 
 def test_get():
@@ -169,16 +169,40 @@ def test_get():
         ok_(v3 is vc.v3)
 
 
-def check_init_kwds_array_alias(kwds):
-    VectCalc(**kwds)
+def check_init_kwds(kwds):
+    vc = VectCalc(**kwds)
+    for (key, desired) in kwds.iteritems():
+        if vc.array_alias(key):
+            pass
+        else:
+            actual = vc.get(key)
+            if (isinstance(actual, numpy.ndarray) and
+                not isinstance(desired, numpy.ndarray)):
+                d = numpy.ones_like(actual) * desired
+                assert_equal(actual, d)
+            else:
+                assert_equal(actual, desired)
 
 
-def test_init_kwds_array_alias():
-    """Test if "array alias" v1_0 works in __init__.SimObject"""
-    yield (check_init_kwds_array_alias, dict(v1_0=0, v2_0=0, v3_0=0))
-    yield (raises(IndexError)(check_init_kwds_array_alias),
-           dict(num_i=10, v1_10=0))
-    yield (raises(IndexError)(check_init_kwds_array_alias),
-           dict(num_i=10, v2_10=0))
-    yield (raises(IndexError)(check_init_kwds_array_alias),
-           dict(num_i=10, v3_10=0))
+def test_init_kwds():
+    """Test if SimObject.__init__ works with various keywords"""
+    yield (check_init_kwds, {})
+    yield (check_init_kwds, dict(num_i=10))
+    yield (check_init_kwds, dict(ans=0))
+    yield (check_init_kwds, dict(v1=0))
+    yield (check_init_kwds, dict(v1_0=0, v2_0=0, v3_0=0))
+    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v1_10=0))
+    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v2_10=0))
+    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v3_10=0))
+    yield (raises(ValueError)(check_init_kwds), dict(undefinedvar=0))
+
+
+def test_set_array_alias():
+    vc = VectCalc(num_i=5)
+
+    desired_v1 = numpy.ones_like(vc.v1)
+    desired_v1[:] = [10, 11, 12, 13, 14]
+    vc.setv(v1_0=10, v1_1=11, v1_2=12, v1_3=13, v1_4=14)
+    assert_equal(vc.v1, desired_v1)
+
+    raises(IndexError)(vc.setv)(v1_5=0)
