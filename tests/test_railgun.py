@@ -167,3 +167,18 @@ def test_get():
         ok_(v1 is vc.v1)
         ok_(v2 is vc.v2)
         ok_(v3 is vc.v3)
+
+
+def check_init_kwds_array_alias(kwds):
+    VectCalc(**kwds)
+
+
+def test_init_kwds_array_alias():
+    """Test if "array alias" v1_0 works in __init__.SimObject"""
+    yield (check_init_kwds_array_alias, dict(v1_0=0, v2_0=0, v3_0=0))
+    yield (raises(IndexError)(check_init_kwds_array_alias),
+           dict(num_i=10, v1_10=0))
+    yield (raises(IndexError)(check_init_kwds_array_alias),
+           dict(num_i=10, v2_10=0))
+    yield (raises(IndexError)(check_init_kwds_array_alias),
+           dict(num_i=10, v3_10=0))
