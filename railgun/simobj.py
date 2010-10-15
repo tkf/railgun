@@ -256,16 +256,23 @@ class SimObject(object):
         self._set_all(**kwds)
 
     def _set_all(self, **kwds):
-        undefined_keywords = set(kwds) - set(self._cmems_parsed_)
+        # searching invalid keyword arguments
+        non_cmem_keys = set(kwds) - set(self._cmems_parsed_)
+        undefined_keywords = set()
+        for key in non_cmem_keys:
+            if not self.array_alias(key):
+                undefined_keywords.add(key)
         if undefined_keywords:
             raise ValueError (
                 "undefined keyword arguments: %s" % strset(undefined_keywords))
+        kwds_cmem = dict([(k, kwds[k]) for k in set(kwds) - non_cmem_keys])
+        kwds_non_cmem = dict([(k, kwds[k]) for k in non_cmem_keys])
         # allocate struct
         self._struct_ = self._struct_type_()
         self._struct_p_ = pointer(self._struct_)
         # set scalar variables including num_*
         scalarvals = dict_override(
-            self._cmems_default_scalar_, kwds, addkeys=True)
+            self._cmems_default_scalar_, kwds_cmem, addkeys=True)
         numkeyset = set('num_%s' % i for i in self._idxset_)
         num_lack = numkeyset - set(scalarvals)
         if num_lack:
@@ -274,7 +281,8 @@ class SimObject(object):
         # allocate C array data and set the defaults
         self._set_cdata()
         self.setv(**dict_override(
-            self._cmems_default_array_, kwds, addkeys=True))
+            self._cmems_default_array_, kwds_cmem, addkeys=True))
+        self.setv(**kwds_non_cmem)
 
     def setv(self, **kwds):
         """
