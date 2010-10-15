@@ -190,6 +190,8 @@ def test_init_kwds():
     yield (check_init_kwds, dict(num_i=10))
     yield (check_init_kwds, dict(ans=0))
     yield (check_init_kwds, dict(v1=0))
+    yield (check_init_kwds, dict(num_i=5, v1=[2,3,5,7,11]))
+    yield (raises(ValueError)(check_init_kwds), dict(num_i=5, v1=[2,3,5]))
     yield (check_init_kwds, dict(v1_0=0, v2_0=0, v3_0=0))
     yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v1_10=0))
     yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v2_10=0))
