@@ -6,6 +6,63 @@
 Welcome to RailGun's documentation!
 ===================================
 
+.. list-table::
+
+  * - Write less code in *C*
+
+      .. sourcecode:: c
+
+         typedef struct linearode_{
+           int num_d, num_s;
+           double dt;
+           double **a;
+           double **x;
+         } LinearODE;
+
+         int LinearODE_run(LinearODE *self)
+         {
+           int s, d1, d2;
+           for (s = 1; s < self->num_s; ++s){
+             for (d1 = 0; d1 < self->num_d; ++d1){
+               self->x[s][d1] = self->x[s-1][d1];
+               for (d2 = 0; d2 < self->num_d; ++d2){
+                 self->x[s][d1] += self->dt * \
+                   self->a[d1][d2] * self->x[s-1][d2];
+               }
+             }
+           }
+           return 0;
+         }
+
+    - ... *and in Python*! ::
+
+        from railgun import SimObject, relpath
+
+
+        class LinearODE(SimObject):
+            _clibname_ = 'liblode.so'
+            _clibdir_ = relpath('.', __file__)
+            _cmembers_ = [
+                'num_d',
+                'num_s = 10000'
+                'double dt = 0.001',
+                'double a[d][d]',
+                'double x[s][d]',
+                ]
+            _cfuncs_ = ["x run()"]
+
+        lode = LinearODE(num_d=2)
+        lode.a = [[0, 1], [-1, 0]]
+        lode.x[0] = [1, 0]
+        x = lode.run()
+
+        import pylab
+        pylab.plot(x)
+        pylab.show()
+
+
+The pair of c and python code above is a very short and *complete* example!
+
 If you want to write fast program for numerical simulations, you will
 always end up with writing it in C (or C++ or FORTRAN, these low-level
 languages). Although we have great python packages (not only) for
