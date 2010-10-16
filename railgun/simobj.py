@@ -169,11 +169,6 @@ class MetaSimObject(type):
     def __new__(cls, name, bases, attrs):
         if not (set(['_clibname_', '_clibdir_',
                      '_cmembers_', '_cfuncs_']) <= set(attrs)):
-            # DO NOT add BaseSimObject to bases here
-            # You will get::
-            #   TypeError: Error when calling the metaclass bases
-            #      Cannot create a consistent method resolution
-            #   order (MRO) for bases SimObject, BaseSimObject
             return type.__new__(cls, name, bases, attrs)
         clibdir = attrs['_clibdir_']
         clibname = attrs['_clibname_']
@@ -304,15 +299,20 @@ class SimObject(object):
             else:
                 setattr(self, key, val)
 
-    def get(self, *args):
+    def getv(self, *args):
         """
-        Get members obj.MEM by obj.get('MEM')
+        Get members obj.MEM by obj.getv('MEM')
 
-        All these are equivalent::
+        These two lines are equivalent::
+
+            a = obj.a
+            a = obj.getv('a')
+
+        You can specify multiple members::
 
             (a, b, c) = (obj.a, obj.b, obj.c)
-            (a, b, c) = obj.get('a', 'b', 'c')
-            (a, b, c) = obj.get('a, b, c')
+            (a, b, c) = obj.getv('a', 'b', 'c')
+            (a, b, c) = obj.getv('a, b, c')
 
         """
         if len(args) == 1:
