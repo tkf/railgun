@@ -44,7 +44,7 @@ Welcome to RailGun's documentation!
             _clibdir_ = relpath('.', __file__)
             _cmembers_ = [
                 'num_d',
-                'num_s = 10000'
+                'num_s = 10000',
                 'double dt = 0.001',
                 'double a[d][d]',
                 'double x[s][d]',
