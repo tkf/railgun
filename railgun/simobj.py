@@ -1,5 +1,7 @@
 import re
-from ctypes import (Structure, POINTER, pointer, c_int, c_double)
+from ctypes import Structure, POINTER, pointer
+from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
+                    c_longlong, c_ulonglong, c_float, c_double, c_longdouble)
 import numpy
 
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
@@ -25,8 +27,28 @@ PT: python type
 
 """
 
-CDT2DTYPE = dict(int=numpy.int32, double=numpy.float)
-CDT2CTYPE = dict(int=c_int, double=c_double)
+CDT2DTYPE = dict(char=numpy.character,
+                 short=numpy.short, ushort=numpy.ushort,
+                 int=numpy.int32, uint=numpy.uint32,   # ?? int16
+                 long=numpy.int32, ulong=numpy.uint32,  # ??
+                 ## longlong=numpy.longlong, ulonglong=numpy.ulonglong,  # ??
+                 float=numpy.float32, double=numpy.float,
+                 longdouble=numpy.longdouble,  # == numpy.float96
+                 ## cfloat=numpy.complex64, cdouble=numpy.complex,  # complex128
+                 ## clongdouble=numpy.complex192,
+                 )
+CDT2CTYPE = dict(char=c_char,
+                 short=c_short, ushort=c_ushort,
+                 int=c_int, uint=c_uint,
+                 long=c_long, ulong=c_ulong,
+                 ## longlong=c_longlong, ulonglong=c_ulonglong,
+                 float=c_float, double=c_double,
+                 longdouble=c_longdouble,
+                 )
+DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.iteritems())
+DTYPE2CDT.update({
+    numpy.dtype('S1'): 'char',
+    })
 
 
 def POINTER_nth(ct, n):
@@ -49,10 +71,7 @@ def as_ndim_pointer(arr, basetype, ndim):
 
 
 def ctype_getter(arr):
-    if arr.dtype == numpy.int32:
-        basetype = c_int
-    elif arr.dtype == numpy.float:
-        basetype = c_double
+    basetype = CDT2CTYPE[DTYPE2CDT[arr.dtype]]
     return as_ndim_pointer(arr, basetype, arr.ndim)
 
 

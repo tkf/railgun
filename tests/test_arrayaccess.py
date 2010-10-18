@@ -6,7 +6,8 @@ from railgun import SimObject, relpath
 
 LIST_IDX = list('ijklm')
 LIST_NUM = [11, 7, 5, 3, 2]
-LIST_CDT = 'int', 'double'
+LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
+            'float', 'double', 'longdouble']
 LIST_DIM = range(1, 6)
 
 
@@ -47,12 +48,23 @@ def get_str_cddec(cdt, dim):
 
 _CMEMBERS_ = (
     ['num_%s = %d' % data for data in zip(LIST_IDX, LIST_NUM)] +
-    ['int ret_int', 'double ret_double'] +
+    ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in
+     ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
+      'float', 'double', 'longdouble']] +
     [get_str_cddec(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM]
     )
 _CFUNCS_ = [
     get_str_get_array(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM
     ]
+
+
+@numpy.vectorize
+def mchr(i):
+    return chr(i % 256)
+
+
+def alpharange(*args):
+    return mchr(numpy.arange(*args))
 
 
 class ArrayAccess(SimObject):
@@ -72,16 +84,20 @@ class ArrayAccess(SimObject):
 
     def fill(self):
         for cdt in LIST_CDT:
+            if cdt == 'char':
+                arange = alpharange
+            else:
+                arange = numpy.arange
             for dim in LIST_DIM:
                 arr = getattr(self, '%s%dd' % (cdt, dim))
                 shape = arr.shape
-                arr[:] = numpy.arange(numpy.prod(shape)).reshape(shape)
+                arr[:] = arange(numpy.prod(shape)).reshape(shape)
 
 
 def check_arrayaccess(cdt, dim):
-    if cdt in ['int']:
-        ass_eq = assert_almost_equal
-    elif cdt in ['double']:
+    if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong']:
+        ass_eq = assert_equal
+    elif cdt in ['float', 'double', 'longdouble']:
         ass_eq = assert_almost_equal
 
     aa = ArrayAccess()
@@ -89,7 +105,10 @@ def check_arrayaccess(cdt, dim):
     garr = aa.get_arr(cdt, dim)
     arr = getattr(aa, '%s%dd' % (cdt, dim))
     ass_eq(garr, arr)
-    arr += 100
+    if cdt == 'char':
+        arr.flat = alpharange(100, numpy.prod(arr.shape) + 100)
+    else:
+        arr += 100
     raises(AssertionError)(assert_equal)(garr, arr)
     garr2 = aa.get_arr(cdt, dim)
     assert_equal(garr2, arr)
