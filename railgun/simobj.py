@@ -2,6 +2,7 @@ import re
 from ctypes import Structure, POINTER, pointer
 from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
                     c_longlong, c_ulonglong, c_float, c_double, c_longdouble)
+import platform
 import numpy
 
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
@@ -29,14 +30,17 @@ PT: python type
 
 CDT2DTYPE = dict(char=numpy.character,
                  short=numpy.short, ushort=numpy.ushort,
-                 int=numpy.int32, uint=numpy.uint32,   # ?? int16
-                 long=numpy.int32, ulong=numpy.uint32,  # ??
-                 ## longlong=numpy.longlong, ulonglong=numpy.ulonglong,  # ??
+                 int=numpy.int32, uint=numpy.uint32,
+                 ## longlong=numpy.longlong, ulonglong=numpy.ulonglong,
                  float=numpy.float32, double=numpy.float,
                  longdouble=numpy.longdouble,  # == numpy.float96
                  ## cfloat=numpy.complex64, cdouble=numpy.complex,  # complex128
                  ## clongdouble=numpy.complex192,
                  )
+if platform.architecture()[0] == '32bit':
+    CDT2DTYPE.update(long=numpy.int32, ulong=numpy.uint32)
+elif platform.architecture()[0] == '64bit':
+    CDT2DTYPE.update(long=numpy.int64, ulong=numpy.uint64)
 CDT2CTYPE = dict(char=c_char,
                  short=c_short, ushort=c_ushort,
                  int=c_int, uint=c_uint,
