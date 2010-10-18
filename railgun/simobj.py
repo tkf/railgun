@@ -47,7 +47,8 @@ CDT2CTYPE = dict(char=c_char,
                  )
 DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.iteritems())
 DTYPE2CDT.update({
-    numpy.dtype('S1'): 'char',
+    numpy.dtype(numpy.int32): 'int',  # otherwise 'long' can override this val
+    numpy.dtype('|S1'): 'char',
     })
 
 
