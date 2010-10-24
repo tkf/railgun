@@ -96,10 +96,14 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
         ndim = nd
         list_cdt = _list_cdt
 
-        def get_arr(self, cdt, dim):
+        def arr(self, cdt, dim):
+            """Get array member '{cdt}{dim}d' (e.g., 'int2d')"""
+            return getattr(self, '%s%dd' % (cdt, dim))
+
+        def arr_via_ret(self, cdt, dim):
             """Get copy of array using 'get_{cdt}{dim}d' c-function"""
             get = getattr(self, 'get_%s%dd' % (cdt, dim))
-            arr = getattr(self, '%s%dd' % (cdt, dim))
+            arr = self.arr(cdt, dim)
             garr = numpy.zeros_like(arr)
             for idx in numpy.ndindex(*arr.shape):
                 get(*idx)  # call get_* c-func. which store val. in ret_{cdt}
@@ -107,15 +111,15 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
             return garr
 
         def fill(self):
+            """Fill array members using arange"""
             for cdt in self.list_cdt:
                 if cdt == 'char':
                     arange = alpharange
                 else:
                     arange = numpy.arange
                 for dim in range(1, 1 + self.ndim):
-                    arr = getattr(self, '%s%dd' % (cdt, dim))
-                    shape = arr.shape
-                    arr[:] = arange(numpy.prod(shape)).reshape(shape)
+                    arr = self.arr(cdt, dim)
+                    arr.flat = arange(arr.size)
     return ArrayAccess
 
 
@@ -131,15 +135,18 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     num_dict = dict(zip(ArrayAccess.num_names, list_num))  # {num_i: 6, ...}
     aa = ArrayAccess(**num_dict)
     aa.fill()
-    garr = aa.get_arr(cdt, dim)
-    arr = getattr(aa, '%s%dd' % (cdt, dim))
+    # arr_via_ret should return same array (garr)
+    garr = aa.arr_via_ret(cdt, dim)
+    arr = aa.arr(cdt, dim)
     ass_eq(garr, arr)
+    # insert completely different value to 'arr'
     if cdt == 'char':
         arr.flat = alpharange(100, numpy.prod(arr.shape) + 100)
     else:
         arr += 100
     raises(AssertionError)(assert_equal)(garr, arr)
-    garr2 = aa.get_arr(cdt, dim)
+    # get array (garr2) via arr_via_ret again
+    garr2 = aa.arr_via_ret(cdt, dim)
     assert_equal(garr2, arr)
 
 
