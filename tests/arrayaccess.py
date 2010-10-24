@@ -115,6 +115,8 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
             for cdt in self.list_cdt:
                 if cdt == 'char':
                     arange = alpharange
+                elif cdt == 'bool':
+                    arange = lambda n: numpy.arange(n) % 2
                 else:
                     arange = numpy.arange
                 for dim in range(1, 1 + self.ndim):
@@ -142,6 +144,8 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     # insert completely different value to 'arr'
     if cdt == 'char':
         arr.flat = alpharange(100, numpy.prod(arr.shape) + 100)
+    elif cdt == 'bool':
+        arr[:] = -arr
     else:
         arr += 100
     raises(AssertionError)(assert_equal)(garr, arr)
