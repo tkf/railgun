@@ -17,13 +17,14 @@ Utility functions
            |  `- your_clib.c
            `- Makefile
 
-   To load ``your_clib.so`` from ``your_module.py``, you can write
-   in your class defined in ``your_module.py``::
+   To load ``your_clib.so`` from ``your_module.py``, you can use
+   :func:`relpath` in your class definition in ``your_module.py``
+   like this::
 
         _clibname_ = 'your_clib.so'
         _clibdir_ = relpath('ext/build', __file__)
 
-   Note that `__file__` is special attribute of python module which is
+   Note that `__file__` is a special attribute of python module which is
    the pathname of the file from which the module was loaded.
 
 

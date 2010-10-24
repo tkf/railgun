@@ -69,7 +69,7 @@
           the index ``i``. For the member named ``num_*``, you can omit
           **CDT** (``int``).
       **CDT**: C Data Type, (optional if **VAR_NAME** starts with ``num_``)
-          Chose CDT from the list in
+          Choose CDT from the list in
           `Relationships among C Data Type (CDT), numpy dtype and ctypes`_.
       **INDEX**: index, optional
           If the variable is an array, **INDEX** should be specified.
@@ -109,8 +109,8 @@
           Name of C function to be loaded.
           You don't need to write the name of the `struct`.
           The name of the `struct` will be automatically added.
-          See ``{key|c1,c2}``-notation to load several C functions
-          at once (:ref:`choices`).
+
+          See also: :ref:`choices`.
       **RETURN_VAR**: string, optional
           Name from C struct members.
           If specified, python wrapper function of **FUNC_NAME** will
@@ -125,7 +125,7 @@
               the argument `x` does not satisfy `0 <= x < num_i`
               (`0 < x <= num_i`).
           **ARG_NAME**: string
-              Name of argument.
+              Name of the argument.
               You can specify the argument with non-keyword argument
               or keyword argument call.
           **DEFAULT**: a number or member of C struct, optional
@@ -143,6 +143,7 @@
               "func_{key | c1, c2, c3}()",
               ]
 
+      See also: :ref:`how_to_write_cfunc`
 
    .. attribute:: SimObject._cstructname_
 
@@ -230,6 +231,9 @@
 Relationships among C Data Type (CDT), numpy dtype and ctypes
 -------------------------------------------------------------
 
+To specify C-language type of C struct members and C function arguments,
+following C Data Types (**CDTs**) are available.
+
 ================ ============================== ============= ================
  CDT              C-language type                numpy dtype   ctypes
 ================ ============================== ============= ================
@@ -238,9 +242,9 @@ Relationships among C Data Type (CDT), numpy dtype and ctypes
 ``ushort``        :c:type:`unsigned short`       `ushort`      `c_ushort`
 ``int``           :c:type:`int`                  `int32`       `c_int`
 ``uint``          :c:type:`unsigned int`         `uint32`      `c_uint`
-``long``          :c:type:`long`                 `int32`/      `c_long`
+``long``          :c:type:`long`                 `int32` or    `c_long`
                                                  `int64`
-``ulong``         :c:type:`unsigned long`        `uint32`/     `c_ulong`
+``ulong``         :c:type:`unsigned long`        `uint32` or   `c_ulong`
                                                  `uint64`
 ``longlong``      :c:type:`long long`            `longlong`    `c_longlong`
 ``ulonglong``     :c:type:`unsigned long long`   `ulonglong`   `c_ulonglong`
@@ -252,5 +256,5 @@ Relationships among C Data Type (CDT), numpy dtype and ctypes
 
 .. note::
 
-   Corresponding Numpy dtype of ``long`` and ``ulong`` is determined by
-   :func:`platform.architecture`.
+   Corresponding Numpy dtypes of CDTs ``long`` and ``ulong`` are chosen
+   based on the variable returned by :func:`platform.architecture`.
