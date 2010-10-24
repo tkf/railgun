@@ -18,14 +18,12 @@ Notations of "types" used here:
 CDT: C Data Type
     String to indicate data type of C
     (e.g.: int, float, double, char)
-DT/dtype: numpy data type
+DTYPE: numpy data type
     This is used as an argument of numpy functions such as
     `numpy.array`
-CT/ctype: ctypes data types
+CTYPE: ctypes data types
     Fundamental data types of `ctypes` such as
     `c_int`, `c_double`, `c_float`, `c_bool`.
-PT: python type
-    Python type object such as `float` or `int`
 
 """
 
@@ -39,10 +37,14 @@ CDT2DTYPE = dict(char=numpy.character,
                  ## clongdouble=numpy.complex192,
                  bool=numpy.bool,
                  )
-if platform.architecture()[0] == '32bit':
+_architecture = platform.architecture()
+if _architecture[0] == '32bit':
     CDT2DTYPE.update(long=numpy.int32, ulong=numpy.uint32)
-elif platform.architecture()[0] == '64bit':
+elif _architecture[0] == '64bit':
     CDT2DTYPE.update(long=numpy.int64, ulong=numpy.uint64)
+else:
+    raise RuntimeError (
+        'Architecture %s is not supported' % str(_architecture))
 CDT2CTYPE = dict(char=c_char,
                  short=c_short, ushort=c_ushort,
                  int=c_int, uint=c_uint,
