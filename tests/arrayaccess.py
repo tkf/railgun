@@ -5,9 +5,6 @@ from nose.tools import raises
 from railgun import SimObject, relpath
 
 LIST_IDX = list('ijklmnopqrstuvwxyz')
-LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-            'float', 'double', 'longdouble']
-NDIM = 5
 
 
 def get_str_get_array(cdt, dim):
@@ -148,8 +145,10 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
 
 if __name__ == '__main__':
     from pprint import pprint
+    list_cdt = ['char', 'int', 'double']
+    ndim = 3
     print '_cfuncs_'
-    pprint(gene_cfuncs(NDIM, LIST_CDT))
+    pprint(gene_cfuncs(ndim, list_cdt))
     print
     print '_cmembers_'
-    pprint(gene_cmembers(NDIM, LIST_CDT))
+    pprint(gene_cmembers(ndim, list_cdt))
