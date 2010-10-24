@@ -1,7 +1,8 @@
 import re
 from ctypes import Structure, POINTER, pointer
 from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
-                    c_longlong, c_ulonglong, c_float, c_double, c_longdouble)
+                    c_longlong, c_ulonglong, c_float, c_double, c_longdouble,
+                    c_bool)
 import platform
 import numpy
 
@@ -31,11 +32,12 @@ PT: python type
 CDT2DTYPE = dict(char=numpy.character,
                  short=numpy.short, ushort=numpy.ushort,
                  int=numpy.int32, uint=numpy.uint32,
-                 ## longlong=numpy.longlong, ulonglong=numpy.ulonglong,
+                 longlong=numpy.longlong, ulonglong=numpy.ulonglong,
                  float=numpy.float32, double=numpy.float,
                  longdouble=numpy.longdouble,  # == numpy.float96
                  ## cfloat=numpy.complex64, cdouble=numpy.complex,  # complex128
                  ## clongdouble=numpy.complex192,
+                 bool=numpy.bool,
                  )
 if platform.architecture()[0] == '32bit':
     CDT2DTYPE.update(long=numpy.int32, ulong=numpy.uint32)
@@ -45,9 +47,10 @@ CDT2CTYPE = dict(char=c_char,
                  short=c_short, ushort=c_ushort,
                  int=c_int, uint=c_uint,
                  long=c_long, ulong=c_ulong,
-                 ## longlong=c_longlong, ulonglong=c_ulonglong,
+                 longlong=c_longlong, ulonglong=c_ulonglong,
                  float=c_float, double=c_double,
                  longdouble=c_longdouble,
+                 bool=c_bool,
                  )
 DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.iteritems())
 DTYPE2CDT.update({
