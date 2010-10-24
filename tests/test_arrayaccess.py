@@ -4,11 +4,12 @@ from nose.tools import raises
 
 from railgun import SimObject, relpath
 
-LIST_IDX = list('ijklm')
-LIST_NUM = [11, 7, 5, 3, 2]
+LIST_IDX = list('ijklmnopqrstuvwxyz')
 LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
             'float', 'double', 'longdouble']
-LIST_DIM = range(1, 6)
+NDIM = 5
+LIST_NUM = [11, 7, 5, 3, 2]
+# LIST_NUM = [2] * NDIM
 
 
 def get_str_get_array(cdt, dim):
@@ -46,16 +47,25 @@ def get_str_cddec(cdt, dim):
     args = ']['.join(LIST_IDX[:dim])
     return '%s %s%dd[%s]' % (cdt, cdt, dim, args)
 
-_CMEMBERS_ = (
-    ['num_%s = %d' % data for data in zip(LIST_IDX, LIST_NUM)] +
-    ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in
-     ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-      'float', 'double', 'longdouble']] +
-    [get_str_cddec(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM]
-    )
-_CFUNCS_ = [
-    get_str_get_array(cdt, dim) for cdt in LIST_CDT for dim in LIST_DIM
-    ]
+
+def gene_nums(nd):
+    return ['num_%s' % data for data in LIST_IDX[:nd]]
+
+
+def gene_cmembers(nd, list_cdt):
+    return (
+        gene_nums(nd) +
+        ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in
+         ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
+          'float', 'double', 'longdouble']] +
+        [get_str_cddec(cdt, dim)
+         for cdt in list_cdt for dim in range(1, 1 + nd)]
+        )
+
+
+def gene_cfuncs(nd, list_cdt):
+    return [get_str_get_array(cdt, dim)
+            for cdt in list_cdt for dim in range(1, 1 + nd)]
 
 
 @numpy.vectorize
@@ -67,40 +77,48 @@ def alpharange(*args):
     return mchr(numpy.arange(*args))
 
 
-class ArrayAccess(SimObject):
-    _clibname_ = 'arrayaccess.so'
-    _clibdir_ = relpath('ext/build', __file__)
-    _cmembers_ = _CMEMBERS_
-    _cfuncs_ = _CFUNCS_
+def gene_class_ArrayAccess(clibname, nd, _list_cdt):
+    class ArrayAccess(SimObject):
+        _clibname_ = clibname
+        _clibdir_ = relpath('ext/build', __file__)
+        _cmembers_ = gene_cmembers(nd, _list_cdt)
+        _cfuncs_ = gene_cfuncs(nd, _list_cdt)
+        num_names = gene_nums(nd)
+        ndim = nd
+        list_cdt = _list_cdt
 
-    def get_arr(self, cdt, dim):
-        get = getattr(self, 'get_%s%dd' % (cdt, dim))
-        arr = getattr(self, '%s%dd' % (cdt, dim))
-        garr = numpy.zeros_like(arr)
-        for idx in numpy.ndindex(*arr.shape):
-            get(*idx)
-            garr[idx] = getattr(self, 'ret_%s' % cdt)
-        return garr
+        def get_arr(self, cdt, dim):
+            get = getattr(self, 'get_%s%dd' % (cdt, dim))
+            arr = getattr(self, '%s%dd' % (cdt, dim))
+            garr = numpy.zeros_like(arr)
+            for idx in numpy.ndindex(*arr.shape):
+                get(*idx)
+                garr[idx] = getattr(self, 'ret_%s' % cdt)
+            return garr
 
-    def fill(self):
-        for cdt in LIST_CDT:
-            if cdt == 'char':
-                arange = alpharange
-            else:
-                arange = numpy.arange
-            for dim in LIST_DIM:
-                arr = getattr(self, '%s%dd' % (cdt, dim))
-                shape = arr.shape
-                arr[:] = arange(numpy.prod(shape)).reshape(shape)
+        def fill(self):
+            for cdt in self.list_cdt:
+                if cdt == 'char':
+                    arange = alpharange
+                else:
+                    arange = numpy.arange
+                for dim in range(1, 1 + self.ndim):
+                    arr = getattr(self, '%s%dd' % (cdt, dim))
+                    shape = arr.shape
+                    arr[:] = arange(numpy.prod(shape)).reshape(shape)
+    return ArrayAccess
 
 
-def check_arrayaccess(cdt, dim):
+def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong']:
         ass_eq = assert_equal
     elif cdt in ['float', 'double', 'longdouble']:
         ass_eq = assert_almost_equal
 
-    aa = ArrayAccess()
+    ArrayAccess = gene_class_ArrayAccess(
+        clibname, len(list_num), list_cdt)
+    num_dict = dict(zip(ArrayAccess.num_names, list_num))  # {num_i: 6, ...}
+    aa = ArrayAccess(**num_dict)
     aa.fill()
     garr = aa.get_arr(cdt, dim)
     arr = getattr(aa, '%s%dd' % (cdt, dim))
@@ -115,15 +133,17 @@ def check_arrayaccess(cdt, dim):
 
 
 def test_arrayaccess():
-    for cdt in LIST_CDT:
-        for dim in LIST_DIM:
-            yield (check_arrayaccess, cdt, dim)
+    for clibname in ['arrayaccess.so', 'arrayaccess-c99.so']:
+        for cdt in LIST_CDT:
+            for dim in range(1, 1 + NDIM):
+                yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT,
+                       cdt, dim)
 
 
 if __name__ == '__main__':
     from pprint import pprint
     print '_cfuncs_'
-    pprint(_CFUNCS_)
+    pprint(gene_cfuncs(NDIM, LIST_CDT))
     print
     print '_cmembers_'
-    pprint(_CMEMBERS_)
+    pprint(gene_cmembers(NDIM, LIST_CDT))
