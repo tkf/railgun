@@ -14,7 +14,7 @@ LIST_NUM = [11, 7, 5, 3, 2]
 
 def get_str_get_array(cdt, dim):
     """
-    Get c-function declaration 'get_{int,double}{1,2,..}d(i, j, ...)'
+    Get c-function declaration 'get_{int,double,...}{1,2,..}d(i, j, ...)'
 
     >>> get_str_get_array('int', 1)
     'get_int1d(i)'
@@ -32,7 +32,7 @@ def get_str_get_array(cdt, dim):
 
 def get_str_cddec(cdt, dim):
     """
-    Get c-data declaration '{int, double} {int,double}{1,2,..}[i][j]...'
+    Get c-data declaration '{int,double,...} {int,double,...}{1,2,..}[i][j]...'
 
     >>> get_str_cddec('int', 1)
     'int int1d[i]'
@@ -49,15 +49,29 @@ def get_str_cddec(cdt, dim):
 
 
 def gene_nums(nd):
+    """
+    Get list of num_* given maximum dimension
+
+    >>> gene_nums(1)
+    ['num_i']
+    >>> gene_nums(4)
+    ['num_i', 'num_j', 'num_k', 'num_l']
+
+    """
     return ['num_%s' % data for data in LIST_IDX[:nd]]
 
 
 def gene_cmembers(nd, list_cdt):
+    """
+    Get cmembers given maximum dimension and list of CDT (c data type)
+
+    >>> gene_cmembers(2, ['int', 'double'])
+    ['num_i', 'num_j', 'int ret_int', 'double ret_double', 'int int1d[i]', 'int int2d[i][j]', 'double double1d[i]', 'double double2d[i][j]']
+
+    """
     return (
         gene_nums(nd) +
-        ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in
-         ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-          'float', 'double', 'longdouble']] +
+        ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in list_cdt] +
         [get_str_cddec(cdt, dim)
          for cdt in list_cdt for dim in range(1, 1 + nd)]
         )
@@ -88,11 +102,12 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
         list_cdt = _list_cdt
 
         def get_arr(self, cdt, dim):
+            """Get copy of array using 'get_{cdt}{dim}d' c-function"""
             get = getattr(self, 'get_%s%dd' % (cdt, dim))
             arr = getattr(self, '%s%dd' % (cdt, dim))
             garr = numpy.zeros_like(arr)
             for idx in numpy.ndindex(*arr.shape):
-                get(*idx)
+                get(*idx)  # call get_* c-func. which store val. in ret_{cdt}
                 garr[idx] = getattr(self, 'ret_%s' % cdt)
             return garr
 
