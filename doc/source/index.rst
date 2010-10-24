@@ -94,6 +94,8 @@ Contents:
    :maxdepth: 2
 
    tutorial
+   simobj
+   utils
 
 RailGun's repository is http://bitbucket.org/tkf/railgun/.
 See samples in source code or

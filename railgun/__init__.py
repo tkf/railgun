@@ -64,3 +64,18 @@ def gene_cmem(cdt):
 
 cmint = gene_cmem('int')
 cmdouble = gene_cmem('double')
+
+
+def cmems(cdt, *args):
+    """
+    Generate `_cmembers_` for same C type easily
+
+    >>> cmems('int', 'a', 'b', 'c')
+    ['int a', 'int b', 'int c']
+    >>> cmems('int', 'a, b, c')
+    ['int a', 'int b', 'int c']
+
+    """
+    if len(args) == 1:
+        args = args[0].split(',')
+    return ['%s %s' % (cdt, v.strip()) for v in args]

@@ -121,6 +121,8 @@ Name of the class
       `int s_end=num_s` or `int s_start=0`.
 
 
+.. _choices:
+
 Loading several C functions at once: ``func_{key|c1,c2}``-notation (choices)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
