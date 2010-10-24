@@ -195,10 +195,12 @@ def gene_array_alias(array_names, sep="_"):
 
 class MetaSimObject(type):
 
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls, clsname, bases, attrs):
         if not (set(['_clibname_', '_clibdir_',
                      '_cmembers_', '_cfuncs_']) <= set(attrs)):
-            return type.__new__(cls, name, bases, attrs)
+            return type.__new__(cls, clsname, bases, attrs)
+        cstructname = attrs.get('_cstructname_', clsname)
+        cfuncprefix = attrs.get('_cfuncprefix_', cstructname + CJOINSTR)
         clibdir = attrs['_clibdir_']
         clibname = attrs['_clibname_']
         cmembers = attrs['_cmembers_']
@@ -230,7 +232,7 @@ class MetaSimObject(type):
         # order of c-members will be lost!
         class StructClass(Structure):
             _fields_ = fields
-        StructClass.__name__ = name + "Struct"
+        StructClass.__name__ = cstructname + "Struct"
         struct_type_p = POINTER(StructClass)
         attrs.update(
             _struct_type_ = StructClass,
@@ -263,14 +265,14 @@ class MetaSimObject(type):
         for (fname, parsed) in cfuncs_parsed.iteritems():
             for args in choice_combinations(parsed):
                 cfname = parsed.fnget(*args)
-                cf = cdll[CJOINSTR.join([name, cfname])]
+                cf = cdll[cfuncprefix + cfname]
                 cf.restype = c_int
                 cf.argtypes = (
                     [struct_type_p] + map(get_arg_ct, parsed['args']))
                 cfunc_loaded[cfname] = cf
             attrs[fname] = gene_cfpywrap(parsed)
 
-        return type.__new__(cls, name, bases, attrs)
+        return type.__new__(cls, clsname, bases, attrs)
 
 
 class SimObject(object):
