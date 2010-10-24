@@ -28,9 +28,10 @@ You can have temporary variables in your C code, but if you want to
 get the value or set the value of a certain variable from python, you
 must add the variable to the `struct`.
 
+.. _how_to_write_cfunc:
 
-Function for calling from python
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+C Function for calling from python
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If you want to use some functions from python, the function must
 take a pointer of the `struct` as first argument, like this:
@@ -63,7 +64,6 @@ Here is an example:
 
    You don't need to check if `s_end` above is in the range
    *[1, self->num_s]*. You will see you can leave it to RailGun!
-
 
 
 How to use your C functions from python
