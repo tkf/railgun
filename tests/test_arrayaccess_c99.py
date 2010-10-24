@@ -1,9 +1,9 @@
-from test_arrayaccess import check_arrayaccess, LIST_CDT
+from arrayaccess import check_arrayaccess, LIST_CDT, NDIM
 
 LIST_CDT = LIST_CDT + ['longlong', 'ulonglong', 'bool']
-NDIM = 5
 LIST_NUM = [11, 7, 5, 3, 2]
 # LIST_NUM = [2] * NDIM
+
 
 def test_arrayaccess_c99():
     clibname = 'arrayaccess-c99.so'
