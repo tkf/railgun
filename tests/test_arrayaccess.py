@@ -125,7 +125,8 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
 
 
 def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
-    if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong']:
+    if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
+               'longlong', 'ulonglong', 'bool']:
         ass_eq = assert_equal
     elif cdt in ['float', 'double', 'longdouble']:
         ass_eq = assert_almost_equal
@@ -148,11 +149,10 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
 
 
 def test_arrayaccess():
-    for clibname in ['arrayaccess.so', 'arrayaccess-c99.so']:
-        for cdt in LIST_CDT:
-            for dim in range(1, 1 + NDIM):
-                yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT,
-                       cdt, dim)
+    clibname = 'arrayaccess.so'
+    for cdt in LIST_CDT:
+        for dim in range(1, 1 + NDIM):
+            yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT, cdt, dim)
 
 
 if __name__ == '__main__':

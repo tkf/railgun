@@ -23,10 +23,12 @@ _normal_ints = ['short', 'int', 'long']
 CDT2CTYPE = dict(char='char')
 CDT2CTYPE.update((c, c) for c in _normal_ints)
 CDT2CTYPE.update(('u' + c, 'unsigned ' + c) for c in _normal_ints)
-CDT2CTYPE.update(float='float', double='double', longdouble='long double')
+CDT2CTYPE.update(float='float', double='double', longdouble='long double',
+                 longlong='long long', ulonglong='unsigned long long',
+                 bool='bool')
 
 
-def gene_arrayaccess(filepath, nd, l_cdt):
+def gene_arrayaccess(filepath, nd, l_cdt, c99):
     codefile = file(filepath, 'w')
 
     l_dim = range(1, 1 + nd)
@@ -39,6 +41,9 @@ def gene_arrayaccess(filepath, nd, l_cdt):
             CDT2CTYPE[cdt],
             ', '.join('*' * dim + cdt + '%dd' % dim for dim in l_dim))
         for cdt in l_cdt]
+    # include
+    if c99:
+        codefile.write('#include <stdbool.h>\n\n')
     # generate typedef struct arrayaccess_{...} ArrayAccess;
     codefile.write(
         TEMPLATE_STRUCT % dict(
@@ -55,14 +60,19 @@ def gene_arrayaccess(filepath, nd, l_cdt):
         )
 
 
-def main(filepath):
+def main(filepath, c99):
     nd = 5
     l_cdt = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
              'float', 'double', 'longdouble']
-    gene_arrayaccess(filepath, nd, l_cdt)
+    if c99:
+        l_cdt += ['longlong', 'ulonglong', 'bool']
+    gene_arrayaccess(filepath, nd, l_cdt, c99)
 
 
 if __name__ == '__main__':
-    import sys
-    filepath = sys.argv[1]
-    main(filepath)
+    from optparse import OptionParser
+    parser = OptionParser()
+    parser.add_option("--c99", default=False, action="store_true")
+    (opts, args) = parser.parse_args()
+    filepath = args[0]
+    main(filepath, opts.c99)
