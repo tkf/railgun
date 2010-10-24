@@ -1,4 +1,4 @@
-from arrayaccess import check_arrayaccess
+from arrayaccess import check_arrayaccess, check_num
 
 LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
             'float', 'double', 'longdouble']
@@ -12,3 +12,7 @@ def test_arrayaccess():
     for cdt in LIST_CDT:
         for dim in range(1, 1 + NDIM):
             yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT, cdt, dim)
+
+
+def test_num():
+    yield (check_num, 'arrayaccess.so', LIST_NUM, LIST_CDT)
