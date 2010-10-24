@@ -356,6 +356,8 @@ class SimObject(object):
 
     def num(self, *args):
         """Get size of array (num_'i') along given index ('i') """
+        if len(args) == 1:
+            args = [a.strip() for a in args[0].split(',')]
         if set(args) > self.indexset:
             istr = strset(set(args) - self.indexset)
             raise ValueError ("index(es) %s doesn't exist" % istr)

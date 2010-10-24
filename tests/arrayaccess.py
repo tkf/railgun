@@ -2,6 +2,7 @@ import numpy
 from numpy.testing import assert_equal, assert_almost_equal
 from nose.tools import raises
 
+from tsutils import eq_
 from railgun import SimObject, relpath
 
 LIST_IDX = list('ijklmnopqrstuvwxyz')
@@ -152,6 +153,17 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     # get array (garr2) via arr_via_ret again
     garr2 = aa.arr_via_ret(cdt, dim)
     assert_equal(garr2, arr)
+
+
+def check_num(clibname, list_num, list_cdt):
+    ArrayAccess = gene_class_ArrayAccess(
+        clibname, len(list_num), list_cdt)
+    num_dict = dict(zip(ArrayAccess.num_names, list_num))
+    aa = ArrayAccess(**num_dict)
+    nd = len(list_num)
+    eq_(tuple(aa.num(*LIST_IDX[:nd])), tuple(list_num))
+    eq_(tuple(aa.num(','.join(LIST_IDX[:nd]))), tuple(list_num))
+    eq_(tuple(aa.num(', '.join(LIST_IDX[:nd]))), tuple(list_num))
 
 
 if __name__ == '__main__':
