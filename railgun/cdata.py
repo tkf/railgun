@@ -35,7 +35,10 @@ def cddec_parse(cdstr):
                 raise ValueError ("type of '%s' should be int" % parsed.vname)
             parsed.cdt = 'int'
         if parsed.default:
+            parsed.has_default = True
             parsed.default = eval(parsed.default)
+        else:
+            parsed.has_default = False
         return parsed
     else:
         raise ValueError("%s is invalid as c-data type declaration" % cdstr)
