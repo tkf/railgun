@@ -516,8 +516,7 @@ class SimObject(object):
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
                 self._cdata_[vname] = arr
-                self._struct_.__setattr__(vname, ctype_getter(arr))
-                ## setattr(self._struct_, vname, ctype_getter(arr))
+                setattr(self._struct_, vname, ctype_getter(arr))
 
     def _get_indexset(self):
         """Get set of index as a `set` of string"""
