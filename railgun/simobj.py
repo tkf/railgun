@@ -499,8 +499,8 @@ class SimObject(object):
         """Get size of array (num_'i') along given index ('i') """
         if len(args) == 1:
             args = [a.strip() for a in args[0].split(',')]
-        if set(args) > self.indexset:
-            istr = strset(set(args) - self.indexset)
+        if set(args) > self._idxset_:
+            istr = strset(set(args) - self._idxset_)
             raise ValueError("index(es) %s doesn't exist" % istr)
         nums = [getattr(self, 'num_%s' % i) for i in args]
         if len(nums) == 1:
@@ -518,11 +518,6 @@ class SimObject(object):
                 self._cdata_[vname] = arr
                 setattr(self._struct_, vname, ctype_getter(arr))
 
-    def _get_indexset(self):
-        """Get set of index as a `set` of string"""
-        return self._idxset_
-    indexset = property(_get_indexset)
-
     def _check_index_in_range(self, arg_val_list):
         """
         Raise ValueError if index 'i' is bigger than 0 and less than num_'i'
@@ -534,7 +529,7 @@ class SimObject(object):
             cdt = ag['cdt']
             aname = ag['aname']
             ixt = ag['ixt']
-            if cdt in self.indexset:
+            if cdt in self._idxset_:
                 idx = cdt
                 if ixt == '<':
                     lower_name = '1'
