@@ -34,7 +34,7 @@ Requirement
 """
 
 __author__  = "Takafumi Arakaki"
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 __license__ = "MIT License"
 
 import os
