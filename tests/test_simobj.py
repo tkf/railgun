@@ -39,13 +39,12 @@ def v3_desired(v1, v2):
     return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
 
 
-def test_vec():
-    vc = VectCalc()
+def check_vec(vc):
     v1 = vc.v1
     v2 = vc.v2
     v3 = vc.v3
-    l1 = range(1, 11)
-    l2 = range(11, 21)
+    l1 = range(vc.num_i)
+    l2 = range(vc.num_i, vc.num_i * 2)
     vc.v1 = l1
     vc.v2 = l2
     assert_equal(v1, numpy.array(l1, dtype=int))
@@ -56,6 +55,11 @@ def test_vec():
         vc.vec(op=key)
         assert_equal(v3, v3d[key],
                      'comparing result(v3) of vec_%s' % key)
+
+
+def test_vec():
+    vc = VectCalc()
+    check_vec(vc)
 
 
 def test_subvec():
