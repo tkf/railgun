@@ -37,10 +37,6 @@ class VectCalc(SimObject):
         class AnotherClass(cls):
             _cstructname_ = cls.__name__
             _clibname_ = clibname
-            # for now, it is needed to specify these attributes manually
-            _clibdir_ = cls._clibdir_
-            _cmembers_ = cls._cmembers_
-            _cfuncs_ = cls._cfuncs_
         return AnotherClass
 
 
