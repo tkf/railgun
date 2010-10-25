@@ -106,6 +106,89 @@ def _gene_porp_array(key):
     return property(fget, fset)
 
 
+def check_num_args_kwds(args, kwds, keyorder, func_name, plus=0):
+    """
+    Raise ValueError if number of arguments is too much
+
+    >>> check_num_args_kwds(range(3), range(3), range(6), 'FUNC_NAME')
+    >>> check_num_args_kwds(range(4), range(3), range(6), 'FUNC_NAME')
+    Traceback (most recent call last):
+        ...
+    ValueError: FUNC_NAME() takes exactly 6 arguments (7 given)
+    >>> check_num_args_kwds(range(4), range(3), range(6), 'FUNC_NAME', 1)
+    Traceback (most recent call last):
+        ...
+    ValueError: FUNC_NAME() takes exactly 7 arguments (8 given)
+
+    """
+    if len(args) + len(kwds) > len(keyorder):
+        raise ValueError(
+            '%s() takes exactly %d arguments (%d given)'
+            % (func_name, plus + len(keyorder), plus + len(args) + len(kwds)))
+
+
+def check_multiple_values(args, kwds, keyorder, func_name):
+    """
+    Raise ValueError if arguments in args and kwds specifies same variables
+
+    >>> check_multiple_values([1, 2], dict(c=1, d=2), ['a', 'b'], 'FUNC_NAME')
+    >>> check_multiple_values([1, 2], dict(a=1, d=2), ['a', 'b'], 'FUNC_NAME')
+    Traceback (most recent call last):
+        ...
+    ValueError: FUNC_NAME() got multiple values for variable in {a}
+    >>> check_multiple_values([1, 2], dict(a=1, b=2), ['a', 'b'], 'FUNC_NAME')
+    Traceback (most recent call last):
+        ...
+    ValueError: FUNC_NAME() got multiple values for variable in {a, b}
+
+    """
+    mval_args = set(keyorder[:len(args)]) & set(kwds)
+    if mval_args:
+        raise ValueError(
+            '%s() got multiple values for variable in %s' %
+            (func_name, strset(mval_args)))
+
+
+def get_cfunc_choices(defaults, kwds, keyorder):
+    """
+    Get list of value in `kwds` or in `defaults` ordered by `keyorder`
+
+    >>> get_cfunc_choices(dict(a=11, b=22), dict(a=1, b=2, c=3), ['b', 'c'])
+    [2, 3]
+    >>> get_cfunc_choices(dict(a=11, b=22), dict(c=4), ['b', 'c'])
+    [22, 4]
+
+    """
+    subdict = defaults.copy()
+    subdict.update(kwds)
+    return [subdict[k] for k in keyorder]
+
+
+def get_cargs(self, defaults, kwds, keyorder):
+    """
+    Get values in `kwds` or in `defaults` ordered by `keyorder`
+
+    Value of `defaults` can be name of member of `self`
+
+    >>> from railgun._helper import HybridObj
+    >>> obj = HybridObj(a=111, b=222, c=333)
+    >>> defaults = dict(A='a', B='b', C='1', D='2.0')
+    >>> get_cargs(obj, defaults, {}, 'ABCD')
+    [111, 222, 1, 2.0]
+    >>> get_cargs(obj, defaults, dict(A=1, B=2), 'ABCD')
+    [1, 2, 1, 2.0]
+
+    """
+    cargs_dict = {}
+    for (k, v) in defaults.iteritems():
+        if hasattr(self, v):
+            cargs_dict[k] = getattr(self, v)
+        else:
+            cargs_dict[k] = eval(v)
+    cargs_dict.update(kwds)
+    return [cargs_dict[k] for k in keyorder]
+
+
 def gene_cfpywrap(cfdec):
     """
     Generate python function given an object parsed by `cfuncs.cfdec_parse`
@@ -120,42 +203,21 @@ def gene_cfpywrap(cfdec):
         (c['key'], c['choices'][0]) for c in cfdec.choset)
 
     def cfpywrap(self, *args, **kwds):
-        # check #arg
-        if len(args) + len(kwds) > len(keyorder):
-            raise ValueError('%s() takes exactly %d arguments (%d given)'
-                             % (cfdec.fname,
-                                1 + len(keyorder),
-                                1 + len(args) + len(kwds)))
-        # check multiple values
-        mval_args = set(keyorder[:len(args)]) & set(kwds)
-        if mval_args:
-            s = '{%s}' % ''.join(str(x) for x in mval_args)
-            raise ValueError(
-                '%s() got multiple values for variable in %s' %
-                (cfdec.fname, s))
+        check_num_args_kwds(args, kwds, keyorder, cfdec.fname, 1)  # check #arg
+        check_multiple_values(args, kwds, keyorder, cfdec.fname)
         # put `args` and `kwds` all together to `allkwds`
         allkwds = {}
         allkwds.update(zip(keyorder, args))
         allkwds.update(kwds)
-        # set cfname
-        choices_dict = defaults_choices.copy()
-        choices_dict.update(allkwds)
-        cfchoices = [choices_dict[k] for k in choiceskeyorder]
-        cfname = cfdec.fnget(*cfchoices)
-        # set c-function arguments
-        cargs_dict = {}
-        for (k, v) in defaults_cargs.iteritems():
-            if hasattr(self, v):
-                cargs_dict[k] = getattr(self, v)
-            else:
-                cargs_dict[k] = eval(v)
-        cargs_dict.update(allkwds)
-        cargs = [cargs_dict[k] for k in cfkeyorder]
-        # check arguments validity
-        self._check_index_in_range(
-            [(a, cargs_dict[a['aname']]) for a in cfdec.args])
-        # call c-function
+        # get cfunc
+        cfname = cfdec.fnget(
+            *get_cfunc_choices(defaults_choices, allkwds, choiceskeyorder))
         cfunc = self._cfunc_loaded_[cfname]
+        # get c-function arguments
+        cargs = get_cargs(self, defaults_cargs, allkwds, cfkeyorder)
+        # check arguments validity
+        self._check_index_in_range(zip(cfdec.args, cargs))
+        # call c-function
         rcode = cfunc(self._struct_p_, *cargs)
         if rcode == 0:
             if cfdec.ret:
