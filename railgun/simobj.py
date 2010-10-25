@@ -103,7 +103,7 @@ def _gene_porp_array(key):
 
 def gene_cfpywrap(cfdec):
     """
-    Generate python function given an object parsed by `cfdec_parse`
+    Generate python function given an object parsed by `cfuncs.cfdec_parse`
     """
     cfkeyorder = [a['aname'] for a in cfdec.args]
     choiceskeyorder = [c['key'] for c in cfdec.choset]
@@ -223,6 +223,74 @@ def attr_from_atttrs_or_bases(bases, attrs, name, default=None):
     return attrs.get(name, latest)
 
 
+def parse_cfuncs(cfuncs):
+    """Parse `_cfuncs_` using `cfuncs.cfdec_parse`"""
+    cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
+    cfuncs_parsed = dict(
+        (parsed.fname, parsed) for parsed in cfuncs_parsed_list)
+    return cfuncs_parsed
+
+
+def parse_cmembers(cmembers):
+    """Parse `_cmembers_` using `cdata.cddec_parse`"""
+    cmems_parsed_list = [cddec_parse(cdstr) for cdstr in cmembers]
+    cmems_parsed = dict(
+        (parsed.vname, parsed) for parsed in cmems_parsed_list)
+    idxset = set([vname[4:]  # len('num_') = 4
+                  for vname in cmems_parsed if vname.startswith('num_')])
+    return (cmems_parsed, cmems_parsed_list, idxset)
+
+
+def default_of_cmembers(cmems_parsed_list):
+    """Get `cmems_default_{scalar, array}` from `cmems_parsed_list`"""
+    cmems_default_scalar = dict(
+        (parsed.vname, parsed.default) for parsed in cmems_parsed_list
+        if parsed.has_default and parsed.ndim == 0)
+    cmems_default_array = dict(
+        (parsed.vname, parsed.default) for parsed in cmems_parsed_list
+        if parsed.has_default and parsed.ndim > 0)
+    return (cmems_default_scalar, cmems_default_array)
+
+
+def get_struct_class(cmems_parsed_list, cstructname):
+    fields = [(parsed.vname,
+               POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
+              for parsed in cmems_parsed_list]
+    # don't use `cmems_parsed.iteritems()` above or
+    # order of c-members will be lost!
+    class StructClass(Structure):
+        _fields_ = fields
+    StructClass.__name__ = cstructname + "Struct"
+    return StructClass
+
+
+def array_alias_from_cmems_parsed(cmems_parsed):
+    array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
+                   if parsed.ndim > 0]
+    array_alias = gene_array_alias(array_names)
+    return staticmethod(array_alias)
+
+
+def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
+    cfunc_loaded = {}
+    def get_arg_ct(ag):
+        if ag['aname'] in idxset:
+            return c_int
+        elif ag['cdt'] in idxset:
+            return c_int
+        else:
+            return CDT2CTYPE[ag['cdt']]
+    for (fname, parsed) in cfuncs_parsed.iteritems():
+        for args in choice_combinations(parsed):
+            cfname = parsed.fnget(*args)
+            cf = cdll[cfuncprefix + cfname]
+            cf.restype = c_int
+            cf.argtypes = (
+                [struct_type_p] + map(get_arg_ct, parsed['args']))
+            cfunc_loaded[cfname] = cf
+    return cfunc_loaded
+
+
 class MetaSimObject(type):
 
     def __new__(cls, clsname, bases, attrs):
@@ -237,71 +305,39 @@ class MetaSimObject(type):
         cfuncprefix = attr_from_atttrs_or_bases(
             bases, attrs, '_cfuncprefix_', cstructname + CJOINSTR)
 
-        cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
-        cfuncs_parsed = dict(
-            (parsed.fname, parsed) for parsed in cfuncs_parsed_list)
-        cmems_parsed_list = [cddec_parse(cdstr) for cdstr in cmembers]
-        cmems_parsed = dict(
-            (parsed.vname, parsed) for parsed in cmems_parsed_list)
-        cmems_default_scalar = dict(
-            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-            if parsed.default and parsed.ndim == 0)
-        cmems_default_array = dict(
-            (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-            if parsed.default and parsed.ndim > 0)
-        idxset = set([vname[4:]  # len('num_') = 4
-                      for vname in cmems_parsed if vname.startswith('num_')])
-        attrs['_cmems_parsed_'] = cmems_parsed
-        attrs['_cmems_default_scalar_'] = cmems_default_scalar
-        attrs['_cmems_default_array_'] = cmems_default_array
-        attrs['_idxset_'] = idxset
+        ## parse _cfuncs_
+        cfuncs_parsed = parse_cfuncs(cfuncs)
+        ## parse _cmembers_
+        (cmems_parsed, cmems_parsed_list, idxset) = parse_cmembers(cmembers)
+        (cmems_default_scalar,
+         cmems_default_array) = default_of_cmembers(cmems_parsed_list)
 
-        ## set _struct_type_{,p_}
-        fields = [(parsed.vname,
-                   POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
-                  for parsed in cmems_parsed_list]
-        # don't use `cmems_parsed.iteritems()` above or
-        # order of c-members will be lost!
-        class StructClass(Structure):
-            _fields_ = fields
-        StructClass.__name__ = cstructname + "Struct"
-        struct_type_p = POINTER(StructClass)
         attrs.update(
-            _struct_type_ = StructClass,
-            _struct_type_p_ = struct_type_p,
+            _cmems_parsed_=cmems_parsed,
+            _cmems_default_scalar_=cmems_default_scalar,
+            _cmems_default_array_=cmems_default_array,
+            _idxset_=idxset,
+            array_alias=array_alias_from_cmems_parsed(cmems_parsed),
             )
-        array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
-                       if parsed.ndim > 0]
-        array_alias = gene_array_alias(array_names)
-        attrs['array_alias'] = staticmethod(array_alias)
+
+        ## set _struct_type_ and _struct_type_p_
+        StructClass = get_struct_class(cmems_parsed_list, cstructname)
+        struct_type_p = POINTER(StructClass)
+        attrs.update(_struct_type_=StructClass, _struct_type_p_=struct_type_p)
 
         ## set getter/setter
-        get_gene_prop = (
-            lambda ndim: (ndim > 0) and _gene_porp_array or _gene_porp_scalar)
         for (vname, parsed) in cmems_parsed.iteritems():
-            gene_prop = get_gene_prop(parsed.ndim)
-            attrs[vname] = gene_prop(vname)
+            if parsed.ndim > 0:
+                attrs[vname] = _gene_porp_array(vname)
+            else:
+                attrs[vname] = _gene_porp_scalar(vname)
 
         ## load c-functions
         cdll = numpy.ctypeslib.load_library(clibname, clibdir)
-        cfunc_loaded = {}
-        attrs['_cdll_'] = cdll
-        attrs['_cfunc_loaded_'] = cfunc_loaded
-        def get_arg_ct(ag):
-            if ag['aname'] in idxset:
-                return c_int
-            elif ag['cdt'] in idxset:
-                return c_int
-            else:
-                return CDT2CTYPE[ag['cdt']]
+        cfunc_loaded = load_cfunc(cdll, cfuncs_parsed, struct_type_p,
+                                  cfuncprefix, idxset)
+        attrs.update(_cdll_=cdll, _cfunc_loaded_=cfunc_loaded)
         for (fname, parsed) in cfuncs_parsed.iteritems():
-            for args in choice_combinations(parsed):
-                cfname = parsed.fnget(*args)
-                cf = cdll[cfuncprefix + cfname]
-                cf.restype = c_int
-                cf.argtypes = (
-                    [struct_type_p] + map(get_arg_ct, parsed['args']))
-                cfunc_loaded[cfname] = cf
             attrs[fname] = gene_cfpywrap(parsed)
 
         return type.__new__(cls, clsname, bases, attrs)

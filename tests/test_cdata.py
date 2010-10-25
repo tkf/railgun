@@ -33,7 +33,8 @@ DATA_TEST_IDX = [
 
 
 def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None):
-    return dict(cdt=cdt, vname=vname, idx=idx, ndim=ndim, default=default)
+    return dict(cdt=cdt, vname=vname, idx=idx, ndim=ndim, default=default,
+                has_default=default is not None)
 
 DATA_TEST_CDEC_PARSE = [
     # (cdstr, correct)
