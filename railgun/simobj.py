@@ -33,7 +33,8 @@ CDT2DTYPE = dict(char=numpy.character,
                  longlong=numpy.longlong, ulonglong=numpy.ulonglong,
                  float=numpy.float32, double=numpy.float,
                  longdouble=numpy.longdouble,  # == numpy.float96
-                 ## cfloat=numpy.complex64, cdouble=numpy.complex,  # complex128
+                 ## cfloat=numpy.complex64,
+                 ## cdouble=numpy.complex,  # complex128
                  ## clongdouble=numpy.complex192,
                  bool=numpy.bool,
                  )
@@ -43,7 +44,7 @@ if _architecture[0] == '32bit':
 elif _architecture[0] == '64bit':
     CDT2DTYPE.update(long=numpy.int64, ulong=numpy.uint64)
 else:
-    raise RuntimeError (
+    raise RuntimeError(
         'Architecture %s is not supported' % str(_architecture))
 CDT2CTYPE = dict(char=c_char,
                  short=c_short, ushort=c_ushort,
@@ -67,7 +68,7 @@ def POINTER_nth(ct, n):
     if n == 0:
         return ct
     else:
-        return POINTER_nth(POINTER(ct), n-1)
+        return POINTER_nth(POINTER(ct), n - 1)
 
 
 def as_ndim_pointer(arr, basetype, ndim):
@@ -86,16 +87,20 @@ def ctype_getter(arr):
 
 
 def _gene_porp_scalar(key):
+
     def fget(self):
         return getattr(self._struct_, key)
+
     def fset(self, val):
         setattr(self._struct_, key, val)
     return property(fget, fset)
 
 
 def _gene_porp_array(key):
+
     def fget(self):
         return self._cdata_[key]
+
     def fset(self, v):
         self._cdata_[key][:] = v
     return property(fget, fset)
@@ -113,18 +118,19 @@ def gene_cfpywrap(cfdec):
         if a['default'] is not None)
     defaults_choices = dict(
         (c['key'], c['choices'][0]) for c in cfdec.choset)
+
     def cfpywrap(self, *args, **kwds):
         # check #arg
         if len(args) + len(kwds) > len(keyorder):
-            raise ValueError ('%s() takes exactly %d arguments (%d given)'
-                              % (cfdec.fname,
-                                 1 + len(keyorder),
-                                 1 + len(args) + len(kwds)))
+            raise ValueError('%s() takes exactly %d arguments (%d given)'
+                             % (cfdec.fname,
+                                1 + len(keyorder),
+                                1 + len(args) + len(kwds)))
         # check multiple values
         mval_args = set(keyorder[:len(args)]) & set(kwds)
         if mval_args:
             s = '{%s}' % ''.join(str(x) for x in mval_args)
-            raise ValueError (
+            raise ValueError(
                 '%s() got multiple values for variable in %s' %
                 (cfdec.fname, s))
         # put `args` and `kwds` all together to `allkwds`
@@ -157,8 +163,8 @@ def gene_cfpywrap(cfdec):
             else:
                 return
         else:
-            raise RuntimeError ('c-function %s() terminates with code %d'
-                                % (cfname, rcode))
+            raise RuntimeError('c-function %s() terminates with code %d'
+                               % (cfname, rcode))
     cfpywrap.func_name = cfdec.fname
     return cfpywrap
 
@@ -182,12 +188,14 @@ def gene_array_alias(array_names, sep="_"):
     >>> iaa('a_1')
     >>> iaa('a^1')
     ('a', (1,))
+
     """
     ptn = re.compile(r'(%s)((\%s[0-9]+)+)' % ('|'.join(array_names), sep))
+
     def array_alias(alias):
         ma = ptn.match(alias)
         if ma:
-            (name, indexstr, dummy) = ma.groups() ## ('x', '_2_1_2', '_2')
+            (name, indexstr, dummy) = ma.groups()  # ('x', '_2_1_2', '_2')
             index = tuple([int(s) for s in indexstr.split(sep)[1:]])
             return (name, index)
     return array_alias
@@ -258,6 +266,7 @@ def get_struct_class(cmems_parsed_list, cstructname):
               for parsed in cmems_parsed_list]
     # don't use `cmems_parsed.iteritems()` above or
     # order of c-members will be lost!
+
     class StructClass(Structure):
         _fields_ = fields
     StructClass.__name__ = cstructname + "Struct"
@@ -273,6 +282,7 @@ def array_alias_from_cmems_parsed(cmems_parsed):
 
 def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
     cfunc_loaded = {}
+
     def get_arg_ct(ag):
         if ag['aname'] in idxset:
             return c_int
@@ -280,6 +290,7 @@ def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
             return c_int
         else:
             return CDT2CTYPE[ag['cdt']]
+
     for (fname, parsed) in cfuncs_parsed.iteritems():
         for args in choice_combinations(parsed):
             cfname = parsed.fnget(*args)
@@ -362,7 +373,7 @@ class SimObject(object):
             if not self.array_alias(key):
                 undefined_keywords.add(key)
         if undefined_keywords:
-            raise ValueError (
+            raise ValueError(
                 "undefined keyword arguments: %s" % strset(undefined_keywords))
         kwds_cmem_scalar = dict([(k, kwds[k]) for k in cmem_keys_scalar])
         kwds_cmem_array = dict([(k, kwds[k]) for k in cmem_keys_array])
@@ -376,7 +387,7 @@ class SimObject(object):
         numkeyset = set('num_%s' % i for i in self._idxset_)
         num_lack = numkeyset - set(scalarvals)
         if num_lack:
-            raise ValueError ("%s are mandatory" % strset(num_lack))
+            raise ValueError("%s are mandatory" % strset(num_lack))
         self.setv(**scalarvals)
         # allocate C array data and set the defaults
         self._set_cdata()
@@ -428,15 +439,15 @@ class SimObject(object):
             args = [a.strip() for a in args[0].split(',')]
         if set(args) > self.indexset:
             istr = strset(set(args) - self.indexset)
-            raise ValueError ("index(es) %s doesn't exist" % istr)
-        nums = [getattr(self, 'num_%s'%i) for i in args]
+            raise ValueError("index(es) %s doesn't exist" % istr)
+        nums = [getattr(self, 'num_%s' % i) for i in args]
         if len(nums) == 1:
             return nums[0]
         else:
             return nums
 
     def _set_cdata(self):
-        self._cdata_ = {} # keep memory for arrays
+        self._cdata_ = {}  # keep memory for arrays
         for (vname, parsed) in self._cmems_parsed_.iteritems():
             if parsed.ndim > 0:
                 shape = tuple(getattr(self, 'num_%s' % i) for i in parsed.idx)
@@ -475,12 +486,12 @@ class SimObject(object):
                     upper_name = 'num_%s' % idx
                     upper_val = self.num(idx)
                 if val < lower_val:
-                    raise ValueError (
+                    raise ValueError(
                         'index %s cannot bet less than %s '
                         'where value is %s=%d'
                         % (idx, lower_name, aname, val))
                 elif val >= upper_val:
-                    raise ValueError (
+                    raise ValueError(
                         'index %s cannot bet larger than or equal to '
                         '%s=%d where value is %s=%d'
                         % (idx, upper_name, upper_val, aname, val))
