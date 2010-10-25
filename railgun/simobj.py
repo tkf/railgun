@@ -461,7 +461,9 @@ class SimObject(object):
         """
         Set variable named 'VAR' by ``set(VAR=VALUE)``
 
-        Alias for array ('ARR_0_1' for ``self.ARR[0,1]``) is available.
+        Alias for element of array ('ARR_0_1' for ``self.ARR[0,1]``)
+        is available.
+
         """
         for (key, val)in kwds.iteritems():
             alias = self.array_alias(key)
@@ -543,11 +545,10 @@ class SimObject(object):
                     upper_val = self.num(idx)
                 if val < lower_val:
                     raise ValueError(
-                        'index %s cannot bet less than %s '
-                        'where value is %s=%d'
+                        'index %s cannot be less than %s where value is %s=%d'
                         % (idx, lower_name, aname, val))
                 elif val >= upper_val:
                     raise ValueError(
-                        'index %s cannot bet larger than or equal to '
+                        'index %s cannot be larger than or equal to '
                         '%s=%d where value is %s=%d'
                         % (idx, upper_name, upper_val, aname, val))
