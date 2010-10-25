@@ -116,8 +116,10 @@
           If specified, python wrapper function of **FUNC_NAME** will
           returns value of **RETURN_VAR** after **FUNC_NAME** function
           called.
-      **ARG**: ``CDT_OR_INDEX ARG_NAME [= DEFAULT]``
-          Argument of C function.
+      **ARG**:
+          Argument of C function with following syntax::
+
+              CDT_OR_INDEX ARG_NAME [= DEFAULT]
 
           **CDT_OR_INDEX**: string
               C Data Type or index.
@@ -126,8 +128,6 @@
               (`0 < x <= num_i`).
           **ARG_NAME**: string
               Name of the argument.
-              You can specify the argument with non-keyword argument
-              or keyword argument call.
           **DEFAULT**: a number or member of C struct, optional
               Default value for the argument.
 

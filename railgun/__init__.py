@@ -2,6 +2,14 @@
 RailGun: Accelerate your simulation programing with "C on Rails"
 ================================================================
 
+Overview
+--------
+
+RailGun is ctypes utilities for faster and easier simulation
+programming in C and Python. It requires constraint to C library
+loaded from Python and gives you automatically generated Python class
+which calls C functions safely.
+
 
 Installation
 ------------
@@ -13,13 +21,16 @@ Installation
 
 Usage
 -----
-See samples in
-`samples/ <https://bitbucket.org/tkf/railgun/src/tip/samples/>`_
+
+Please read
+`document <http://tkf.bitbucket.org/railgun-doc/index.html>`_ and
+`samples <https://bitbucket.org/tkf/railgun/src/tip/samples/>`_.
 
 
 Requirement
 -----------
-This module only requires Numpy.
+- Numpy
+- (matplotlib for sample code)
 """
 
 __author__  = "Takafumi Arakaki"
