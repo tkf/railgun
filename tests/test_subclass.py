@@ -1,8 +1,9 @@
 # import numpy
 # from numpy.testing import assert_equal
-# from nose.tools import raises  # , ok_, with_setup
+from nose.tools import ok_  # , raises, with_setup
 
 from tsutils import eq_
+from test_simobj import check_vec
 from railgun import SimObject, relpath
 
 
@@ -28,6 +29,28 @@ class VectCalc(SimObject):
     def __init__(self, num_i=10, **kwds):
         SimObject.__init__(self, num_i=num_i, **kwds)
 
+    @classmethod
+    def another_clib(cls, clibname):
+        """
+        Generate a class which loads `clibname` instead
+        """
+        class AnotherClass(cls):
+            _cstructname_ = cls.__name__
+            _clibname_ = clibname
+            # for now, it is needed to specify these attributes manually
+            _clibdir_ = cls._clibdir_
+            _cmembers_ = cls._cmembers_
+            _cfuncs_ = cls._cfuncs_
+        return AnotherClass
+
+
+def test_another_clib():
+    clibname = 'vectclac-O3.so'
+    AnotherClass = VectCalc.another_clib(clibname)
+    vc = AnotherClass()
+    ok_(vc._cdll_._name.endswith(clibname))
+    check_vec(vc)
+
 
 def test():
     vc = VectCalc()
@@ -36,3 +59,4 @@ def test():
     eq_(vc.num_i, 20)
     vc = VectCalc(num_i=30)
     eq_(vc.num_i, 30)
+    check_vec(vc)
