@@ -193,18 +193,50 @@ def gene_array_alias(array_names, sep="_"):
     return array_alias
 
 
+def latest_attr(iter_of_obj, name, default=None):
+    """
+    Get a attribute of given name found in latter object in given iterative
+
+    >>> iter_of_dict = [{'a': 1}, {'c': 2}, {'a': 3}, {'c': 4}, {}]
+    >>> from railgun._helper import HybridObj
+    >>> iter_of_obj = map(HybridObj, iter_of_dict)
+    >>> latest_attr(iter_of_obj, 'a')
+    3
+    >>> latest_attr(iter_of_obj, 'b')
+    >>> latest_attr(iter_of_obj, 'b', 'Not Found')
+    'Not Found'
+    >>> latest_attr(iter_of_obj, 'c')
+    4
+
+    """
+    for obj in iter_of_obj[::-1]:
+        if hasattr(obj, name):
+            return getattr(obj, name)
+    return default
+
+
+def attr_from_atttrs_or_bases(bases, attrs, name, default=None):
+    """
+    Get an attribute from `attrs` or from `bases` if not found in `attrs`
+    """
+    latest = latest_attr(bases, name, default)
+    return attrs.get(name, latest)
+
+
 class MetaSimObject(type):
 
     def __new__(cls, clsname, bases, attrs):
-        if not (set(['_clibname_', '_clibdir_',
-                     '_cmembers_', '_cfuncs_']) <= set(attrs)):
+        clibdir = attr_from_atttrs_or_bases(bases, attrs, '_clibdir_')
+        clibname = attr_from_atttrs_or_bases(bases, attrs, '_clibname_')
+        cmembers = attr_from_atttrs_or_bases(bases, attrs, '_cmembers_')
+        cfuncs = attr_from_atttrs_or_bases(bases, attrs, '_cfuncs_')
+        if not all([clibdir, clibname, cmembers, cfuncs]):
             return type.__new__(cls, clsname, bases, attrs)
-        cstructname = attrs.get('_cstructname_', clsname)
-        cfuncprefix = attrs.get('_cfuncprefix_', cstructname + CJOINSTR)
-        clibdir = attrs['_clibdir_']
-        clibname = attrs['_clibname_']
-        cmembers = attrs['_cmembers_']
-        cfuncs = attrs['_cfuncs_']
+        cstructname = attr_from_atttrs_or_bases(
+            bases, attrs, '_cstructname_', clsname)
+        cfuncprefix = attr_from_atttrs_or_bases(
+            bases, attrs, '_cfuncprefix_', cstructname + CJOINSTR)
+
         cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
         cfuncs_parsed = dict(
             (parsed.fname, parsed) for parsed in cfuncs_parsed_list)
