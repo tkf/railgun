@@ -38,7 +38,8 @@ __version__ = "0.1.5"
 __license__ = "MIT License"
 
 import os
-from railgun.simobj import SimObject
+from railgun.simobj import SimObject, CDT2DTYPE
+from railgun._helper import HybridObj
 
 
 def relpath(path, fpath):
@@ -46,14 +47,14 @@ def relpath(path, fpath):
     return os.path.join(os.path.dirname(fpath), path)
 
 
-def gene_cmem(cdt):
+def gene_cmem(cdt, funcfmt='%s'):
     """
-    Generate function `cm{cdt}` automatically
+    Generate function to generate `_cmembers_` for same C type easily
 
-    >>> cmint = gene_cmem('int')
-    >>> cmint('a', 'b', 'c')
+    >>> cm_int = gene_cmem('int', 'cm_%s')
+    >>> cm_int('a', 'b', 'c')
     ['int a', 'int b', 'int c']
-    >>> cmint('a, b, c')
+    >>> cm_int('a, b, c')
     ['int a', 'int b', 'int c']
 
     """
@@ -61,20 +62,34 @@ def gene_cmem(cdt):
         if len(args) == 1:
             args = args[0].split(',')
         return ['%s %s' % (cdt, v.strip()) for v in args]
-    cmem.func_name = 'cm%s' % cdt
+    func_name = funcfmt % cdt
+    cmem.func_name = func_name
     cmem.__doc__ = """
     Generate `_cmembers_` for same C type easily
 
-    >>> cm%(cdt)s('a, b, c')
+    >>> %(func_name)s('a, b, c')
     ['%(cdt)s a', '%(cdt)s b', '%(cdt)s c']
-    >>> cm%(cdt)s('a', 'b', 'c')
+    >>> %(func_name)s('a', 'b', 'c')
     ['%(cdt)s a', '%(cdt)s b', '%(cdt)s c']
 
-    """ % dict(cdt=cdt)
+    """ % dict(cdt=cdt, func_name=func_name)
     return cmem
 
-cmint = gene_cmem('int')
-cmdouble = gene_cmem('double')
+cm = HybridObj((cdt, gene_cmem(cdt, 'cm.%s')) for cdt in CDT2DTYPE)
+cm.__doc__ = """
+Correction of functions to generate `_cmembers_` for same C type easily
+
+>>> cm.int('a', 'b', 'c')
+['int a', 'int b', 'int c']
+>>> cm.int('a, b, c')
+['int a', 'int b', 'int c']
+>>> cm['int']('a', 'b', 'c')
+['int a', 'int b', 'int c']
+>>> print sorted(cm())  #doctest: +NORMALIZE_WHITESPACE
+['bool', 'char', 'double', 'float', 'int', 'long', 'longdouble',
+ 'longlong', 'short', 'uint', 'ulong', 'ulonglong', 'ushort']
+
+"""
 
 
 def cmems(cdt, *args):
