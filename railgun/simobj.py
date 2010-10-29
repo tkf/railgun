@@ -71,18 +71,23 @@ def POINTER_nth(ct, n):
         return POINTER_nth(POINTER(ct), n - 1)
 
 
-def as_ndim_pointer(arr, base_POINTER, ctpa_list):
-    if not ctpa_list:
-        return arr.ctypes.data_as(base_POINTER)
+def as_ndim_pointer(arr, base_POINTER, ctpa, ctpas_remain):
+    if ctpas_remain:
+        next_ctpa = ctpas_remain[0]
+        next_ctpas_remain = ctpas_remain[1:]
+        prow = [as_ndim_pointer(row, base_POINTER, next_ctpa,
+                                next_ctpas_remain) for row in arr]
+        return ctpa(*prow)
     else:
-        ctpa = ctpa_list[0]
-        prow = [as_ndim_pointer(row, base_POINTER, ctpa_list[1:])
-                for row in arr]
+        prow = [row.ctypes.data_as(base_POINTER) for row in arr]
         return ctpa(*prow)
 
 
 def ctype_getter(arr):
     basetype = CDT2CTYPE[DTYPE2CDT[arr.dtype]]
+    base_POINTER = POINTER(basetype)
+    if arr.ndim == 1:
+        return arr.ctypes.data_as(base_POINTER)
     # make list of pointer type such as: int*, int**, int***, ...
     _P = basetype
     POINTER_list = []
@@ -93,9 +98,8 @@ def ctype_getter(arr):
     ctpa_list = []
     for (i, num) in enumerate(arr.shape[:-1]):
         ctpa_list.append(POINTER_list[- 1 - i] * num)
-    # pointer type for last "row"
-    base_POINTER = POINTER(basetype)
-    return as_ndim_pointer(arr, base_POINTER, tuple(ctpa_list))
+    return as_ndim_pointer(arr, base_POINTER,
+                           ctpa_list[0], tuple(ctpa_list[1:]))
 
 
 def _gene_porp_scalar(key):
