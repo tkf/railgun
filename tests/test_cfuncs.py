@@ -44,17 +44,21 @@ DATA_TEST_REGEX = dict(
             ("a",       cor_arg(None,  'a')),
             ("i a=1",   cor_arg('i',   'a', '1' )),
             ("i< a=1",  cor_arg('i',   'a', '1', '<')),
+            ("double b = 1.0 ", cor_arg('double', 'b', '1.0')),
+            ("double b = 1e7 ", cor_arg('double', 'b', '1e7')),
+            ("double b = 1e-7", cor_arg('double', 'b', '1e-7')),
             ],
         ),
     )
 
 DATA_CFDEC_PARSE = [
     # (cfstr, correct, fnameargslist)
-    ("ans func(int a, i< b=0, double c=2.0)",
+    ("ans func(int a, i< b=0, double c=2.0, double d = 1e-7)",
      dict(ret="ans", fname="func",
           args=[cor_arg('int', 'a'),
                 cor_arg('i', 'b', '0', '<'),
                 cor_arg('double', 'c', '2.0'),
+                cor_arg('double', 'd', '1e-7'),
                 ],
           choset=[
               ],

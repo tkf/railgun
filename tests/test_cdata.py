@@ -19,6 +19,9 @@ DATA_TEST_REGEX = dict(
             ("int a[i] =2", dict_re_cddec('int', 'a', '[i]', '2')),
             ("int a[i][j]=3", dict_re_cddec('int', 'a', '[i][j]', '3')),
             ('num_i = 10', dict_re_cddec(None, 'num_i', None, '10')),
+            ("double b = 1.0", dict_re_cddec('double', 'b', None, '1.0')),
+            ("double b = 1e7", dict_re_cddec('double', 'b', None, '1e7')),
+            ("double b = 1e-7", dict_re_cddec('double', 'b', None, '1e-7')),
             ],
         ),
     )
