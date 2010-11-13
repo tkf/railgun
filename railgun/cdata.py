@@ -3,7 +3,7 @@ from railgun._helper import HybridObj
 
 RE_CDDEC = re.compile(
     r'(?:(?P<cdt>[\w]+) )?(?P<vname>\w+)(?P<idx>\[.*\])?'
-    r'(?: *= *(?P<default>[\w\.]*))?$',
+    r'(?: *= *(?P<default>[\w\.\-]*))?$',
     )  ## matches 'int a[i][j] = 3'
 
 
