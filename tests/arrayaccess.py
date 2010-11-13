@@ -128,7 +128,7 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
 
 def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-               'longlong', 'ulonglong', 'bool']:
+               'longlong', 'ulonglong', 'bool', 'size_t']:
         ass_eq = assert_equal
     elif cdt in ['float', 'double', 'longdouble']:
         ass_eq = assert_almost_equal

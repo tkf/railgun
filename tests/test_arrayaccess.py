@@ -1,7 +1,7 @@
 from arrayaccess import check_arrayaccess, check_num
 
 LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-            'float', 'double', 'longdouble']
+            'float', 'double', 'longdouble', 'size_t']
 NDIM = 5
 LIST_NUM = [11, 7, 5, 3, 2]
 # LIST_NUM = [2] * NDIM
