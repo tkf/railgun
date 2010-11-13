@@ -25,7 +25,7 @@ CDT2CTYPE.update((c, c) for c in _normal_ints)
 CDT2CTYPE.update(('u' + c, 'unsigned ' + c) for c in _normal_ints)
 CDT2CTYPE.update(float='float', double='double', longdouble='long double',
                  longlong='long long', ulonglong='unsigned long long',
-                 bool='bool')
+                 bool='bool', size_t='size_t')
 
 
 def gene_arrayaccess(filepath, nd, l_cdt, c99):
@@ -42,8 +42,10 @@ def gene_arrayaccess(filepath, nd, l_cdt, c99):
             ', '.join('*' * dim + cdt + '%dd' % dim for dim in l_dim))
         for cdt in l_cdt]
     # include
+    codefile.write('#include <stdlib.h>\n')
     if c99:
-        codefile.write('#include <stdbool.h>\n\n')
+        codefile.write('#include <stdbool.h>\n')
+    codefile.write('\n')
     # generate typedef struct arrayaccess_{...} ArrayAccess;
     codefile.write(
         TEMPLATE_STRUCT % dict(
@@ -63,7 +65,7 @@ def gene_arrayaccess(filepath, nd, l_cdt, c99):
 def main(filepath, c99):
     nd = 5
     l_cdt = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
-             'float', 'double', 'longdouble']
+             'float', 'double', 'longdouble', 'size_t']
     if c99:
         l_cdt += ['longlong', 'ulonglong', 'bool']
     gene_arrayaccess(filepath, nd, l_cdt, c99)

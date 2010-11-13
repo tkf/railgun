@@ -2,7 +2,7 @@ import re
 from ctypes import Structure, POINTER, pointer
 from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
                     c_longlong, c_ulonglong, c_float, c_double, c_longdouble,
-                    c_bool)
+                    c_bool, c_size_t)
 import platform
 import numpy
 
@@ -46,6 +46,7 @@ elif _architecture[0] == '64bit':
 else:
     raise RuntimeError(
         'Architecture %s is not supported' % str(_architecture))
+CDT2DTYPE['size_t'] = CDT2DTYPE['ulong']
 CDT2CTYPE = dict(char=c_char,
                  short=c_short, ushort=c_ushort,
                  int=c_int, uint=c_uint,
@@ -53,7 +54,7 @@ CDT2CTYPE = dict(char=c_char,
                  longlong=c_longlong, ulonglong=c_ulonglong,
                  float=c_float, double=c_double,
                  longdouble=c_longdouble,
-                 bool=c_bool,
+                 bool=c_bool, size_t=c_size_t,
                  )
 DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.iteritems())
 DTYPE2CDT.update({
