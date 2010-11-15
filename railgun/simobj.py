@@ -515,7 +515,9 @@ class SimObject(object):
             return mems
 
     def num(self, *args):
-        """Get size of array (num_'i') along given index ('i') """
+        """
+        Get shape of array (Ni, Nj, ...) along given index ('i', 'j', ...)
+        """
         if len(args) == 1:
             args = [a.strip() for a in args[0].split(',')]
         if set(args) > self._idxset_:
