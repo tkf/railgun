@@ -86,24 +86,8 @@ def test_subvec():
 
 
 def test_cwrap_with_subvec():
-    class VectCalc(SimObject):
-        _clibname_ = 'vectclac.so'
-        _clibdir_ = relpath('ext/build', __file__)
-
-        _cmembers_ = [
-            'num_i = 10',
-            'int v1[i] = 1',
-            'int v2[i] = 2',
-            'int v3[i]',
-            'int ans',
-            ]
-
-        _cfuncs_ = [
-            "vec_{op | plus, minus, times, divide}()",
-            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-            "fill_{vec | v1, v2, v3}(int s)",
-            "ans subvec_dot(i i1=0, i< i2=num_i)",
-            ]
+    class VectCalcWithCwrap(VectCalc):
+        _cstructname_ = 'VectCalc'
 
         def _cwrap_subvec(old_subvec):
             def subvec(self, i1=0, i2=None, op='plus'):
@@ -113,7 +97,7 @@ def test_cwrap_with_subvec():
                 return self.v3[i1:i2]
             return subvec
 
-    vc = VectCalc()
+    vc = VectCalcWithCwrap()
     num_i = vc.num_i
     v1 = vc.v1
     v2 = vc.v2
