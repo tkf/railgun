@@ -206,7 +206,7 @@ def get_cargs(self, defaults, kwds, keyorder):
     return [cargs_dict[k] for k in keyorder]
 
 
-def gene_cfpywrap(cfdec):
+def gene_cfpywrap(attrs, cfdec):
     """
     Generate python function given an object parsed by `cfuncs.cfdec_parse`
     """
@@ -245,6 +245,10 @@ def gene_cfpywrap(cfdec):
             raise RuntimeError('c-function %s() terminates with code %d'
                                % (cfname, rcode))
     cfpywrap.func_name = cfdec.fname
+    # wrap it if there is wrap function
+    wrap_name = '_cwrap_%s' % cfdec.fname
+    if wrap_name in attrs:
+        cfpywrap = attrs[wrap_name](cfpywrap)
     return cfpywrap
 
 
@@ -428,7 +432,7 @@ class MetaSimObject(type):
                                   cfuncprefix, idxset)
         attrs.update(_cdll_=cdll, _cfunc_loaded_=cfunc_loaded)
         for (fname, parsed) in cfuncs_parsed.iteritems():
-            attrs[fname] = gene_cfpywrap(parsed)
+            attrs[fname] = gene_cfpywrap(attrs, parsed)
 
         return type.__new__(cls, clsname, bases, attrs)
 
