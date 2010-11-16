@@ -85,6 +85,54 @@ def test_subvec():
                              (key, i1, i2))
 
 
+def test_cwrap_with_subvec():
+    class VectCalc(SimObject):
+        _clibname_ = 'vectclac.so'
+        _clibdir_ = relpath('ext/build', __file__)
+
+        _cmembers_ = [
+            'num_i = 10',
+            'int v1[i] = 1',
+            'int v2[i] = 2',
+            'int v3[i]',
+            'int ans',
+            ]
+
+        _cfuncs_ = [
+            "vec_{op | plus, minus, times, divide}()",
+            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+            "fill_{vec | v1, v2, v3}(int s)",
+            "ans subvec_dot(i i1=0, i< i2=num_i)",
+            ]
+
+        def _cwrap_subvec(old_subvec):
+            def subvec(self, i1=0, i2=None, op='plus'):
+                if i2 is None:
+                    i2 = self.num_i
+                old_subvec(self, i1=i1, i2=i2, op=op)
+                return self.v3[i1:i2]
+            return subvec
+
+    vc = VectCalc()
+    num_i = vc.num_i
+    v1 = vc.v1
+    v2 = vc.v2
+    l1 = range(1, 11)
+    l2 = range(11, 21)
+    vc.v1 = l1
+    vc.v2 = l2
+    assert_equal(v1, numpy.array(l1, dtype=int))
+    assert_equal(v2, numpy.array(l2, dtype=int))
+
+    v3d = v3_desired(vc.v1, vc.v2)
+    for i1 in range(num_i):
+        for i2 in range(i1 + 1, num_i):
+            for key in v3d:
+                assert_equal(vc.subvec(op=key, i1=i1, i2=i2), v3d[key][i1:i2],
+                             'comparing result(v3) of subvec_%s(%d, %d)' %
+                             (key, i1, i2))
+
+
 def test_fill():
     vc = VectCalc()
     num_i = vc.num_i
