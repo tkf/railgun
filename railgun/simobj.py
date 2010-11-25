@@ -12,7 +12,7 @@ from railgun._helper import dict_override, strset
 try:
     from railgun import cstyle
 except ImportError:
-    cstyle = None
+    pass
 
 """
 SimObject, its metaclass (MetaSimObject), and helper functions
@@ -443,8 +443,13 @@ class MetaSimObject(type):
 
 class SimObject(object):
     __metaclass__ = MetaSimObject
+    _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
 
     def __init__(self, **kwds):
+        if '_calloc_' in kwds:
+            self._calloc_ = kwds['_calloc_']
+            del kwds['_calloc_']
+
         self._set_all(**kwds)
 
     def _set_all(self, **kwds):
@@ -545,7 +550,7 @@ class SimObject(object):
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
                 self._cdata_[vname] = arr
-                if cstyle and 1 < arr.ndim <= cstyle.MAXDIM:
+                if self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
                     cs = cstyle.CStyle(arr)
                     self._cdata_['CStyle:%s' % vname] = cs
                     ptr = cast(
