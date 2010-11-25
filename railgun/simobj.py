@@ -1,5 +1,5 @@
 import re
-from ctypes import Structure, POINTER, pointer
+from ctypes import Structure, POINTER, pointer, cast
 from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
                     c_longlong, c_ulonglong, c_float, c_double, c_longdouble,
                     c_bool, c_size_t)
@@ -9,6 +9,10 @@ import numpy
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
 from railgun._helper import dict_override, strset
+try:
+    from railgun import cstyle
+except ImportError:
+    cstyle = None
 
 """
 SimObject, its metaclass (MetaSimObject), and helper functions
@@ -541,7 +545,15 @@ class SimObject(object):
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
                 self._cdata_[vname] = arr
-                setattr(self._struct_, vname, ctype_getter(arr))
+                if cstyle and 1 < arr.ndim <= cstyle.MAXDIM:
+                    cs = cstyle.CStyle(arr)
+                    self._cdata_['CStyle:%s' % vname] = cs
+                    ptr = cast(
+                        cs.pointer,
+                        POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
+                else:
+                    ptr = ctype_getter(arr)
+                setattr(self._struct_, vname, ptr)
 
     def _check_index_in_range(self, arg_val_list):
         """
