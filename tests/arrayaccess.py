@@ -126,7 +126,9 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
     return ArrayAccess
 
 
-def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
+def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim,
+                      _calloc_=None):
+    """Check C side array access"""
     if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
                'longlong', 'ulonglong', 'bool', 'size_t']:
         ass_eq = assert_equal
@@ -136,6 +138,8 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
     ArrayAccess = gene_class_ArrayAccess(
         clibname, len(list_num), list_cdt)
     num_dict = dict(zip(ArrayAccess.num_names, list_num))  # {num_i: 6, ...}
+    if _calloc_ is not None:
+        num_dict.update(_calloc_=_calloc_)
     aa = ArrayAccess(**num_dict)
     aa.fill()
     # arr_via_ret should return same array (garr)
@@ -156,6 +160,7 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim):
 
 
 def check_num(clibname, list_num, list_cdt):
+    """Check SimObject.num()"""
     ArrayAccess = gene_class_ArrayAccess(
         clibname, len(list_num), list_cdt)
     num_dict = dict(zip(ArrayAccess.num_names, list_num))

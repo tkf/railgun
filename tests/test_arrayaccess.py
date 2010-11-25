@@ -11,7 +11,9 @@ def test_arrayaccess():
     clibname = 'arrayaccess.so'
     for cdt in LIST_CDT:
         for dim in range(1, 1 + NDIM):
-            yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT, cdt, dim)
+            for _calloc_ in [None, True, False]:
+                yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT, cdt,
+                       dim, _calloc_)
 
 
 def test_num():

@@ -3,7 +3,7 @@
 #include "structmember.h"
 #include <numpy/arrayobject.h>
 
-#define CStyle_MAXDIM 3
+#define CStyle_MAXDIM 5
 
 typedef struct cstyle_{
   PyObject_HEAD
@@ -122,20 +122,79 @@ cstyle4d_free(void ****carray, PyObject* pyarray)
 }
 
 
+void *****
+cstyle5d_alloc(PyObject* pyarray)
+{
+  int i, j, k, l, num0, num1, num2, num3;
+  npy_intp ind[5];
+  void *****carray;
+
+  num0 = PyArray_DIM(pyarray, 0);
+  num1 = PyArray_DIM(pyarray, 1);
+  num2 = PyArray_DIM(pyarray, 2);
+  num3 = PyArray_DIM(pyarray, 3);
+  carray = (void*****) malloc(sizeof(void****) * num0);
+  if (carray == NULL){
+    return NULL;
+  }
+  for (i = 0; i < num0; ++i){
+    carray[i] = (void****) malloc(sizeof(void***) * num1);
+    for (j = 0; j < num1; ++j){
+      carray[i][j] = (void***) malloc(sizeof(void**) * num2);
+      for (k = 0; k < num2; ++k){
+        carray[i][j][k] = (void**) malloc(sizeof(void*) * num3);
+      }
+    }
+  }
+  ind[4] = 0;
+  for (i = 0; i < num0; ++i){
+    ind[0] = i;
+    for (j = 0; j < num1; ++j){
+      ind[1] = j;
+      for (k = 0; k < num2; ++k){
+        ind[2] = k;
+        for (l = 0; l < num3; ++l){
+          ind[3] = l;
+          carray[i][j][k][l] = PyArray_GetPtr((PyArrayObject*) pyarray, ind);
+        }
+      }
+    }
+  }
+  return carray;
+}
+
+
+void
+cstyle5d_free(void *****carray, PyObject* pyarray)
+{
+  int i, j, k, num0, num1, num2;
+  num0 = PyArray_DIM(pyarray, 0);
+  num1 = PyArray_DIM(pyarray, 1);
+  num2 = PyArray_DIM(pyarray, 2);
+
+  for (i = 0; i < num0; ++i){
+    for (j = 0; j < num1; ++j){
+      for (k = 0; k < num2; ++k){
+        free(carray[i][j][k]);
+      }
+      free(carray[i][j]);
+    }
+    free(carray[i]);
+  }
+  free(carray);
+}
+
+
 static void
 CStyle_dealloc(CStyle *self)
 {
   if (self->pyarray == NULL) return;
+
   switch (PyArray_NDIM(self->pyarray)){
-  case 2:
-    cstyle2d_free(self->carray);
-    break;
-  case 3:
-    cstyle3d_free(self->carray, self->pyarray);
-    break;
-  case 4:
-    cstyle4d_free(self->carray, self->pyarray);
-    break;
+  case 2: cstyle2d_free(self->carray); break;
+  case 3: cstyle3d_free(self->carray, self->pyarray); break;
+  case 4: cstyle4d_free(self->carray, self->pyarray); break;
+  case 5: cstyle5d_free(self->carray, self->pyarray); break;
   }
 
   Py_XDECREF(self->pyarray);
@@ -174,15 +233,10 @@ CStyle_init(CStyle *self, PyObject *args, PyObject *kwds)
 
   /* Allocate C-array */
   switch (PyArray_NDIM(pyarray)){
-  case 2:
-    self->carray = cstyle2d_alloc(self->pyarray);
-    break;
-  case 3:
-    self->carray = cstyle3d_alloc(self->pyarray);
-    break;
-  case 4:
-    self->carray = cstyle4d_alloc(self->pyarray);
-    break;
+  case 2: self->carray = cstyle2d_alloc(self->pyarray); break;
+  case 3: self->carray = cstyle3d_alloc(self->pyarray); break;
+  case 4: self->carray = cstyle4d_alloc(self->pyarray); break;
+  case 5: self->carray = cstyle5d_alloc(self->pyarray); break;
   }
 
   if (self->carray == NULL){
