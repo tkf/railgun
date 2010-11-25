@@ -1,4 +1,5 @@
 from setuptools import setup
+from numpy.distutils.core import Extension
 import railgun
 from railgun import __author__, __version__, __license__
 
@@ -23,5 +24,12 @@ setup(
         "Programming Language :: Python",
 
         "Topic :: Scientific/Engineering",
+        ],
+    ext_modules=[
+        Extension(
+            'railgun.cstyle',
+            sources=['src/cstylemodule.c'],
+            extra_compile_args=["-fPIC", "-Wall", "-g"],
+            ),
         ],
     )
