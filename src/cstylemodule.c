@@ -13,7 +13,7 @@ typedef struct cstyle_{
 } CStyle;
 
 
-void **
+static void **
 cstyle2d_alloc(PyObject* pyarray)
 {
   int i, num0;
@@ -31,14 +31,7 @@ cstyle2d_alloc(PyObject* pyarray)
 }
 
 
-void
-cstyle2d_free(void **carray)
-{
-  free(carray);
-}
-
-
-void ***
+static void ***
 cstyle3d_alloc(PyObject* pyarray)
 {
   int i, j, num0, num1;
@@ -47,10 +40,9 @@ cstyle3d_alloc(PyObject* pyarray)
   num0 = PyArray_DIM(pyarray, 0);
   num1 = PyArray_DIM(pyarray, 1);
 
-  carray = (void***) malloc(sizeof(void**) * num0);
-  if (carray == NULL) goto fail0;
-  ptr1 = (void**) malloc(sizeof(void*) * num0 * num1);
-  if (ptr1 == NULL) goto fail1;
+  carray = (void***) malloc(sizeof(void*) * (num0 * (1 + num1)));
+  if (carray == NULL) return NULL;
+  ptr1 = (void**) (carray + num0);
 
   for (i = 0; i < num0; ++i){
     carray[i] = ptr1 + (i * num1);
@@ -59,20 +51,10 @@ cstyle3d_alloc(PyObject* pyarray)
     }
   }
   return carray;
- fail1: free(carray);
- fail0: return NULL;
 }
 
 
-void
-cstyle3d_free(void ***carray)
-{
-  free(carray[0]);
-  free(carray);
-}
-
-
-void ****
+static void ****
 cstyle4d_alloc(PyObject* pyarray)
 {
   int i, j, k, num0, num1, num2;
@@ -82,12 +64,11 @@ cstyle4d_alloc(PyObject* pyarray)
   num1 = PyArray_DIM(pyarray, 1);
   num2 = PyArray_DIM(pyarray, 2);
 
-  carray = (void****) malloc(sizeof(void***) * num0);
-  if (carray == NULL) goto fail0;
-  ptr1 = (void***) malloc(sizeof(void**) * num0 * num1);
-  if (ptr1 == NULL) goto fail1;
-  ptr2 = (void**) malloc(sizeof(void*) * num0 * num1 * num2);
-  if (ptr2 == NULL) goto fail2;
+  carray = (void****)
+    malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2))));
+  if (carray == NULL) return NULL;
+  ptr1 = (void***) (carray + num0);
+  ptr2 = (void**) (carray + num0 * (1 + num1));
 
   for (i = 0; i < num0; ++i){
     carray[i] = ptr1 + (i * num1);
@@ -99,22 +80,10 @@ cstyle4d_alloc(PyObject* pyarray)
     }
   }
   return carray;
- fail2: free(ptr1);
- fail1: free(carray);
- fail0: return NULL;
 }
 
 
-void
-cstyle4d_free(void ****carray)
-{
-  free(carray[0][0]);
-  free(carray[0]);
-  free(carray);
-}
-
-
-void *****
+static void *****
 cstyle5d_alloc(PyObject* pyarray)
 {
   int i, j, k, l, num0, num1, num2, num3;
@@ -126,14 +95,12 @@ cstyle5d_alloc(PyObject* pyarray)
   num2 = PyArray_DIM(pyarray, 2);
   num3 = PyArray_DIM(pyarray, 3);
 
-  carray = (void*****) malloc(sizeof(void****) * num0);
-  if (carray == NULL) goto fail0;
-  ptr1 = (void****) malloc(sizeof(void***) * num0 * num1);
-  if (ptr1 == NULL) goto fail1;
-  ptr2 = (void***) malloc(sizeof(void**) * num0 * num1 * num2);
-  if (ptr2 == NULL) goto fail2;
-  ptr3 = (void**) malloc(sizeof(void*) * num0 * num1 * num2 * num3);
-  if (ptr3 == NULL) goto fail3;
+  carray = (void*****)
+    malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2 * (1 + num3)))));
+  if (carray == NULL) return NULL;
+  ptr1 = (void****) (carray + num0);
+  ptr2 = (void***) (carray + num0 * (1 + num1));
+  ptr3 = (void**) (carray + num0 * (1 + num1 * (1 + num2)));
 
   ind[4] = 0;
   for (i = 0; i < num0; ++i){
@@ -154,35 +121,16 @@ cstyle5d_alloc(PyObject* pyarray)
     }
   }
   return carray;
- fail3: free(ptr2);
- fail2: free(ptr1);
- fail1: free(carray);
- fail0: return NULL;
-}
-
-
-void
-cstyle5d_free(void *****carray)
-{
-  free(carray[0][0][0]);
-  free(carray[0][0]);
-  free(carray[0]);
-  free(carray);
 }
 
 
 static void
 CStyle_dealloc(CStyle *self)
 {
-  if (self->pyarray == NULL) return;
-
-  switch (PyArray_NDIM(self->pyarray)){
-  case 2: cstyle2d_free(self->carray); break;
-  case 3: cstyle3d_free(self->carray); break;
-  case 4: cstyle4d_free(self->carray); break;
-  case 5: cstyle5d_free(self->carray); break;
+  if (self->carray != NULL){
+    free(self->carray);
+    self->carray = NULL;
   }
-
   Py_XDECREF(self->pyarray);
 }
 
