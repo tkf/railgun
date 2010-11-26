@@ -127,6 +127,7 @@ CStyle_dealloc(CStyle *self)
     self->carray = NULL;
   }
   Py_XDECREF(self->pyarray);
+  self->ob_type->tp_free((PyObject*)self);
 }
 
 
