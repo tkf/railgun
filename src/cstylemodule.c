@@ -20,7 +20,7 @@ cstyle2d_alloc(PyObject* pyarray)
   void **carray;
 
   num0 = PyArray_DIM(pyarray, 0);
-  carray = (void**) malloc(sizeof(void*) * num0);
+  carray = (void**) PyMem_Malloc(sizeof(void*) * num0);
   if (carray == NULL){
     return NULL;
   }
@@ -40,7 +40,7 @@ cstyle3d_alloc(PyObject* pyarray)
   num0 = PyArray_DIM(pyarray, 0);
   num1 = PyArray_DIM(pyarray, 1);
 
-  carray = (void***) malloc(sizeof(void*) * (num0 * (1 + num1)));
+  carray = (void***) PyMem_Malloc(sizeof(void*) * (num0 * (1 + num1)));
   if (carray == NULL) return NULL;
   ptr1 = (void**) (carray + num0);
 
@@ -65,7 +65,7 @@ cstyle4d_alloc(PyObject* pyarray)
   num2 = PyArray_DIM(pyarray, 2);
 
   carray = (void****)
-    malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2))));
+    PyMem_Malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2))));
   if (carray == NULL) return NULL;
   ptr1 = (void***) (carray + num0);
   ptr2 = (void**) (carray + num0 * (1 + num1));
@@ -96,7 +96,7 @@ cstyle5d_alloc(PyObject* pyarray)
   num3 = PyArray_DIM(pyarray, 3);
 
   carray = (void*****)
-    malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2 * (1 + num3)))));
+    PyMem_Malloc(sizeof(void*) * (num0 * (1 + num1 * (1 + num2 * (1 + num3)))));
   if (carray == NULL) return NULL;
   ptr1 = (void****) (carray + num0);
   ptr2 = (void***) (carray + num0 * (1 + num1));
@@ -128,7 +128,7 @@ static void
 CStyle_dealloc(CStyle *self)
 {
   if (self->carray != NULL){
-    free(self->carray);
+    PyMem_Free(self->carray);
     self->carray = NULL;
   }
   Py_XDECREF(self->pyarray);
@@ -174,7 +174,7 @@ CStyle_init(CStyle *self, PyObject *args, PyObject *kwds)
   }
 
   if (self->carray == NULL){
-    PyErr_SetString(PyExc_RuntimeError, "failed to allocate memory");
+    PyErr_NoMemory();
     Py_XDECREF(pyarray);
     return -1;
   }
