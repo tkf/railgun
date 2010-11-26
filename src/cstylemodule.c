@@ -87,7 +87,6 @@ static void *****
 cstyle5d_alloc(PyObject* pyarray)
 {
   int i, j, k, l, num0, num1, num2, num3;
-  npy_intp ind[5];
   void *****carray, ****ptr1, ***ptr2, **ptr3;
 
   num0 = PyArray_DIM(pyarray, 0);
@@ -102,20 +101,16 @@ cstyle5d_alloc(PyObject* pyarray)
   ptr2 = (void***) (carray + num0 * (1 + num1));
   ptr3 = (void**) (carray + num0 * (1 + num1 * (1 + num2)));
 
-  ind[4] = 0;
   for (i = 0; i < num0; ++i){
-    ind[0] = i;
     carray[i] = ptr1 + (i * num1);
     for (j = 0; j < num1; ++j){
-      ind[1] = j;
       carray[i][j] = ptr2 + (i * num1 * num2) + (j * num2);
       for (k = 0; k < num2; ++k){
-        ind[2] = k;
         carray[i][j][k] = ptr3 +
           (i * num1 * num2 * num3) + (j * num2 * num3) + (k * num3);
         for (l = 0; l < num3; ++l){
-          ind[3] = l;
-          carray[i][j][k][l] = PyArray_GetPtr((PyArrayObject*) pyarray, ind);
+          carray[i][j][k][l] =
+            PyArray_GETPTR4((PyArrayObject*) pyarray, i, j, k, l);
         }
       }
     }
