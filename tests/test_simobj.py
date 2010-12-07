@@ -312,3 +312,30 @@ def test_empty_cfuncprefix():
     raises_AttributeError = raises(AttributeError)(check_empty_cfuncprefix)
     yield (raises_nothing, '')
     yield (raises_AttributeError, None)
+
+
+def test_fixed_shape():
+    """
+    Array c-member can have fixed-shape
+    """
+
+    class VectCalc(SimObject):
+        _clibname_ = 'vectclac.so'
+        _clibdir_ = relpath('ext/build', __file__)
+
+        _cmembers_ = [
+            'num_i = 5',
+            'int v1[0]',
+            'int v2[1]',
+            'int v3[5]',
+            'int ans',
+            ]
+
+        _cfuncs_ = []
+
+    for num_i in range(4,7):
+        vc = VectCalc(num_i=num_i)
+        assert vc.num("i") == num_i, 'vc.num("i") == num_i'
+        assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
+        assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
+        assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
