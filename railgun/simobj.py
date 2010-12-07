@@ -396,7 +396,7 @@ class MetaSimObject(type):
         clibname = attr_from_atttrs_or_bases(bases, attrs, '_clibname_')
         cmembers = attr_from_atttrs_or_bases(bases, attrs, '_cmembers_')
         cfuncs = attr_from_atttrs_or_bases(bases, attrs, '_cfuncs_')
-        if not all([clibdir, clibname, cmembers, cfuncs]):
+        if any(c is None for c in [clibdir, clibname, cmembers, cfuncs]):
             return type.__new__(cls, clsname, bases, attrs)
         cstructname = attr_from_atttrs_or_bases(
             bases, attrs, '_cstructname_', clsname)
@@ -546,7 +546,9 @@ class SimObject(object):
         self._cdata_ = {}  # keep memory for arrays
         for (vname, parsed) in self._cmems_parsed_.iteritems():
             if parsed.ndim > 0:
-                shape = tuple(getattr(self, 'num_%s' % i) for i in parsed.idx)
+                shape = tuple(
+                    int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
+                    for i in parsed.idx)
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
                 self._cdata_[vname] = arr
