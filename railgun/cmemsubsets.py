@@ -1,7 +1,7 @@
 import re
 from itertools import product, izip_longest
 
-from railgun._helper import strset
+from railgun._helper import strset, valbykey
 
 
 RE_BRACES = re.compile(r"{[\w, ]+}")
@@ -119,7 +119,6 @@ class CMemSubSets(object):
                 cmems=mfd['members'],
                 default=mfd['default'],
                 cfuncs_parsed=concatfunc(expand_braces, mfd['funcs']),
-                on=mfd['default'],
                 )
             setdiff_mems = set(mfd_parsed['cmems']) - cmems
             setdiff_funcs = set(mfd_parsed['cfuncs_parsed']) - cfuncs
@@ -132,26 +131,37 @@ class CMemSubSets(object):
                     'C-funcs %s of subset "%s" are not '
                     'recognized' % (strset(setdiff_funcs), name))
             cmss[name] = mfd_parsed
+        # converted data
         self._cmss_ = cmss
         self._cfunc_to_cmss_ = _cmss_inverse(cmss, 'cfuncs_parsed')
         self._cmem_to_cmss_ = _cmss_inverse(cmss, 'cmems')
+        # set default flags
+        self._set_flags_default()
 
     def copy(self):
         cmssnew = self.__class__()
-        cmssnew._cmss_ = self._cmss_.copy()
-        cmssnew._cfunc_to_cmss_ = self._cfunc_to_cmss_.copy()
-        cmssnew._cmem_to_cmss_ = self._cmem_to_cmss_.copy()
+        # copy (reference of) converted data
+        cmssnew._cmss_ = self._cmss_
+        cmssnew._cfunc_to_cmss_ = self._cfunc_to_cmss_
+        cmssnew._cmem_to_cmss_ = self._cmem_to_cmss_
+        cmssnew._set_flags_default()
         return cmssnew
+
+    def _set_flags_default(self):
+        flags = {}
+        for (name, mfd) in self._cmss_.iteritems():
+            flags[name] = mfd.get('default')
+        self._flags_ = flags
 
     def set(self, **kwds):
         """Set flags of c member subset"""
-        for (name, val) in kwds.iteritems():
-            self._cmss_[name]['on'] = val
+        self._flags_.update(kwds)
 
-    def get(self, *args):
+    def get(self, *args, **kwds):
         """Get flags given names of c member subset"""
-        ret = [self._cmss_[name]['on'] for name in args]
-        if len(ret) == 1:
+        forcetuple = kwds.get('forcetuple')
+        ret = valbykey(self._flags_, *args)
+        if len(ret) == 1 and not forcetuple:
             return ret[0]
         else:
             return ret
@@ -168,8 +178,7 @@ class CMemSubSets(object):
 
         """
         if name in self._cfunc_to_cmss_:
-            cmss = self._cmss_
-            return all(cmss[k]['on'] for k in self._cfunc_to_cmss_[name])
+            return all(self.get(*self._cfunc_to_cmss_[name], forcetuple=True))
         else:
             return True
 
@@ -181,7 +190,6 @@ class CMemSubSets(object):
 
         """
         if name in self._cmem_to_cmss_:
-            cmss = self._cmss_
-            return any(cmss[k]['on'] for k in self._cmem_to_cmss_[name])
+            return any(self.get(*self._cmem_to_cmss_[name], forcetuple=True))
         else:
             return True
