@@ -9,7 +9,7 @@ import numpy
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
 from railgun.cmemsubsets import CMemSubSets
-from railgun._helper import dict_override, strset
+from railgun._helper import dict_override, strset, subdict_by_prefix
 try:
     from railgun import cstyle
 except ImportError:
@@ -519,9 +519,31 @@ class SimObject(object):
     _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
 
     def __init__(self, **kwds):
+        """
+        Allocate C members to construct `SimObject`
+
+        Parameters
+        ----------
+        _calloc_ : bool, optional
+            If True, use cstyle.CStyle to allocate memory (default: True).
+        _cmemsubsets_{FLAG_NAME} : bool, optional
+            Set flag of `FLAG_NAME` which is defined by `_cmemsubsets_`
+            attribute.
+
+        Other keyword arguments will be name of C member or
+        "array alias" of array C member.
+
+        """
         if '_calloc_' in kwds:
             self._calloc_ = kwds['_calloc_']
             del kwds['_calloc_']
+
+        # copy is needed otherwise self._cmemsubsets_parsed_ is shared by
+        # all instance of SimObject
+        self._cmemsubsets_parsed_ = self._cmemsubsets_parsed_.copy()
+        cmemsubsets_kwds = subdict_by_prefix(kwds, '_cmemsubsets_',
+                                             remove_original=True)
+        self._cmemsubsets_parsed_.set(**cmemsubsets_kwds)
 
         self._set_all(**kwds)
 
@@ -556,8 +578,13 @@ class SimObject(object):
         self.setv(**scalarvals)
         # allocate C array data and set the defaults
         self._set_cdata()
+        cmems_default_array = self._cmems_default_array_
+        array_allocated = filter(  # remove if not allocated
+            self._cmemsubsets_parsed_.cmem_need_alloc, cmems_default_array)
+        cmems_default_array_allocated = dict((k, cmems_default_array[k])
+                                             for k in array_allocated)
         self.setv(**dict_override(
-            self._cmems_default_array_, kwds_cmem_array, addkeys=True))
+            cmems_default_array_allocated, kwds_cmem_array, addkeys=True))
         self.setv(**kwds_non_cmem)
 
     def setv(self, **kwds):

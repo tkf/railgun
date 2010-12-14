@@ -376,3 +376,17 @@ def test_cmemsubset():
     vc = VectCalc()
     vc.subvec_dot()
     raises(ValueError)(vc.vec)()
+    vc.getv('v1, v2')
+    raises(KeyError)(vc.getv)('v3')
+
+    vc = VectCalc(_cmemsubsets_dot=False)
+    raises(ValueError)(vc.subvec_dot)()
+    raises(ValueError)(vc.vec)()
+    raises(KeyError)(vc.getv)('v1')
+    raises(KeyError)(vc.getv)('v2')
+    raises(KeyError)(vc.getv)('v3')
+
+    vc = VectCalc(_cmemsubsets_vec=True)
+    vc.subvec_dot()
+    vc.vec()
+    vc.getv('v1, v2, v3')
