@@ -35,6 +35,29 @@ DATA_CMEMSUBSETS = [
                  cmems=dict(v1=True, v2=True, v3=False))
             ]
         ),
+    dict(
+        kwds=dict(
+            data=dict(
+                debug=dict(members=['x_debug_%d' % i for i in range(3)],
+                           funcs=['f_{0, 1, 2}', 'g_{0, 1, 2}'],
+                           default=False),
+                ),
+            cfuncs=['%s_%d' % (f, i) for f in 'fgh' for i in range(3)],
+            cmems=['%s_%d' % (x, i)
+                   for x in ('x', 'x_debug') for i in range(3)]),
+        cases=[
+            dict(flags=dict(debug=False),
+                 cfuncs=dict([('%s_%d' % (f, i), f == 'h')
+                              for f in 'fgh' for i in range(3)]),
+                 cmems=dict([('%s_%d' % (x, i), x == 'x')
+                             for x in ('x', 'x_debug') for i in range(3)])),
+            dict(flags=dict(debug=True),
+                 cfuncs=dict([('%s_%d' % (f, i), True)
+                              for f in 'fgh' for i in range(3)]),
+                 cmems=dict([('%s_%d' % (x, i), True)
+                             for x in ('x', 'x_debug') for i in range(3)])),
+            ]
+        ),
     ]
 
 
@@ -49,9 +72,13 @@ def check_cmemsubsets(data):
     for case in data['cases']:
         cmss.set(**case['flags'])
         for (name, desired) in case['cfuncs'].iteritems():
-            eq_(cmss.cfunc(name), desired)
+            eq_(cmss.cfunc(name), desired,
+                msg=('comparing cfuncs "%s" with falgs: %s' %
+                     (name, case['flags'])))
         for (name, desired) in case['cmems'].iteritems():
-            eq_(cmss.cmem(name), desired)
+            eq_(cmss.cmem(name), desired,
+                msg=('comparing cmems "%s" with falgs: %s' %
+                     (name, case['flags'])))
 
 
 def test_cmemsubsets():
