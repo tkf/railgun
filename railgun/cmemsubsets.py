@@ -27,7 +27,7 @@ def altconcat(*args):
 
 def expand_braces(rawfname):
     """
-    Expand braces taking product of sets
+    Expand braces taking product of sets of values inside of the braces
 
     >>> expand_braces('abc_{i,j,k}_def_{x,y}') #doctest: +NORMALIZE_WHITESPACE
     ['abc_i_def_x', 'abc_i_def_y',
@@ -55,7 +55,55 @@ def concatfunc(func, lst):
     return ret
 
 
+def _cmss_inverse(cmss, key):
+    """
+    Returns "inverse" dictionary of `cmss` (dict-of-dict-of-list)
+
+    Let `cmss` is (in JSON format)::
+
+        { name1: { cfuncs: [f, g, h], cmems: [x, y] },
+          name2: { cfuncs: [f, j, k], cmems: [y, z] } }
+
+    Then `_cmss_inverse(cmss, 'cfuncs')` returns::
+
+        { f: [name1, name2], g: [name1], h: [name1], j: [name2], k: [name2] }
+
+    and `_cmss_inverse(cmss, 'cmems')` returns::
+
+        { x: [name1], y: [name1, name2], z: [name2] }
+
+    Note that although it is written as list, list of "cmss name" above
+    is actually set.
+
+    Examples
+    --------
+    >>> cmss = dict(
+    ...     name1=dict(cfuncs=['f', 'g', 'h'], cmems=['x', 'y']),
+    ...     name2=dict(cfuncs=['f', 'j', 'k'], cmems=['y', 'z']),
+    ...     )
+    >>> cfuncs = _cmss_inverse(cmss, 'cfuncs')
+    >>> sorted(cfuncs['f'])
+    ['name1', 'name2']
+    >>> sorted(cfuncs['g'])
+    ['name1']
+    >>> sorted(cfuncs['j'])
+    ['name2']
+
+    """
+    inv = {}
+    for (cmss_name, mfd) in cmss.iteritems():
+        for var in mfd[key]:
+            if var in inv:
+                var_cmss_set = inv[var]
+            else:
+                var_cmss_set = set()
+                inv[var] = var_cmss_set
+            var_cmss_set.add(cmss_name)
+    return inv
+
+
 class CMemSubSets(object):
+    """C Member Sub-Sets"""
 
     def __init__(self, data, cfuncs, cmems):
         cfuncs = set(cfuncs)
@@ -82,14 +130,16 @@ class CMemSubSets(object):
                     'recognized' % (strset(setdiff_funcs), name))
             cmss[name] = mfd_parsed
         self._cmss_ = cmss
+        self._cfunc_to_cmss_ = _cmss_inverse(cmss, 'cfuncs_parsed')
+        self._cmem_to_cmss_ = _cmss_inverse(cmss, 'cmems')
 
     def set(self, **kwds):
-        """Set flags"""
+        """Set flags of c member subset"""
         for (name, val) in kwds.iteritems():
             self._cmss_[name]['on'] = val
 
     def get(self, *args):
-        """Get flags"""
+        """Get flags given names of c member subset"""
         ret = [self._cmss_[name]['on'] for name in args]
         if len(ret) == 1:
             return ret[0]
@@ -98,18 +148,30 @@ class CMemSubSets(object):
 
     def cfunc(self, name):
         """
-        Check c-function's flag: True if all flag is on, otherwise False
+        Check if given c-function is callable
+
+        Returned value is True if all flag is on or `name` is not in
+        any c member subset, otherwise False.
+
+        For c function to be callable, *all* falg are needed to be on
+        otherwise given c function might use unallocated members.
+
         """
-        for mfd in self._cmss_.itervalues():
-            if name in mfd['cfuncs_parsed'] and not mfd['on']:
-                return False
-        return True
+        if name in self._cfunc_to_cmss_:
+            cmss = self._cmss_
+            return all(cmss[k]['on'] for k in self._cfunc_to_cmss_[name])
+        else:
+            return True
 
     def cmem(self, name):
         """
-        Check c-member's flag: True if at least one flag is on, otherwise False
+        Check if given c-member should be allocated
+
+        True if at least one flag is on, otherwise False
+
         """
-        for mfd in self._cmss_.itervalues():
-            if name in mfd['cmems'] and mfd['on']:
-                return True
-        return False
+        if name in self._cmem_to_cmss_:
+            cmss = self._cmss_
+            return any(cmss[k]['on'] for k in self._cmem_to_cmss_[name])
+        else:
+            return True
