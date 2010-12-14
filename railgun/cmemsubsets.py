@@ -105,9 +105,12 @@ def _cmss_inverse(cmss, key):
 class CMemSubSets(object):
     """C Member Sub-Sets"""
 
-    def __init__(self, data, cfuncs, cmems):
-        cfuncs = set(cfuncs)
-        cmems = set(cmems)
+    def __init__(self, data=None, cfuncs=None, cmems=None):
+        if data is None:
+            data = {}
+        else:
+            cfuncs = set(cfuncs)
+            cmems = set(cmems)
         cmss = {}
         for (name, mfd) in data.iteritems():
             # mfd: members, funcs, default
@@ -132,6 +135,13 @@ class CMemSubSets(object):
         self._cmss_ = cmss
         self._cfunc_to_cmss_ = _cmss_inverse(cmss, 'cfuncs_parsed')
         self._cmem_to_cmss_ = _cmss_inverse(cmss, 'cmems')
+
+    def copy(self):
+        cmssnew = self.__class__()
+        cmssnew._cmss_ = self._cmss_.copy()
+        cmssnew._cfunc_to_cmss_ = self._cfunc_to_cmss_.copy()
+        cmssnew._cmem_to_cmss_ = self._cmem_to_cmss_.copy()
+        return cmssnew
 
     def set(self, **kwds):
         """Set flags of c member subset"""
