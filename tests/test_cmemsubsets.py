@@ -1,10 +1,18 @@
-# from nose.tools import raises, ok_, with_setup
+from nose.tools import ok_  # , raises, with_setup
 
 from tsutils import eq_
 from railgun.cmemsubsets import CMemSubSets
 
 
 DATA_CMEMSUBSETS = [
+    dict(
+        kwds={},
+        cases=[
+            dict(flags={},
+                 cfuncs=dict(any_cfunc_name=True),
+                 cmems=dict(any_cmem_name=True)),
+            ]
+        ),
     dict(
         kwds=dict(
             data=dict(
@@ -61,26 +69,43 @@ DATA_CMEMSUBSETS = [
     ]
 
 
-def check_cmemsubsets(data):
-    kwds = data['kwds']
-    cmss = CMemSubSets(**kwds)
-
+def check_default(cmss, kwds):
     for name in kwds['data']:
         eq_(cmss.get(name), kwds['data'][name].get('default', False),
             msg='comparing default value of flag "%s"' % name)
 
-    for case in data['cases']:
-        cmss.set(**case['flags'])
-        for (name, desired) in case['cfuncs'].iteritems():
-            eq_(cmss.cfunc_is_callable(name), desired,
-                msg=('comparing cfuncs "%s" with falgs: %s' %
-                     (name, case['flags'])))
-        for (name, desired) in case['cmems'].iteritems():
-            eq_(cmss.cmem_need_alloc(name), desired,
-                msg=('comparing cmems "%s" with falgs: %s' %
-                     (name, case['flags'])))
+
+def test_default():
+    for data in DATA_CMEMSUBSETS:
+        kwds = data['kwds']
+        if 'data' in kwds:  # no test for empty `kwds`
+            yield (check_default, CMemSubSets(**kwds), kwds)
+
+
+def check_cmemsubsets(cmss, case):
+    cmss.set(**case['flags'])
+    for (name, desired) in case['cfuncs'].iteritems():
+        eq_(cmss.cfunc_is_callable(name), desired,
+            msg=('comparing cfuncs "%s" with falgs: %s' %
+                 (name, case['flags'])))
+    for (name, desired) in case['cmems'].iteritems():
+        eq_(cmss.cmem_need_alloc(name), desired,
+            msg=('comparing cmems "%s" with falgs: %s' %
+                 (name, case['flags'])))
 
 
 def test_cmemsubsets():
-    for kwds in DATA_CMEMSUBSETS:
-        yield (check_cmemsubsets, kwds)
+    for data in DATA_CMEMSUBSETS:
+        kwds = data['kwds']
+        for case in data['cases']:
+            yield (check_cmemsubsets, CMemSubSets(**kwds), case)
+
+
+def test_cmemsubsets_copy():
+    for data in DATA_CMEMSUBSETS:
+        kwds = data['kwds']
+        for case in data['cases']:
+            cmss = CMemSubSets(**kwds)
+            copy = cmss.copy()
+            ok_(cmss is not copy)
+            yield (check_cmemsubsets, copy, case)
