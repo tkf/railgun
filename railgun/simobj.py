@@ -390,6 +390,52 @@ def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
 
 
 class MetaSimObject(type):
+    """
+    Meta-class for `SimObject`
+
+    Given Attributes
+    ----------------
+    _clibname_ : str
+        Name of your C shared library
+    _clibdir_ : str
+        Path of the C library directory
+    _cmembers_ : list of str
+        List of definition of C member
+    _cfuncs_ : list of str
+        List of definition of C function to be loaded
+    _cstructname_ : str, optional
+        Name of C struct (default is class name)
+    _cfuncprefix_ : str, optional
+        Prefix of C functions (default is ``_cstructname_ + '_'``)
+    _cwrap_{CFUNC_NAME} : function, optional
+        Wrapper for loaded C function `CFUNC_NAME`
+
+    Attributes to be set
+    --------------------
+    _cmems_parsed_ : dict
+        Key: name of C member; Value: object parsed by `cdata.cddec_parse`
+    _cmems_default_scalar_ : dict
+        Key: name of C member (scalar); Value: default value
+    _cmems_default_array_ : dict
+        Key: name of C member (array); Value: default value
+    _idxset_ : set
+        set of index
+    array_alias : function
+        Parser for "array alias" such as "a_1_2"
+    _struct_type_ : ctypes obejct
+        Subclass of `ctypes.Structure` generated from `_cmembers_`
+    _struct_type_p_ : ctypes obejct
+        Pointer type of _struct_type_
+    _cdll_ : ctypes object
+        Loaded C library
+    _cfunc_loaded_ : dict
+        Loaded C functions.
+        Key: Name of C function (without `_cfuncprefix_`);
+        Value: ctypes object
+
+    Additionally, C member and C function will be added as attributes.
+
+    """
 
     def __new__(cls, clsname, bases, attrs):
         clibdir = attr_from_atttrs_or_bases(bases, attrs, '_clibdir_')
