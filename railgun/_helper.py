@@ -65,6 +65,24 @@ class HybridObj(object):
         return self.__dict__.__len__()
 
 
+def _parse_csk_args(args):
+    """
+    Parse comma separated argument (helper function for `get_subdict` etc.)
+
+    >>> _parse_csk_args(('a', 'b'))
+    ('a', 'b')
+    >>> _parse_csk_args(('a, b',))
+    ('a', 'b')
+
+    """
+    if len(args) == 1 and hasattr(args[0], 'find') and args[0].find(',') != -1:
+        # args = ['a, b, c']
+        return tuple([k.strip() for k in args[0].split(',')])
+    else:
+        # args = ['a', 'b', 'c']
+        return tuple(args)
+
+
 def subdict(d, *args):
     """
     Get sub-dictionary (parts of dictionary) with specified keys.
@@ -77,13 +95,7 @@ def subdict(d, *args):
     {'a': 1, 'b': 2}
 
     """
-    if len(args) == 1 and hasattr(args[0], 'find') and args[0].find(',') != -1:
-        # args = ['a, b, c']
-        keys = [k.strip() for k in args[0].split(',')]
-    else:
-        # args = ['a', 'b', 'c']
-        keys = args
-
+    keys = _parse_csk_args(args)
     return dict([(k, d[k]) for k in keys])
 
 
@@ -99,14 +111,38 @@ def valbykey(d, *args):
     (1, 2)
 
     """
-    if len(args) == 1 and hasattr(args[0], 'find') and args[0].find(',') != -1:
-        # args = ['a, b, c']
-        keys = [k.strip() for k in args[0].split(',')]
-    else:
-        # args = ['a', 'b', 'c']
-        keys = args
-
+    keys = _parse_csk_args(args)
     return tuple([d[k] for k in keys])
+
+
+def subdict_by_prefix(dct, prefix, remove_prefix=True, remove_original=False):
+    """
+    Construct sub-dictionary from `dct` whose key starts with `prefix`
+
+    >>> dct = dict(a_1=2, a_3=4, a_k=5, a=0, b_0=2)
+    >>> subdict_by_prefix(dct, 'a_')['1']
+    2
+    >>> sorted(subdict_by_prefix(dct, 'a_'))
+    ['1', '3', 'k']
+    >>> sorted(subdict_by_prefix(dct, 'a_', remove_prefix=False))
+    ['a_1', 'a_3', 'a_k']
+    >>> sorted(subdict_by_prefix(dct, 'a_', remove_original=True))
+    ['1', '3', 'k']
+    >>> sorted(dct)
+    ['a', 'b_0']
+
+    """
+    if remove_prefix:
+        len_prefix = len(prefix)
+        getkey = lambda k: k[len_prefix:]
+    else:
+        getkey = lambda k: k
+    keylist = [k for k in dct if k.startswith(prefix)]
+    subdict = dict((getkey(k), dct[k]) for k in keylist)
+    if remove_original:
+        for k in keylist:
+            del dct[k]
+    return subdict
 
 
 def iteralt(l1, l2):
