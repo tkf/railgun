@@ -117,7 +117,7 @@ class CMemSubSets(object):
             mfd_parsed = dict(
                 cfuncs=mfd['funcs'],
                 cmems=mfd['members'],
-                default=mfd['default'],
+                default=mfd.get('default', False),
                 cfuncs_parsed=concatfunc(expand_braces, mfd['funcs']),
                 )
             setdiff_mems = set(mfd_parsed['cmems']) - cmems
@@ -150,7 +150,7 @@ class CMemSubSets(object):
     def _set_flags_default(self):
         flags = {}
         for (name, mfd) in self._cmss_.iteritems():
-            flags[name] = mfd.get('default')
+            flags[name] = mfd['default']
         self._flags_ = flags
 
     def set(self, **kwds):
