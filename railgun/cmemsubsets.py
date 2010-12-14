@@ -166,6 +166,9 @@ class CMemSubSets(object):
         else:
             return ret
 
+    def getall(self):
+        return self._flags_.copy()
+
     def cfunc_is_callable(self, name):
         """
         Check if given c-function is callable

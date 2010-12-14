@@ -339,3 +339,40 @@ def test_fixed_shape():
         assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
         assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
         assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
+
+
+def test_cmemsubset():
+
+    class VectCalc(SimObject):
+        _clibname_ = 'vectclac.so'
+        _clibdir_ = relpath('ext/build', __file__)
+
+        _cmembers_ = [
+            'num_i = 10',
+            'int v1[i] = 1',
+            'int v2[i] = 2',
+            'int v3[i]',
+            'int ans',
+            ]
+
+        _cfuncs_ = [
+            "vec_{op | plus, minus, times, divide}()",
+            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+            "fill_{vec | v1, v2, v3}(int s)",
+            "ans subvec_dot(i i1=0, i< i2=num_i)",
+            ]
+
+        _cmemsubsets_ = dict(
+            vec=dict(members=['v1', 'v2', 'v3'],
+                     funcs=['vec_{plus, minus, times, divide}',
+                            'subvec_{plus, minus, times, divide}',
+                            'fill_{v1, v2, v3}'],
+                     default=False),
+            dot=dict(members=['v1', 'v2'],
+                     funcs=['subvec_dot'],
+                     default=True),
+            )
+
+    vc = VectCalc()
+    vc.subvec_dot()
+    raises(ValueError)(vc.vec)()

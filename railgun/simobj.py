@@ -8,6 +8,7 @@ import numpy
 
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
+from railgun.cmemsubsets import CMemSubSets
 from railgun._helper import dict_override, strset
 try:
     from railgun import cstyle
@@ -233,6 +234,10 @@ def gene_cfpywrap(attrs, cfdec):
         # get cfunc
         cfname = cfdec.fnget(
             *get_cfunc_choices(defaults_choices, allkwds, choiceskeyorder))
+        if not self._cmemsubsets_parsed_.cfunc_is_callable(cfname):
+            raise ValueError(
+                'C function "%s" cannot be executed. Check flags %s.' %
+                (cfname, self._cmemsubsets_parsed_.getall()))
         cfunc = self._cfunc_loaded_[cfname]
         # get c-function arguments
         cargs = get_cargs(self, defaults_cargs, allkwds, cfkeyorder)
@@ -409,6 +414,20 @@ class MetaSimObject(type):
         Prefix of C functions (default is ``_cstructname_ + '_'``)
     _cwrap_{CFUNC_NAME} : function, optional
         Wrapper for loaded C function `CFUNC_NAME`
+    _cmemsubsets_ : dict of dict of list, optional
+        Definition of subset of C members for controlling which
+        C members to be loaded.
+
+        Example (in JSON format)::
+
+            { name1: { cfuncs: [f, g, h], cmems: [x, y] },
+              name2: { cfuncs: [f, j, k], cmems: [y, z] } }
+
+        Here,
+        ``f, g, h, j, k`` are name of C functions,
+        ``x, y, z`` are name of C members, and
+        ``name1, name2`` are name of C member subset.
+
 
     Attributes to be set
     --------------------
@@ -432,6 +451,8 @@ class MetaSimObject(type):
         Loaded C functions.
         Key: Name of C function (without `_cfuncprefix_`);
         Value: ctypes object
+    _cmemsubsets_parsed_ : CMemSubSets
+        An instance of CMemSubSets generated from `_cmemsubsets_`
 
     Additionally, C member and C function will be added as attributes.
 
@@ -448,6 +469,7 @@ class MetaSimObject(type):
             bases, attrs, '_cstructname_', clsname)
         cfuncprefix = attr_from_atttrs_or_bases(
             bases, attrs, '_cfuncprefix_', cstructname + CJOINSTR)
+        cmemsubsets = attr_from_atttrs_or_bases(bases, attrs, '_cmemsubsets_')
 
         ## parse _cfuncs_
         cfuncs_parsed = parse_cfuncs(cfuncs)
@@ -480,7 +502,12 @@ class MetaSimObject(type):
         cdll = numpy.ctypeslib.load_library(clibname, clibdir)
         cfunc_loaded = load_cfunc(cdll, cfuncs_parsed, struct_type_p,
                                   cfuncprefix, idxset)
-        attrs.update(_cdll_=cdll, _cfunc_loaded_=cfunc_loaded)
+        attrs.update(
+            _cdll_=cdll,
+            _cfunc_loaded_=cfunc_loaded,
+            _cmemsubsets_parsed_=CMemSubSets(
+                cmemsubsets, set(cfunc_loaded), set(cmems_parsed)),
+            )
         for (fname, parsed) in cfuncs_parsed.iteritems():
             attrs[fname] = gene_cfpywrap(attrs, parsed)
 
@@ -590,8 +617,9 @@ class SimObject(object):
 
     def _set_cdata(self):
         self._cdata_ = {}  # keep memory for arrays
+        cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         for (vname, parsed) in self._cmems_parsed_.iteritems():
-            if parsed.ndim > 0:
+            if parsed.ndim > 0 and cmem_need_alloc(vname):
                 shape = tuple(
                     int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
                     for i in parsed.idx)
