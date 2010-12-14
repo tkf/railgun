@@ -72,11 +72,11 @@ def check_cmemsubsets(data):
     for case in data['cases']:
         cmss.set(**case['flags'])
         for (name, desired) in case['cfuncs'].iteritems():
-            eq_(cmss.cfunc(name), desired,
+            eq_(cmss.cfunc_is_callable(name), desired,
                 msg=('comparing cfuncs "%s" with falgs: %s' %
                      (name, case['flags'])))
         for (name, desired) in case['cmems'].iteritems():
-            eq_(cmss.cmem(name), desired,
+            eq_(cmss.cmem_need_alloc(name), desired,
                 msg=('comparing cmems "%s" with falgs: %s' %
                      (name, case['flags'])))
 
