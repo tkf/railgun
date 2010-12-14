@@ -146,7 +146,7 @@ class CMemSubSets(object):
         else:
             return ret
 
-    def cfunc(self, name):
+    def cfunc_is_callable(self, name):
         """
         Check if given c-function is callable
 
@@ -163,7 +163,7 @@ class CMemSubSets(object):
         else:
             return True
 
-    def cmem(self, name):
+    def cmem_need_alloc(self, name):
         """
         Check if given c-member should be allocated
 
