@@ -2,7 +2,7 @@ from nose.tools import ok_  #, raises, with_setup
 ## from pprint import pformat
 
 from tsutils import eq_
-from railgun.cdata import RE_CDDEC, cddec_idx_parse, cddec_parse
+from railgun.cdata import RE_CDDEC, cddec_idx_parse, cddec_parse, cmem
 
 
 def dict_re_cddec(cdt, vname, idx=None, default=None):
@@ -35,9 +35,21 @@ DATA_TEST_IDX = [
     ]
 
 
-def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None):
+def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None, valtype=None):
+    if valtype is not None:
+        return dict(cdt=cdt, vname=vname, valtype=valtype)
+    elif ndim == 0:
+        valtype = 'scalar'
+    elif ndim > 0:
+        valtype = 'array'
     return dict(cdt=cdt, vname=vname, idx=idx, ndim=ndim, default=default,
-                has_default=default is not None)
+                has_default=default is not None, valtype=valtype)
+
+
+class DmyCDT(object):
+    """Dummy Class for arbitrary C Data Type"""
+    _cdata_ = None
+
 
 DATA_TEST_CDEC_PARSE = [
     # (cdstr, correct)
@@ -49,6 +61,7 @@ DATA_TEST_CDEC_PARSE = [
     ("int a[i] =2", dict_cdec_parse('int', 'a', tuple('i'), 1, 2)),
     ("int a[i][j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3)),
     ('num_i = 10', dict_cdec_parse('int', 'num_i', default=10)),
+    (cmem('obj', DmyCDT), dict_cdec_parse(DmyCDT, 'obj', valtype='object')),
     ]
 
 
