@@ -4,7 +4,7 @@ from nose.tools import raises, ok_  # , with_setup
 
 from tsutils import eq_
 from railgun import SimObject, relpath, cmem
-from railgun.simobj import CDT2CTYPE, POINTER
+from railgun.simobj import CDT2CTYPE, CDT2DTYPE, POINTER
 
 
 class VectCalc(SimObject):
@@ -401,7 +401,7 @@ def test_cmem_object():
     class Int1DimArrayAsObject(object):
         _ctype_ = POINTER(CDT2CTYPE['int'])
         def __init__(self, *args, **kwds):
-            self.arr = arr = numpy.array(*args, dtype='int', **kwds)
+            self.arr = arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
             self._cdata_ = arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
 
     class VectCalc(SimObject):
