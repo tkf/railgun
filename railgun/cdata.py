@@ -48,7 +48,7 @@ def cddec_parse(cdstr):
         raise ValueError("%s is invalid as c-data type declaration" % cdstr)
 
 
-def cmem(vname, cdt):
+def cmem(vname, cdt, **kwds):
     """
     Declaration of C member
 
@@ -56,13 +56,30 @@ def cmem(vname, cdt):
     ----------
     vname : str
         Name of C member
-    cdt : any object
-        This object must have attribute '_cdata_' whose
-        instance will be passed to `SimObject._struct_`
-        (instance of `ctypes.Structure` subclass)
+    cdt : class
+        This class must have the following two attributes
+
+        _ctype_ : ctype
+            It will be used for field of `SimObject._struct_`
+            (subclass of `ctypes.Structure`).
+            It must be an attribute of the *class* `cdt`,
+            ie., accessible via `cdt._ctype_`.
+        _cdata_ : data
+            It will be passed to `SimObject._struct_`
+            (instance of `ctypes.Structure` subclass).
+            This is required only for instance of the class, so that
+            you can set this in `cdt.__init__`.
 
     """
-    return HybridObj(vname=vname, cdt=cdt, valtype='object')
+    if not hasattr(cdt, '_ctype_'):
+        raise ValueError('%r (cdt of %s) does not have _ctype_ '
+                         'attribute' % (cdt, vname))
+    parsed = HybridObj(vname=vname, cdt=cdt, valtype='object', **kwds)
+    if 'default' in parsed:
+        parsed.has_default = True
+    else:
+        parsed.has_default = False
+    return parsed
 
 
 def iscmem(cmem):

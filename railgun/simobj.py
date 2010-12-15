@@ -137,9 +137,9 @@ def _gene_prop_object(key):
         return self._cdatastore_[key]
 
     def fset(self, v):
-        if not isinstance(v, self._cmemsubsets_parsed_[key]):
+        if not isinstance(v, self._cmems_parsed_[key].cdt):
             raise ValueError('given value is not instance of %r' %
-                             self._cmemsubsets_parsed_[key])
+                             self._cmems_parsed_[key].cdt)
         self._cdatastore_[key] = v
         setattr(self._struct_, key, v._cdata_)
     return property(fget, fset)
@@ -362,19 +362,23 @@ def default_of_cmembers(cmems_parsed_list):
     """Get `cmems_default_{scalar, array}` from `cmems_parsed_list`"""
     cmems_default_scalar = dict(
         (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-        if parsed.has_default and parsed.ndim == 0)
+        if parsed.has_default and parsed.valtype == 'scalar')
     cmems_default_array = dict(
         (parsed.vname, parsed.default) for parsed in cmems_parsed_list
-        if parsed.has_default and parsed.ndim > 0)
+        if parsed.has_default and parsed.valtype == 'array')
     return (cmems_default_scalar, cmems_default_array)
 
 
 def get_struct_class(cmems_parsed_list, cstructname):
-    fields = [(parsed.vname,
-               POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
-              for parsed in cmems_parsed_list]
-    # don't use `cmems_parsed.iteritems()` above or
-    # order of c-members will be lost!
+    fields = []
+    for parsed in cmems_parsed_list:
+        # don't use `cmems_parsed.iteritems()` above or
+        # order of c-members will be lost!
+        if parsed.valtype == 'object':
+            fields.append((parsed.vname, parsed.cdt._ctype_))
+        else:
+            ctype = POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim)
+            fields.append((parsed.vname, ctype))
 
     class StructClass(Structure):
         _fields_ = fields
@@ -384,7 +388,7 @@ def get_struct_class(cmems_parsed_list, cstructname):
 
 def array_alias_from_cmems_parsed(cmems_parsed):
     array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
-                   if parsed.ndim > 0]
+                   if parsed.valtype == 'array']
     array_alias = gene_array_alias(array_names)
     return staticmethod(array_alias)
 

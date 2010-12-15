@@ -3,7 +3,8 @@ from numpy.testing import assert_equal
 from nose.tools import raises, ok_  # , with_setup
 
 from tsutils import eq_
-from railgun import SimObject, relpath
+from railgun import SimObject, relpath, cmem
+from railgun.simobj import CDT2CTYPE, POINTER
 
 
 class VectCalc(SimObject):
@@ -393,3 +394,43 @@ def test_cmemsubset():
     vc.subvec_dot()
     vc.vec()
     vc.getv('v1, v2, v3')
+
+
+def test_cmem_object():
+
+    class Int1DimArrayAsObject(object):
+        _ctype_ = POINTER(CDT2CTYPE['int'])
+        def __init__(self, *args, **kwds):
+            self.arr = arr = numpy.array(*args, dtype='int', **kwds)
+            self._cdata_ = arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
+
+    class VectCalc(SimObject):
+        _clibname_ = 'vectclac.so'
+        _clibdir_ = relpath('ext/build', __file__)
+
+        _cmembers_ = [
+            'num_i',
+            cmem('v1', Int1DimArrayAsObject),
+            cmem('v2', Int1DimArrayAsObject),
+            cmem('v3', Int1DimArrayAsObject),
+            'int ans',
+            ]
+
+        _cfuncs_ = [
+            "vec_{op | plus, minus, times, divide}()",
+            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+            "fill_{vec | v1, v2, v3}(int s)",
+            "ans subvec_dot(i i1=0, i< i2=num_i)",
+            ]
+
+        def __init__(self, num_i=10, **kwds):
+            SimObject.__init__(self, num_i=num_i, **kwds)
+            self.v1 = Int1DimArrayAsObject([0] * num_i)
+            self.v2 = Int1DimArrayAsObject([0] * num_i)
+            self.v3 = Int1DimArrayAsObject([0] * num_i)
+
+    vc = VectCalc()
+    for i in [1, 2, 3]:
+        vc.fill(i, 'v%d' % i)
+        v_i = getattr(vc, 'v%d' % i).arr
+        assert_equal(v_i, numpy.array([i] * vc.num_i))
