@@ -37,7 +37,8 @@ DATA_TEST_IDX = [
 
 def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None, valtype=None):
     if valtype is not None:
-        return dict(cdt=cdt, vname=vname, valtype=valtype)
+        return dict(cdt=cdt, vname=vname, valtype=valtype,
+                    has_default=default is not None)
     elif ndim == 0:
         valtype = 'scalar'
     elif ndim > 0:
@@ -48,7 +49,7 @@ def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None, valtype=None):
 
 class DmyCDT(object):
     """Dummy Class for arbitrary C Data Type"""
-    _cdata_ = None
+    _ctype_ = None
 
 
 DATA_TEST_CDEC_PARSE = [

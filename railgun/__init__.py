@@ -40,6 +40,7 @@ __license__ = "MIT License"
 import os
 from railgun.simobj import SimObject, CDT2DTYPE
 from railgun._helper import HybridObj
+from railgun.cdata import cmem
 
 
 def relpath(path, fpath):
