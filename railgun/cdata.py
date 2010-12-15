@@ -20,14 +20,18 @@ def cddec_parse(cdstr):
     """
     Parse declaration of data from a string
     """
+    if not isinstance(cdstr, basestring) and iscmem(cdstr):
+        return cdstr  # already parsed object
     cdstr = cdstr.strip()
     match = RE_CDDEC.match(cdstr)
     if match:
         parsed = HybridObj(match.groupdict())
         if parsed.idx:
+            parsed.valtype = 'array'
             parsed.idx = cddec_idx_parse(parsed.idx)
             parsed.ndim = len(parsed.idx)
         else:
+            parsed.valtype = 'scalar'
             parsed.idx = ()
             parsed.ndim = 0
         if parsed.vname.startswith('num_'):
@@ -42,3 +46,24 @@ def cddec_parse(cdstr):
         return parsed
     else:
         raise ValueError("%s is invalid as c-data type declaration" % cdstr)
+
+
+def cmem(vname, cdt):
+    """
+    Declaration of C member
+
+    Parameters
+    ----------
+    vname : str
+        Name of C member
+    cdt : any object
+        This object must have attribute '_cdata_' whose
+        instance will be passed to `SimObject._struct_`
+        (instance of `ctypes.Structure` subclass)
+
+    """
+    return HybridObj(vname=vname, cdt=cdt, valtype='object')
+
+
+def iscmem(cmem):
+    return hasattr(cmem, 'vname') and hasattr(cmem, 'cdt')

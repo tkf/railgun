@@ -30,6 +30,8 @@ DTYPE: numpy data type
 CTYPE: ctypes data types
     Fundamental data types of `ctypes` such as
     `c_int`, `c_double`, `c_float`, `c_bool`.
+VALTYPE : Value Type
+    {'scalar', 'array', 'object'}
 
 """
 
@@ -126,6 +128,20 @@ def _gene_prop_array(key):
 
     def fset(self, v):
         self._cdatastore_[key][:] = v
+    return property(fget, fset)
+
+
+def _gene_prop_object(key):
+
+    def fget(self):
+        return self._cdatastore_[key]
+
+    def fset(self, v):
+        if not isinstance(v, self._cmemsubsets_parsed_[key]):
+            raise ValueError('given value is not instance of %r' %
+                             self._cmemsubsets_parsed_[key])
+        self._cdatastore_[key] = v
+        setattr(self._struct_, key, v._cdata_)
     return property(fget, fset)
 
 
@@ -494,10 +510,14 @@ class MetaSimObject(type):
 
         ## set getter/setter
         for (vname, parsed) in cmems_parsed.iteritems():
-            if parsed.ndim > 0:
+            if parsed.valtype == 'array':
                 attrs[vname] = _gene_prop_array(vname)
-            else:
+            elif parsed.valtype == 'scalar':
                 attrs[vname] = _gene_prop_scalar(vname)
+            elif parsed.valtype == 'object':
+                attrs[vname] = _gene_prop_object(vname)
+            else:
+                ValueError('valtype "%s" is not recognized' % parsed.valtype)
 
         ## load c-functions
         cdll = numpy.ctypeslib.load_library(clibname, clibdir)
@@ -550,17 +570,22 @@ class SimObject(object):
 
     def _is_cmem_scalar(self, name):
         return (name in self._cmems_parsed_ and
-                self._cmems_parsed_[name].ndim == 0)
+                self._cmems_parsed_[name].valtype == 'scalar')
 
     def _is_cmem_array(self, name):
         return (name in self._cmems_parsed_ and
-                self._cmems_parsed_[name].ndim > 0)
+                self._cmems_parsed_[name].valtype == 'array')
+
+    def _is_cmem_object(self, name):
+        return (name in self._cmems_parsed_ and
+                self._cmems_parsed_[name].valtype == 'object')
 
     def _set_all(self, **kwds):
         # decompose keyword arguments into its disjoint subsets
         kwds_scalar = subdict_by_filter(kwds, self._is_cmem_scalar, True)
         kwds_array = subdict_by_filter(kwds, self._is_cmem_array, True)
         kwds_array_alias = subdict_by_filter(kwds, self.array_alias, True)
+        kwds_object = subdict_by_filter(kwds, self._is_cmem_object, True)
         if kwds:  # there should not be remaining arguments
             raise ValueError(
                 "undefined keyword arguments: %s" % kwds)
@@ -585,6 +610,7 @@ class SimObject(object):
         self.setv(**dict_override(
             cmems_default_array_allocated, kwds_array, addkeys=True))
         self.setv(**kwds_array_alias)
+        self.setv(**kwds_object)
 
     def setv(self, **kwds):
         """
@@ -645,7 +671,7 @@ class SimObject(object):
         self._cdatastore_ = {}  # keep memory for arrays
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         for (vname, parsed) in self._cmems_parsed_.iteritems():
-            if parsed.ndim > 0 and cmem_need_alloc(vname):
+            if parsed.valtype == 'array' and cmem_need_alloc(vname):
                 shape = tuple(
                     int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
                     for i in parsed.idx)
