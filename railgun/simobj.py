@@ -121,10 +121,10 @@ def _gene_porp_scalar(key):
 def _gene_porp_array(key):
 
     def fget(self):
-        return self._cdata_[key]
+        return self._cdatastore_[key]
 
     def fset(self, v):
-        self._cdata_[key][:] = v
+        self._cdatastore_[key][:] = v
     return property(fget, fset)
 
 
@@ -599,7 +599,7 @@ class SimObject(object):
             alias = self.array_alias(key)
             if alias:
                 (name, index) = alias
-                self._cdata_[name][index] = val
+                self._cdatastore_[name][index] = val
             else:
                 setattr(self, key, val)
 
@@ -643,7 +643,7 @@ class SimObject(object):
             return nums
 
     def _set_cdata(self):
-        self._cdata_ = {}  # keep memory for arrays
+        self._cdatastore_ = {}  # keep memory for arrays
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         for (vname, parsed) in self._cmems_parsed_.iteritems():
             if parsed.ndim > 0 and cmem_need_alloc(vname):
@@ -652,10 +652,10 @@ class SimObject(object):
                     for i in parsed.idx)
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
-                self._cdata_[vname] = arr
+                self._cdatastore_[vname] = arr
                 if self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
                     cs = cstyle.CStyle(arr)
-                    self._cdata_['CStyle:%s' % vname] = cs
+                    self._cdatastore_['CStyle:%s' % vname] = cs
                     ptr = cast(
                         cs.pointer,
                         POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
