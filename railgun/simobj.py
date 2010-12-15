@@ -108,7 +108,7 @@ def ctype_getter(arr):
                            ctpa_list[0], tuple(ctpa_list[1:]))
 
 
-def _gene_porp_scalar(key):
+def _gene_prop_scalar(key):
 
     def fget(self):
         return getattr(self._struct_, key)
@@ -118,7 +118,7 @@ def _gene_porp_scalar(key):
     return property(fget, fset)
 
 
-def _gene_porp_array(key):
+def _gene_prop_array(key):
 
     def fget(self):
         return self._cdatastore_[key]
@@ -315,7 +315,7 @@ def latest_attr(iter_of_obj, name, default=None):
     return default
 
 
-def attr_from_atttrs_or_bases(bases, attrs, name, default=None):
+def attr_from_attrs_or_bases(bases, attrs, name, default=None):
     """
     Get an attribute from `attrs` or from `bases` if not found in `attrs`
     """
@@ -459,17 +459,17 @@ class MetaSimObject(type):
     """
 
     def __new__(cls, clsname, bases, attrs):
-        clibdir = attr_from_atttrs_or_bases(bases, attrs, '_clibdir_')
-        clibname = attr_from_atttrs_or_bases(bases, attrs, '_clibname_')
-        cmembers = attr_from_atttrs_or_bases(bases, attrs, '_cmembers_')
-        cfuncs = attr_from_atttrs_or_bases(bases, attrs, '_cfuncs_')
+        clibdir = attr_from_attrs_or_bases(bases, attrs, '_clibdir_')
+        clibname = attr_from_attrs_or_bases(bases, attrs, '_clibname_')
+        cmembers = attr_from_attrs_or_bases(bases, attrs, '_cmembers_')
+        cfuncs = attr_from_attrs_or_bases(bases, attrs, '_cfuncs_')
         if any(c is None for c in [clibdir, clibname, cmembers, cfuncs]):
             return type.__new__(cls, clsname, bases, attrs)
-        cstructname = attr_from_atttrs_or_bases(
+        cstructname = attr_from_attrs_or_bases(
             bases, attrs, '_cstructname_', clsname)
-        cfuncprefix = attr_from_atttrs_or_bases(
+        cfuncprefix = attr_from_attrs_or_bases(
             bases, attrs, '_cfuncprefix_', cstructname + CJOINSTR)
-        cmemsubsets = attr_from_atttrs_or_bases(bases, attrs, '_cmemsubsets_')
+        cmemsubsets = attr_from_attrs_or_bases(bases, attrs, '_cmemsubsets_')
 
         ## parse _cfuncs_
         cfuncs_parsed = parse_cfuncs(cfuncs)
@@ -494,9 +494,9 @@ class MetaSimObject(type):
         ## set getter/setter
         for (vname, parsed) in cmems_parsed.iteritems():
             if parsed.ndim > 0:
-                attrs[vname] = _gene_porp_array(vname)
+                attrs[vname] = _gene_prop_array(vname)
             else:
-                attrs[vname] = _gene_porp_scalar(vname)
+                attrs[vname] = _gene_prop_scalar(vname)
 
         ## load c-functions
         cdll = numpy.ctypeslib.load_library(clibname, clibdir)
