@@ -145,6 +145,28 @@ def subdict_by_prefix(dct, prefix, remove_prefix=True, remove_original=False):
     return subdict
 
 
+def subdict_by_filter(dct, func, remove_original=False):
+    """
+    Construct sub-dictionary from `dct` for which func(key) is true
+
+    >>> dct = dict(a_1=2, a_3=4, a_k=5, a=0, b_0=2)
+    >>> sorted(subdict_by_filter(dct, lambda x: x.startswith('a_')))
+    ['a_1', 'a_3', 'a_k']
+    >>> sorted(subdict_by_filter(dct, lambda x: x.startswith('a_'),
+    ...                          remove_original=True))
+    ['a_1', 'a_3', 'a_k']
+    >>> sorted(dct)
+    ['a', 'b_0']
+
+    """
+    keylist = filter(func, dct)
+    subdict = dict((k, dct[k]) for k in keylist)
+    if remove_original:
+        for k in keylist:
+            del dct[k]
+    return subdict
+
+
 def iteralt(l1, l2):
     """
     Iterate two sequences alternately
