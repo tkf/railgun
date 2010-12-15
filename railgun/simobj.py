@@ -9,7 +9,8 @@ import numpy
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
 from railgun.cmemsubsets import CMemSubSets
-from railgun._helper import dict_override, strset, subdict_by_prefix
+from railgun._helper import (
+    dict_override, strset, subdict_by_prefix, subdict_by_filter)
 try:
     from railgun import cstyle
 except ImportError:
@@ -547,30 +548,28 @@ class SimObject(object):
 
         self._set_all(**kwds)
 
+    def _is_cmem_scalar(self, name):
+        return (name in self._cmems_parsed_ and
+                self._cmems_parsed_[name].ndim == 0)
+
+    def _is_cmem_array(self, name):
+        return (name in self._cmems_parsed_ and
+                self._cmems_parsed_[name].ndim > 0)
+
     def _set_all(self, **kwds):
-        # searching invalid keyword arguments
-        non_cmem_keys = set(kwds) - set(self._cmems_parsed_)
-        cmem_keys = set(kwds) - non_cmem_keys
-        cmem_keys_scalar = set(
-            [k for k in cmem_keys if self._cmems_parsed_[k].ndim == 0])
-        cmem_keys_array = set(
-            [k for k in cmem_keys if self._cmems_parsed_[k].ndim > 0])
-        undefined_keywords = set()
-        for key in non_cmem_keys:
-            if not self.array_alias(key):
-                undefined_keywords.add(key)
-        if undefined_keywords:
+        # decompose keyword arguments into its disjoint subsets
+        kwds_scalar = subdict_by_filter(kwds, self._is_cmem_scalar, True)
+        kwds_array = subdict_by_filter(kwds, self._is_cmem_array, True)
+        kwds_array_alias = subdict_by_filter(kwds, self.array_alias, True)
+        if kwds:  # there should not be remaining arguments
             raise ValueError(
-                "undefined keyword arguments: %s" % strset(undefined_keywords))
-        kwds_cmem_scalar = dict([(k, kwds[k]) for k in cmem_keys_scalar])
-        kwds_cmem_array = dict([(k, kwds[k]) for k in cmem_keys_array])
-        kwds_non_cmem = dict([(k, kwds[k]) for k in non_cmem_keys])
+                "undefined keyword arguments: %s" % kwds)
         # allocate struct
         self._struct_ = self._struct_type_()
         self._struct_p_ = pointer(self._struct_)
         # set scalar variables including num_*
         scalarvals = dict_override(
-            self._cmems_default_scalar_, kwds_cmem_scalar, addkeys=True)
+            self._cmems_default_scalar_, kwds_scalar, addkeys=True)
         numkeyset = set('num_%s' % i for i in self._idxset_)
         num_lack = numkeyset - set(scalarvals)
         if num_lack:
@@ -584,8 +583,8 @@ class SimObject(object):
         cmems_default_array_allocated = dict((k, cmems_default_array[k])
                                              for k in array_allocated)
         self.setv(**dict_override(
-            cmems_default_array_allocated, kwds_cmem_array, addkeys=True))
-        self.setv(**kwds_non_cmem)
+            cmems_default_array_allocated, kwds_array, addkeys=True))
+        self.setv(**kwds_array_alias)
 
     def setv(self, **kwds):
         """
