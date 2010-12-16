@@ -64,7 +64,7 @@ DATA_TEST_CDEC_PARSE = [
     ("int a[i] =2", dict_cdec_parse('int', 'a', tuple('i'), 1, 2)),
     ("int a[i][j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3)),
     ('num_i = 10', dict_cdec_parse('int', 'num_i', default=10)),
-    (cmem('obj', DmyCDT), dict_cdec_parse(DmyCDT, 'obj', valtype='object')),
+    (cmem(DmyCDT, 'obj'), dict_cdec_parse(DmyCDT, 'obj', valtype='object')),
     ]
 
 
