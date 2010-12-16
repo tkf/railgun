@@ -437,17 +437,14 @@ class MetaSimObject(type):
         Wrapper for loaded C function `CFUNC_NAME`
     _cmemsubsets_ : dict of dict of list, optional
         Definition of subset of C members for controlling which
-        C members to be loaded.
+        C members to be loaded. Example::
 
-        Example (in JSON format)::
+            { 'name1': { 'cfuncs': ['f', 'g', 'h'], 'cmems': ['x', 'y'] },
+              'name2': { 'cfuncs': ['f', 'j', 'k'], 'cmems': ['y', 'z'] } }
 
-            { name1: { cfuncs: [f, g, h], cmems: [x, y] },
-              name2: { cfuncs: [f, j, k], cmems: [y, z] } }
-
-        Here,
-        ``f, g, h, j, k`` are name of C functions,
-        ``x, y, z`` are name of C members, and
-        ``name1, name2`` are name of C member subset.
+        Here, ``name1, name2`` are name of C member subset,
+        ``f, g, h, j, k`` are name of C functions, and
+        ``x, y, z`` are name of C members.
 
 
     Attributes to be set

@@ -59,20 +59,24 @@ def _cmss_inverse(cmss, key):
     """
     Returns "inverse" dictionary of `cmss` (dict-of-dict-of-list)
 
-    Let `cmss` is (in JSON format)::
+    Let `cmss` is::
 
-        { name1: { cfuncs: [f, g, h], cmems: [x, y] },
-          name2: { cfuncs: [f, j, k], cmems: [y, z] } }
+        { 'name1': { 'cfuncs': ['f', 'g', 'h'], 'cmems': ['x', 'y'] },
+          'name2': { 'cfuncs': ['f', 'j', 'k'], 'cmems': ['y', 'z'] } }
 
     Then `_cmss_inverse(cmss, 'cfuncs')` returns::
 
-        { f: [name1, name2], g: [name1], h: [name1], j: [name2], k: [name2] }
+        { 'f': ['name1', 'name2'],
+          'g': ['name1'],
+          'h': ['name1'],
+          'j': ['name2'],
+          'k': ['name2'] }
 
     and `_cmss_inverse(cmss, 'cmems')` returns::
 
-        { x: [name1], y: [name1, name2], z: [name2] }
+        { 'x': ['name1'], 'y': ['name1', 'name2'], z: ['name2'] }
 
-    Note that although it is written as list, list of "cmss name" above
+    Note that although it is written as list, set of "cmss name" above
     is actually set.
 
     Examples
