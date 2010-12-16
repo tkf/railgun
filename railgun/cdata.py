@@ -48,14 +48,12 @@ def cddec_parse(cdstr):
         raise ValueError("%s is invalid as c-data type declaration" % cdstr)
 
 
-def cmem(vname, cdt, **kwds):
+def cmem(cdt, vname, **kwds):
     """
     Declaration of C member
 
     Parameters
     ----------
-    vname : str
-        Name of C member
     cdt : class
         This class must have the following two attributes
 
@@ -69,6 +67,8 @@ def cmem(vname, cdt, **kwds):
             (instance of `ctypes.Structure` subclass).
             This is required only for instance of the class, so that
             you can set this in `cdt.__init__`.
+    vname : str
+        Name of C member
 
     """
     if not hasattr(cdt, '_ctype_'):
@@ -83,4 +83,6 @@ def cmem(vname, cdt, **kwds):
 
 
 def iscmem(cmem):
-    return hasattr(cmem, 'vname') and hasattr(cmem, 'cdt')
+    return (hasattr(cmem, 'vname') and
+            hasattr(cmem, 'cdt') and
+            hasattr(cmem, 'has_default'))

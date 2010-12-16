@@ -410,9 +410,9 @@ def test_cmem_object():
 
         _cmembers_ = [
             'num_i',
-            cmem('v1', Int1DimArrayAsObject),
-            cmem('v2', Int1DimArrayAsObject),
-            cmem('v3', Int1DimArrayAsObject),
+            cmem(Int1DimArrayAsObject, 'v1'),
+            cmem(Int1DimArrayAsObject, 'v2'),
+            cmem(Int1DimArrayAsObject, 'v3'),
             'int ans',
             ]
 
