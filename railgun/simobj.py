@@ -442,9 +442,9 @@ class MetaSimObject(type):
             { 'name1': { 'cfuncs': ['f', 'g', 'h'], 'cmems': ['x', 'y'] },
               'name2': { 'cfuncs': ['f', 'j', 'k'], 'cmems': ['y', 'z'] } }
 
-        Here, ``name1, name2`` are name of C member subset,
-        ``f, g, h, j, k`` are name of C functions, and
-        ``x, y, z`` are name of C members.
+        Here, ``name1, name2`` are the name of C member subset,
+        ``f, g, h, j, k`` are the name of C functions, and
+        ``x, y, z`` are the name of C members.
 
 
     Attributes to be set
