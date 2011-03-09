@@ -179,6 +179,50 @@
                    ...
                    ]
 
+   .. attribute:: SimObject._cmemsubsets_
+
+      dict of dict of list, optional
+      Definition of subset of C members for controlling which
+      C members to be loaded. Example::
+
+          { 'name1': { 'cfuncs': ['f', 'g', 'h'], 'cmems': ['x', 'y'] },
+            'name2': { 'cfuncs': ['f', 'j', 'k'], 'cmems': ['y', 'z'] } }
+
+      Here, ``name1, name2`` are the name of C member subset,
+      ``f, g, h, j, k`` are the name of C functions, and
+      ``x, y, z`` are the name of C members.
+
+   .. method:: SimObject._cwrap_{C_FUNC_NAME}(func)
+
+      This is optional. If you want to wrap C function ``C_FUNC_NAME``,
+      define this wrapper function.
+
+      Example::
+
+          class YourSimObj(SimObject):
+
+              _clibname_ = '...'
+              _clibdir_ = '...'
+              _cmembers_ = [
+                  'num_i',
+                  'int vec[i]',
+                  ]
+              _cfuncs_ = [
+                  'your_c_function',
+                  ]
+
+              def _cwrap_your_c_function(old_c_function):
+                  def your_c_function(self, *args, **kwds):
+                      old_c_function(self, *args, **kwds)
+                      return self.vec[:]  # return copy
+                  return your_c_function
+
+      After `your_c_function` is loaded from C library, your wrapper function
+      will be called like this::
+
+          your_c_function = _cwrap_your_c_function(your_c_function)
+
+
    .. method:: SimObject.setv(**kwds)
 
       This is used for setting values of C struct members.
