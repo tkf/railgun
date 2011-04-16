@@ -1,5 +1,6 @@
+from setuptools import setup
 import numpy
-from numpy.distutils.core import setup, Extension
+from numpy.distutils.core import Extension
 import railgun
 from railgun import __author__, __version__, __license__
 
