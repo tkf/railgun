@@ -1,0 +1,27 @@
+--- lode_cstructname.py	2011-04-17 15:39:05.942934998 +0900
++++ lode.py	2011-04-16 21:53:58.707407999 +0900
+@@ -1,6 +1,6 @@
+ from railgun import SimObject, relpath
+ 
+-class LinearOrdinaryDifferentialEquation(SimObject):  # != LinearODE
++class LinearODE(SimObject):
+     """
+     Solve D-dimensional linear ordinary differential equations
+ 
+@@ -14,7 +14,6 @@
+ 
+     _clibname_ = 'liblode.so'  # name of shared library
+     _clibdir_ = relpath('.', __file__)  # library directory
+-    _cstructname_ = 'LinearODE'  # specify the C struct name
+     _cmembers_ = [  # declaring members of struct
+         'num_d',  # num_* as size of array (no need to write `int`)
+         'num_s = 10000',  # setting default value
+@@ -30,7 +29,7 @@
+         ]
+ 
+ 
+-lode = LinearOrdinaryDifferentialEquation(num_d=2)  # set num_d
++lode = LinearODE(num_d=2)  # set num_d
+ lode.x[0] = [1, 0]  # access c-member "VAR" via lode.VAR
+ lode.a = [[0, 1], [-1, 0]]
+ x1 = lode.run().copy()
