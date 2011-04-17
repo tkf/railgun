@@ -27,7 +27,7 @@ class LinearODERK4(SimObject):
         cm.double(*['k%s_debug[s][d]' % s for s in '1234']) +
         cm.double(*['x%s_debug[s][d]' % s for s in '123'])
     )
-    _cfuncs_ = ["x run_{level | normal, debug }()"]
+    _cfuncs_ = ["x run_{mode | normal, debug}()"]
     _cmemsubsets_ = dict(
         debug=dict(
             funcs=['run_debug'],

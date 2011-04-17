@@ -12,16 +12,16 @@ C code (``lode_rk4.c``)
 .. literalinclude:: lode_rk4.c
    :language: c
 
-Running without intermediate variables
---------------------------------------
+Running on "normal mode"
+------------------------
 .. literalinclude:: run.py
    :language: python
 
 .. plot:: source/samples/lode_rk4/run.py
 
 
-Running with intermediate variables
------------------------------------
+Running on "debug mode"
+-----------------------
 .. literalinclude:: run_debug.py
    :language: python
 
