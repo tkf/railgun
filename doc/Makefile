@@ -134,4 +134,6 @@ doctest:
 
 
 samples:
-	for sdir in source/samples/*; do make -C $$sdir; done
+	for sdir in source/samples/*; do \
+		[ -e $$sdir/Makefile ] && make -C $$sdir; \
+		done
