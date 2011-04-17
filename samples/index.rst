@@ -6,4 +6,5 @@ Samples
    :glob:
 
    lode/*
+   lode_rk4/*
    */*
