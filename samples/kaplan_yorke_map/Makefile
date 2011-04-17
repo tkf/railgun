@@ -10,6 +10,6 @@ kaplan_yorke_map.o: kaplan_yorke_map.c
 	gcc -c $< -fPIC -O3 -ftree-vectorizer-verbose=1
 
 clean:
-	rm $(objs) $(slib)
+	-rm $(objs) $(slib)
 
 .PHONY: all clean

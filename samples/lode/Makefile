@@ -8,4 +8,4 @@ liblode_cfuncprefix.so: lode_cfuncprefix.c
 	$(CC) $(CFLAGS) $(CPPFLAGS) -Wall -Wextra -shared $< -o $@
 
 clean:
-	rm *.so
+	-rm *.so
