@@ -185,8 +185,8 @@
       Definition of subset of C members for controlling which
       C members to be loaded. Example::
 
-          { 'name1': { 'cfuncs': ['f', 'g', 'h'], 'cmems': ['x', 'y'] },
-            'name2': { 'cfuncs': ['f', 'j', 'k'], 'cmems': ['y', 'z'] } }
+          { 'name1': { 'funcs': ['f', 'g', 'h'], 'members': ['x', 'y'] },
+            'name2': { 'funcs': ['f', 'j', 'k'], 'members': ['y', 'z'] } }
 
       Here, ``name1, name2`` are the name of C member subset,
       ``f, g, h, j, k`` are the name of C functions, and
