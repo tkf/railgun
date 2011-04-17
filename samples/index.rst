@@ -5,4 +5,5 @@ Samples
    :maxdepth: 2
    :glob:
 
+   lode/*
    */*
