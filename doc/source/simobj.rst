@@ -1,18 +1,21 @@
 :class:`SimObject` --- A class loads everything you need from C shared library
 ==============================================================================
 
-.. module:: railgun
+.. class:: yourcode.YourSimObject
 
-
-.. class:: SimObject
-
-   A base class used for loading C shared library.
+   To load your C shared library, please define this class which
+   override :class:`railgun.SimObject`.
    You will need to define four attribute: :attr:`_clibname_`,
    :attr:`_clibdir_`, :attr:`_cmembers_` and :attr:`_cfuncs_`.
 
+   .. note::
+
+      In this document, :class:`yourcode.YourSimObject` means the class
+      *you need to define*. It is not the class in RailGun.
+
    Example::
 
-       class NameOfCStruct(SimObject):
+       class YourSimObject(SimObject):
            _clibname_ = 'name_of_shared_library.so'
            _clibdir_ = 'path/to/shared/library'
 
@@ -36,24 +39,24 @@
            def some_function(self, ...):
                ...
 
-   - You can override :meth:`SimObject.__init__`.
+   - You can override :meth:`railgun.SimObject.__init__`.
    - You can define additional python methods or members.
-     But be careful with name: :class:`SimObject` will overwrite
+     But be careful with name: :class:`railgun.SimObject` will overwrite
      the methods or members of your class with name in
      :attr:`_cmembers_` and :attr:`_cfuncs_`.
 
 
-   .. attribute:: SimObject._clibname_
+   .. attribute:: _clibname_
 
       Name of your C shared library.
 
-   .. attribute:: SimObject._clibdir_
+   .. attribute:: _clibdir_
 
       Path of the directory where your C library are.
       If you want to specify relative path from where
       this python module file are, you can use :func:`relpath`.
 
-   .. attribute:: SimObject._cmembers_
+   .. attribute:: _cmembers_
 
       This is a list of the definitions of C variables with
       following syntax::
@@ -96,9 +99,9 @@
               'double double_matrix[k][i] = -4.1',
               ]
 
-      See also: :func:`cmems`
+      See also: :func:`railgun.cmems`
 
-   .. attribute:: SimObject._cfuncs_
+   .. attribute:: _cfuncs_
 
       This is a list of the definitions of C functions with
       following syntax::
@@ -145,7 +148,7 @@
 
       See also: :ref:`how_to_write_cfunc`
 
-   .. attribute:: SimObject._cstructname_
+   .. attribute:: _cstructname_
 
       This is optional. This is used to specify the name of C struct
       explicitly::
@@ -158,12 +161,12 @@
                _cstructname_ = 'CStructName'  # this is name of c-struct
 
 
-   .. attribute:: SimObject._cfuncprefix_
+   .. attribute:: _cfuncprefix_
 
       This is optional. This is used to specify the prefix of C functions
       explicitly (default is name of C Struct + ``_``)::
 
-           class YourSimObj(SimObject):
+           class YourSimObject(SimObject):
                ...
                _cfuncprefix_ = 'MyPrefix'
                _cfuncs_ = [
@@ -171,7 +174,7 @@
                    ...
                    ]
 
-           class YourSimObj(SimObject):
+           class YourSimObject(SimObject):
                ...
                _cfuncprefix_ = ''
                _cfuncs_ = [
@@ -179,7 +182,7 @@
                    ...
                    ]
 
-   .. attribute:: SimObject._cmemsubsets_
+   .. attribute:: _cmemsubsets_
 
       dict of dict of list, optional
       Definition of subset of C members for controlling which
@@ -192,14 +195,14 @@
       ``f, g, h, j, k`` are the name of C functions, and
       ``x, y, z`` are the name of C members.
 
-   .. method:: SimObject._cwrap_{C_FUNC_NAME}(func)
+   .. method:: _cwrap_C_FUNC_NAME(func)
 
       This is optional. If you want to wrap C function ``C_FUNC_NAME``,
       define this wrapper function.
 
       Example::
 
-          class YourSimObj(SimObject):
+          class YourSimObject(SimObject):
 
               _clibname_ = '...'
               _clibdir_ = '...'
@@ -223,7 +226,11 @@
           your_c_function = _cwrap_your_c_function(your_c_function)
 
 
-   .. method:: SimObject.setv(**kwds)
+
+.. class:: railgun.SimObject
+
+
+   .. method:: setv(**kwds)
 
       This is used for setting values of C struct members.
 
@@ -239,7 +246,7 @@
            obj.var[0][1] = 1
 
 
-   .. method:: SimObject.getv(*args)
+   .. method:: getv(*args)
 
       Get the C variable by specifying the name
       (Following lines have same effects)::
@@ -256,7 +263,7 @@
            (a, c, c) = obj.getv('a, b, c')
 
 
-   .. method:: SimObject.num(*args)
+   .. method:: num(*args)
 
       Get the size along index
       (Following lines have same effects)::
