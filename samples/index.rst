@@ -8,5 +8,5 @@ Samples
    lode/*
    lode_rk4/*
    logistic_map/*
-   glsctypes/*
+   gslctypes/*
    */*
