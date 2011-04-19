@@ -1,6 +1,6 @@
 .. _logistic_map:
 
-Logistic map with noise additive (usage of :func:`railgun.cmem`)
+Logistic map with additive noise (usage of :func:`railgun.cmem`)
 ================================================================
 
 You will need the file ``gslctypes_rng.py`` (see :ref:`gslctypes`).
