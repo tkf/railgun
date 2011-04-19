@@ -3,3 +3,4 @@ build/
 dist/
 *.egg-info/
 MANIFEST
+doc/source/_templates

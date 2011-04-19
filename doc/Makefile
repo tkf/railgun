@@ -12,7 +12,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) source
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest samples samples-clean
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest samples samples-clean google-analytics-on google-analytics-off
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -139,3 +139,11 @@ samples-clean:
 	for sdir in source/samples/*; do \
 		[ -e $$sdir/Makefile ] && make -C $$sdir clean; \
 		done
+
+
+google-analytics-on:
+	@[ ! -e source/_templates ] && ln -s __templates source/_templates \
+		|| echo 'already on'
+
+google-analytics-off:
+	@[ -L source/_templates ] && rm source/_templates || echo 'not on'
