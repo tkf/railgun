@@ -30,6 +30,8 @@ DATA_TEST_REGEX = dict(
         ),
     RE_CFDEC_CHOSET=(
         RE_CFDEC_CHOSET, [
+            ("{ key | a, b, c }",
+             dict(key='key', choices='a, b, c ')),
             ("{key | a, b, c }",
              dict(key='key', choices='a, b, c ')),
             ("{key|a,b,c}",

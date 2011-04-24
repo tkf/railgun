@@ -7,7 +7,7 @@ RE_CFDEC_FUNC = re.compile(
     r"(?:(?P<ret>[\w]+) )?(?P<fname>[^\( ][^\(]*)\((?P<args>[^\)]*)\)"
     )  # matches "ret func(a, b, c)" as "RET FNAME(ARGS)"
 RE_CFDEC_CHOSET = re.compile(
-    r"{(?P<key>[a-zA-Z]\w*) *\| *(?P<choices>[\w, ]+)}",
+    r"{ *(?P<key>[a-zA-Z]\w*) *\| *(?P<choices>[\w, ]+)}",
     )  # matches "{key | a, b, c}" as "{KEY | CHOICES}"
 RE_CFDEC_CHOSET_SPLIT = re.compile(
     r"{[a-zA-Z]\w* *\| *[\w, ]+}",
