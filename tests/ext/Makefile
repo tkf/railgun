@@ -1,4 +1,4 @@
-compile_shared=$(CC) $(CFLAGS) $(CPPFLAGS) -Wall -Wextra -shared -fPIC
+compile_shared=$(CC) $(CFLAGS) $(CPPFLAGS) -Wall -shared -fPIC
 
 .PHONY: all
 all: \
