@@ -100,7 +100,7 @@ def test_cddec_idx_parse():
 
 def check_cddec_parse(cdstr, correct):
     ret = cddec_parse(cdstr)
-    dct = ret()
+    dct = ret.as_dict()
     eq_(dct, correct,
         msg='cddec_parse(%s) returns incorrect value' % cdstr)
 

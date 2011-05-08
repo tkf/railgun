@@ -1,10 +1,106 @@
 import re
-from railgun._helper import HybridObj
 
 RE_CDDEC = re.compile(
     r'(?:(?P<cdt>[\w]+) )?(?P<vname>\w+)(?P<idx>\[.*\])?'
     r'(?: *= *(?P<default>[\w\.\-+]*))?$',
     )  ## matches 'int a[i][j] = 3'
+
+
+class _CDataDeclaration(object):
+    """
+    C-data declaration
+    """
+
+    def as_dict(self):
+        keys = ["cdt", "vname", "valtype", "idx", "ndim", "default",
+                "has_default"]
+        return dict((k, getattr(self, k)) for k in keys if hasattr(self, k))
+
+    def _set_valtype_idx_ndim(self, idx):
+        if idx:
+            self.valtype = 'array'
+            self.idx = cddec_idx_parse(idx)
+            self.ndim = len(self.idx)
+        else:
+            self.valtype = 'scalar'
+            self.idx = ()
+            self.ndim = 0
+
+    def _set_default(self, default):
+        if default:
+            self.has_default = True
+            self.default = eval(default)
+        else:
+            self.has_default = False
+            self.default = None
+
+    def _set_cdt_vname(self, cdt, vname):
+        self.cdt = cdt
+        self.vname = vname
+        if vname.startswith('num_'):
+            if not (cdt != 'int' or cdt is not None):
+                raise ValueError ("type of '%s' should be int" % vname)
+            self.cdt = 'int'
+
+    @classmethod
+    def from_string(cls, cdstr):
+        """
+        Parse declaration of C-data from a string
+        """
+        if not isinstance(cdstr, basestring) and iscmem(cdstr):
+            return cdstr  # already parsed object
+        cdstr = cdstr.strip()
+        match = RE_CDDEC.match(cdstr)
+        if match:
+            return cls.from_groupdict(**match.groupdict())
+        else:
+            raise ValueError("%s is invalid as c-data type declaration" % cdstr)
+
+    @classmethod
+    def from_groupdict(cls, cdt, vname, idx, default):
+        parsed = cls()
+        parsed._set_cdt_vname(cdt, vname)
+        parsed._set_valtype_idx_ndim(idx)
+        parsed._set_default(default)
+        return parsed
+
+    @classmethod
+    def from_cdtclass(cls, cdt, vname, **kwds):
+        """
+        Declaration of C member
+
+        Parameters
+        ----------
+        cdt : class
+            This class must have the following two attributes
+
+            _ctype_ : ctype
+                It will be used for field of `SimObject._struct_`
+                (subclass of `ctypes.Structure`).
+                It must be an attribute of the *class* `cdt`,
+                ie., accessible via `cdt._ctype_`.
+            _cdata_ : data
+                It will be passed to `SimObject._struct_`
+                (instance of `ctypes.Structure` subclass).
+                This is required only for instance of the class, so that
+                you can set this in `cdt.__init__`.
+        vname : str
+            Name of C member
+
+        """
+        if not hasattr(cdt, '_ctype_'):
+            raise ValueError('%r (cdt of %s) does not have _ctype_ '
+                             'attribute' % (cdt, vname))
+        parsed = cls()
+        parsed.cdt = cdt
+        parsed.vname = vname
+        parsed.valtype = 'object'
+        if "default" in kwds:
+            parsed.has_default = True
+            parsed.default = kwds["default"]
+        else:
+            parsed.has_default = False
+        return parsed
 
 
 def cddec_idx_parse(idxtr):
@@ -16,73 +112,9 @@ def cddec_idx_parse(idxtr):
         return tuple(idxtr.strip('[]').split(']['))
 
 
-def cddec_parse(cdstr):
-    """
-    Parse declaration of data from a string
-    """
-    if not isinstance(cdstr, basestring) and iscmem(cdstr):
-        return cdstr  # already parsed object
-    cdstr = cdstr.strip()
-    match = RE_CDDEC.match(cdstr)
-    if match:
-        parsed = HybridObj(match.groupdict())
-        if parsed.idx:
-            parsed.valtype = 'array'
-            parsed.idx = cddec_idx_parse(parsed.idx)
-            parsed.ndim = len(parsed.idx)
-        else:
-            parsed.valtype = 'scalar'
-            parsed.idx = ()
-            parsed.ndim = 0
-        if parsed.vname.startswith('num_'):
-            if not (parsed.cdt != 'int' or parsed.cdt is not None):
-                raise ValueError ("type of '%s' should be int" % parsed.vname)
-            parsed.cdt = 'int'
-        if parsed.default:
-            parsed.has_default = True
-            parsed.default = eval(parsed.default)
-        else:
-            parsed.has_default = False
-        return parsed
-    else:
-        raise ValueError("%s is invalid as c-data type declaration" % cdstr)
-
-
-def cmem(cdt, vname, **kwds):
-    """
-    Declaration of C member
-
-    Parameters
-    ----------
-    cdt : class
-        This class must have the following two attributes
-
-        _ctype_ : ctype
-            It will be used for field of `SimObject._struct_`
-            (subclass of `ctypes.Structure`).
-            It must be an attribute of the *class* `cdt`,
-            ie., accessible via `cdt._ctype_`.
-        _cdata_ : data
-            It will be passed to `SimObject._struct_`
-            (instance of `ctypes.Structure` subclass).
-            This is required only for instance of the class, so that
-            you can set this in `cdt.__init__`.
-    vname : str
-        Name of C member
-
-    """
-    if not hasattr(cdt, '_ctype_'):
-        raise ValueError('%r (cdt of %s) does not have _ctype_ '
-                         'attribute' % (cdt, vname))
-    parsed = HybridObj(vname=vname, cdt=cdt, valtype='object', **kwds)
-    if 'default' in parsed:
-        parsed.has_default = True
-    else:
-        parsed.has_default = False
-    return parsed
+cddec_parse = _CDataDeclaration.from_string
+cmem = _CDataDeclaration.from_cdtclass
 
 
 def iscmem(cmem):
-    return (hasattr(cmem, 'vname') and
-            hasattr(cmem, 'cdt') and
-            hasattr(cmem, 'has_default'))
+    return isinstance(cmem, _CDataDeclaration)
