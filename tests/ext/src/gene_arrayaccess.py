@@ -28,18 +28,29 @@ CDT2CTYPE.update(float='float', double='double', longdouble='long double',
                  bool='bool', size_t='size_t')
 
 
-def idx_flat(dim, l_idx, prefix):
+def gene_idx(dim, l_idx):
     """
-    >>> idx_flat(1, 'i', 'num_')
+    >>> gene_idx(1, 'i')
     '[i]'
-    >>> idx_flat(2, 'ij', 'num_')
-    '[(i) * num_j + j]'
-    >>> idx_flat(3, 'ijk', 'num_')
-    '[((i) * num_j + j) * num_k + k]'
-    >>> idx_flat(4, 'ijkl', 'num_')
-    '[(((i) * num_j + j) * num_k + k) * num_l + l]'
+    >>> gene_idx(2, 'ij')
+    '[i][j]'
     """
+    return '[%s]' % ']['.join(l_idx[:dim])
 
+
+def gene_idx_flat(dim, l_idx, prefix):
+    """
+    >>> gene_idx_flat(1, 'i', 'num_')
+    '[i]'
+    >>> gene_idx_flat(2, 'ij', 'num_')
+    '[(i) * num_j + j]'
+    >>> gene_idx_flat(3, 'ijk', 'num_')
+    '[((i) * num_j + j) * num_k + k]'
+    >>> gene_idx_flat(4, 'ijkl', 'num_')
+    '[(((i) * num_j + j) * num_k + k) * num_l + l]'
+    >>> gene_idx_flat(2, 'ijkl', 'num_')
+    '[(i) * num_j + j]'
+    """
     def idxexpr(dim, l_idx, prefix):
         if dim == 1:
             return l_idx[0]
@@ -47,7 +58,28 @@ def idx_flat(dim, l_idx, prefix):
         z = l_idx[-1]
         return "(%(a)s) * %(p)s%(z)s + %(z)s" % dict(a=a, z=z, p=prefix)
 
-    return "[%s]" % idxexpr(dim, l_idx, prefix)
+    return "[%s]" % idxexpr(dim, l_idx[:dim], prefix)
+
+
+def gene_array_declaration(l_cdt, l_dim):
+    """
+    >>> gene_array_declaration(['int', 'double'], [1, 2])
+    ['int *int1d, **int2d;', 'double *double1d, **double2d;']
+    """
+    return ['%s %s;' % (CDT2CTYPE[cdt],
+                        ', '.join('*' * dim + cdt + '%dd' % dim
+                                  for dim in l_dim))
+            for cdt in l_cdt]
+
+
+def gene_array_declaration_flat(l_cdt, l_dim):
+    """
+    >>> gene_array_declaration_flat(['int', 'double'], [1, 2])
+    ['int *int1d, *int2d;', 'double *double1d, *double2d;']
+    """
+    return ['%s %s;' % (CDT2CTYPE[cdt],
+                        ', '.join('*' + cdt + '%dd' % dim for dim in l_dim))
+            for cdt in l_cdt]
 
 
 def gene_arrayaccess(filepath, nd, l_cdt, c99, carrtype=None):
@@ -58,19 +90,11 @@ def gene_arrayaccess(filepath, nd, l_cdt, c99, carrtype=None):
     args_ = [', '.join('int %s' % i for i in l_idx[:dim]) for dim in l_dim]
     l_ret = ['%s ret_%s;' % (CDT2CTYPE[cdt], cdt) for cdt in l_cdt]
     if carrtype == "flat":
-        idx_ = [idx_flat(dim, l_idx[:dim], "self->num_") for dim in l_dim]
-        l_arr = [
-            '%s %s;' % (
-                CDT2CTYPE[cdt],
-                ', '.join('*' + cdt + '%dd' % dim for dim in l_dim))
-            for cdt in l_cdt]
+        idx_ = [gene_idx_flat(dim, l_idx, "self->num_") for dim in l_dim]
+        l_arr = gene_array_declaration_flat(l_cdt, l_dim)
     else:
-        idx_ = ['[%s]' % ']['.join(l_idx[:dim]) for dim in l_dim]
-        l_arr = [
-            '%s %s;' % (
-                CDT2CTYPE[cdt],
-                ', '.join('*' * dim + cdt + '%dd' % dim for dim in l_dim))
-            for cdt in l_cdt]
+        idx_ = [gene_idx(dim, l_idx) for dim in l_dim]
+        l_arr = gene_array_declaration(l_cdt, l_dim)
     # include
     codefile.write('#include <stdlib.h>\n')
     if c99:
