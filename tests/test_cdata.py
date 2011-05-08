@@ -37,16 +37,19 @@ DATA_TEST_IDX = [
     ]
 
 
-def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None, valtype=None):
+def dict_cdec_parse(cdt, vname, idx=(), ndim=0, default=None, valtype=None,
+                    carrtype="iliffe"):
     if valtype is not None:
         return dict(cdt=cdt, vname=vname, valtype=valtype,
-                    has_default=default is not None)
+                    has_default=default is not None, carrtype=None)
     elif ndim == 0:
         valtype = 'scalar'
+        carrtype = None
     elif ndim > 0:
         valtype = 'array'
     return dict(cdt=cdt, vname=vname, idx=idx, ndim=ndim, default=default,
-                has_default=default is not None, valtype=valtype)
+                has_default=default is not None, valtype=valtype,
+                carrtype=carrtype)
 
 
 class DmyCDT(object):
@@ -63,6 +66,10 @@ DATA_TEST_CDEC_PARSE = [
     ("int a = 1", dict_cdec_parse('int', 'a', default=1)),
     ("int a[i] =2", dict_cdec_parse('int', 'a', tuple('i'), 1, 2)),
     ("int a[i][j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3)),
+    ("int a[i,j]", dict_cdec_parse('int', 'a', tuple('ij'), 2,
+                                   carrtype="flat")),
+    ("int a[i,j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3,
+                                     carrtype="flat")),
     ('num_i = 10', dict_cdec_parse('int', 'num_i', default=10)),
     (cmem(DmyCDT, 'obj'), dict_cdec_parse(DmyCDT, 'obj', valtype='object')),
     ]
@@ -88,7 +95,7 @@ def test_regex():
 
 
 def check_cddec_idx_parse(idxtr, dimtuple):
-    ret = cddec_idx_parse(idxtr)
+    ret = cddec_idx_parse(idxtr)[0]
     eq_(ret, dimtuple,
         msg='cddec_idx_parse(%r) = %r != %r' % (idxtr, ret, dimtuple))
 

@@ -11,15 +11,18 @@ class _CDataDeclaration(object):
     C-data declaration
     """
 
+    def __init__(self):
+        self.carrtype = None
+
     def as_dict(self):
         keys = ["cdt", "vname", "valtype", "idx", "ndim", "default",
-                "has_default"]
+                "has_default", "carrtype"]
         return dict((k, getattr(self, k)) for k in keys if hasattr(self, k))
 
     def _set_valtype_idx_ndim(self, idx):
         if idx:
             self.valtype = 'array'
-            self.idx = cddec_idx_parse(idx)
+            (self.idx, self.carrtype) = cddec_idx_parse(idx)
             self.ndim = len(self.idx)
         else:
             self.valtype = 'scalar'
@@ -107,9 +110,13 @@ def cddec_idx_parse(idxtr):
     """Parse string like '[i][j]' to ('i', 'j')"""
     idxtr = idxtr.strip()
     if idxtr == '':
-        return ()
+        return ((), None)
     else:
-        return tuple(idxtr.strip('[]').split(']['))
+        stripped = idxtr.strip('[]')  # "i][j][k" or "i,j,k"
+        if "," in stripped:
+            return (tuple(stripped.split(",")), "flat")
+        else:
+            return (tuple(stripped.split('][')), "iliffe")
 
 
 cddec_parse = _CDataDeclaration.from_string
