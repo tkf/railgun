@@ -101,7 +101,7 @@ def test_regex():
 
 def check_cfdec_parse(cfstr, correct, fnameargslist):
     ret = cfdec_parse(cfstr)
-    dct = subdict(ret(), *list(correct))  # exclude 'fnget'
+    dct = subdict(ret.as_dict(), *list(correct))  # exclude 'fnget'
     fnget = ret.fnget
     eq_(correct, dct, 'incorrect return for "%s"' % (cfstr))
     for (fname, args) in fnameargslist:
