@@ -62,7 +62,10 @@ def gene_cmem(cdt, funcfmt='%s'):
     """
     def cmem(*args):
         if len(args) == 1:
-            args = args[0].split(',')
+            if isinstance(args[0], basestring):
+                args = args[0].split(',')
+            else:
+                args = args[0]  # assume the first argument is iterative
         return ['%s %s' % (cdt, v.strip()) for v in args]
     func_name = funcfmt % cdt
     cmem.func_name = func_name

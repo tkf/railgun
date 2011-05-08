@@ -22,10 +22,10 @@ class LinearODERK4(SimObject):
         'double a[d][d]',  # num_d x num_d array
         'double x[s][d]',  # num_s x num_d array
     ] + (
-        cm.double(*['k%s[d]' % s for s in '1234']) +
-        cm.double(*['x%s[d]' % s for s in '123']) +
-        cm.double(*['k%s_debug[s][d]' % s for s in '1234']) +
-        cm.double(*['x%s_debug[s][d]' % s for s in '123'])
+        cm.double('k%s[d]' % s for s in '1234') +
+        cm.double('x%s[d]' % s for s in '123') +
+        cm.double('k%s_debug[s][d]' % s for s in '1234') +
+        cm.double('x%s_debug[s][d]' % s for s in '123')
     )
     _cfuncs_ = ["x run_{mode | normal, debug}()"]
     _cmemsubsets_ = dict(
