@@ -8,7 +8,34 @@ RE_CDDEC = re.compile(
 
 class _CDataDeclaration(object):
     """
-    C-data declaration
+    A class to sotre parsed information of C-data declaration
+
+    Attributes
+    ----------
+    cdt : str
+        C Data Type
+    vname : str
+        variable name
+    valtype : {'scalar', 'array', 'object'}
+        type of the variable.
+        'object' is not basic c type, but user-defined variable type
+    idx : tuple of str
+        e.g., `('i', 'j', 'k')` for 'a[i][j][k]'
+    ndim : int
+        this is `len(idx)`
+    default : obj
+        default value
+    has_default : bool
+        True if `default` is specified, False otherwise.
+    carrtype : {'iliffe', 'flat'}
+        'iliffe'
+            array data structure is "Iliffe vector" or "display".
+            you can access c array via `a[i][j]`.
+            see: http://en.wikipedia.org/wiki/Iliffe_vector
+        'flat'
+            array data structure is flattened array or one dimensional
+            array. you can access c array via `a[i * num_j + j]`.
+
     """
 
     def __init__(self):
