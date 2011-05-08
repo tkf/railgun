@@ -63,6 +63,7 @@ DATA_TEST_CDEC_PARSE = [
     ("int aA1", dict_cdec_parse('int', 'aA1')),
     ("int a[i]", dict_cdec_parse('int', 'a', tuple('i'), 1)),
     ("int a[i][j]", dict_cdec_parse('int', 'a', tuple('ij'), 2)),
+    ("int a[ i ][ j][k ]", dict_cdec_parse('int', 'a', tuple('ijk'), 3)),
     ("int a = 1", dict_cdec_parse('int', 'a', default=1)),
     ("int a[i] =2", dict_cdec_parse('int', 'a', tuple('i'), 1, 2)),
     ("int a[i][j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3)),
@@ -70,6 +71,8 @@ DATA_TEST_CDEC_PARSE = [
                                    carrtype="flat")),
     ("int a[i,j]=3", dict_cdec_parse('int', 'a', tuple('ij'), 2, 3,
                                      carrtype="flat")),
+    ("int a[ i , j,k ]", dict_cdec_parse('int', 'a', tuple('ijk'), 3,
+                                         carrtype="flat")),
     ('num_i = 10', dict_cdec_parse('int', 'num_i', default=10)),
     (cmem(DmyCDT, 'obj'), dict_cdec_parse(DmyCDT, 'obj', valtype='object')),
     ]

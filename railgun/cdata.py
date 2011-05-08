@@ -141,9 +141,9 @@ def cddec_idx_parse(idxtr):
     else:
         stripped = idxtr.strip('[]')  # "i][j][k" or "i,j,k"
         if "," in stripped:
-            return (tuple(stripped.split(",")), "flat")
+            return (tuple(s.strip() for s in stripped.split(",")), "flat")
         else:
-            return (tuple(stripped.split('][')), "iliffe")
+            return (tuple(s.strip() for s in stripped.split('][')), "iliffe")
 
 
 cddec_parse = _CDataDeclaration.from_string
