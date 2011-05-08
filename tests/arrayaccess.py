@@ -26,7 +26,7 @@ def get_str_get_array(cdt, dim):
     return 'get_%s%dd(%s)' % (cdt, dim, args)
 
 
-def get_str_cddec(cdt, dim):
+def get_str_cddec(cdt, dim, carrtype=None):
     """
     Get c-data declaration '{int,double,...} {int,double,...}{1,2,..}[i][j]...'
 
@@ -34,13 +34,18 @@ def get_str_cddec(cdt, dim):
     'int int1d[i]'
     >>> get_str_cddec('int', 2)
     'int int2d[i][j]'
+    >>> get_str_cddec('int', 2, 'flat')
+    'int int2d[i,j]'
     >>> get_str_cddec('double', 1)
     'double double1d[i]'
     >>> get_str_cddec('double', 2)
     'double double2d[i][j]'
 
     """
-    args = ']['.join(LIST_IDX[:dim])
+    if carrtype == "flat":
+        args = ','.join(LIST_IDX[:dim])
+    else:
+        args = ']['.join(LIST_IDX[:dim])
     return '%s %s%dd[%s]' % (cdt, cdt, dim, args)
 
 
@@ -57,18 +62,24 @@ def gene_nums(nd):
     return ['num_%s' % data for data in LIST_IDX[:nd]]
 
 
-def gene_cmembers(nd, list_cdt):
+def gene_cmembers(nd, list_cdt, carrtype=None):
     """
     Get cmembers given maximum dimension and list of CDT (c data type)
 
-    >>> gene_cmembers(2, ['int', 'double'])
-    ['num_i', 'num_j', 'int ret_int', 'double ret_double', 'int int1d[i]', 'int int2d[i][j]', 'double double1d[i]', 'double double2d[i][j]']
+    >>> gene_cmembers(2, ['int', 'double'])  #doctest: +NORMALIZE_WHITESPACE
+    ['num_i', 'num_j', 'int ret_int', 'double ret_double',
+     'int int1d[i]', 'int int2d[i][j]',
+     'double double1d[i]', 'double double2d[i][j]']
+    >>> gene_cmembers(2, ['int', 'double'], 'flat')  #doctest: +NORMALIZE_WHITESPACE
+    ['num_i', 'num_j', 'int ret_int', 'double ret_double',
+     'int int1d[i]', 'int int2d[i,j]',
+     'double double1d[i]', 'double double2d[i,j]']
 
     """
     return (
         gene_nums(nd) +
         ['%(cdt)s ret_%(cdt)s' % dict(cdt=cdt) for cdt in list_cdt] +
-        [get_str_cddec(cdt, dim)
+        [get_str_cddec(cdt, dim, carrtype)
          for cdt in list_cdt for dim in range(1, 1 + nd)]
         )
 
@@ -87,11 +98,11 @@ def alpharange(*args):
     return mchr(numpy.arange(*args))
 
 
-def gene_class_ArrayAccess(clibname, nd, _list_cdt):
+def gene_class_ArrayAccess(clibname, nd, _list_cdt, carrtype=None):
     class ArrayAccess(SimObject):
         _clibname_ = clibname
         _clibdir_ = relpath('ext/build', __file__)
-        _cmembers_ = gene_cmembers(nd, _list_cdt)
+        _cmembers_ = gene_cmembers(nd, _list_cdt, carrtype)
         _cfuncs_ = gene_cfuncs(nd, _list_cdt)
         num_names = gene_nums(nd)
         ndim = nd
@@ -127,7 +138,7 @@ def gene_class_ArrayAccess(clibname, nd, _list_cdt):
 
 
 def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim,
-                      _calloc_=None):
+                      _calloc_=None, carrtype=None):
     """Check C side array access"""
     if cdt in ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
                'longlong', 'ulonglong', 'bool', 'size_t']:
@@ -136,7 +147,7 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim,
         ass_eq = assert_almost_equal
 
     ArrayAccess = gene_class_ArrayAccess(
-        clibname, len(list_num), list_cdt)
+        clibname, len(list_num), list_cdt, carrtype)
     num_dict = dict(zip(ArrayAccess.num_names, list_num))  # {num_i: 6, ...}
     if _calloc_ is not None:
         num_dict.update(_calloc_=_calloc_)
@@ -159,10 +170,10 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim,
     assert_equal(garr2, arr)
 
 
-def check_num(clibname, list_num, list_cdt):
+def check_num(clibname, list_num, list_cdt, carrtype=None):
     """Check SimObject.num()"""
     ArrayAccess = gene_class_ArrayAccess(
-        clibname, len(list_num), list_cdt)
+        clibname, len(list_num), list_cdt, carrtype)
     num_dict = dict(zip(ArrayAccess.num_names, list_num))
     aa = ArrayAccess(**num_dict)
     nd = len(list_num)

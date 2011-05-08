@@ -28,19 +28,49 @@ CDT2CTYPE.update(float='float', double='double', longdouble='long double',
                  bool='bool', size_t='size_t')
 
 
-def gene_arrayaccess(filepath, nd, l_cdt, c99):
+def idx_flat(dim, l_idx, prefix):
+    """
+    >>> idx_flat(1, 'i', 'num_')
+    '[i]'
+    >>> idx_flat(2, 'ij', 'num_')
+    '[(i) * num_j + j]'
+    >>> idx_flat(3, 'ijk', 'num_')
+    '[((i) * num_j + j) * num_k + k]'
+    >>> idx_flat(4, 'ijkl', 'num_')
+    '[(((i) * num_j + j) * num_k + k) * num_l + l]'
+    """
+
+    def idxexpr(dim, l_idx, prefix):
+        if dim == 1:
+            return l_idx[0]
+        a = idxexpr(dim - 1, l_idx[:-1], prefix)
+        z = l_idx[-1]
+        return "(%(a)s) * %(p)s%(z)s + %(z)s" % dict(a=a, z=z, p=prefix)
+
+    return "[%s]" % idxexpr(dim, l_idx, prefix)
+
+
+def gene_arrayaccess(filepath, nd, l_cdt, c99, carrtype=None):
     codefile = file(filepath, 'w')
 
     l_dim = range(1, 1 + nd)
     l_idx = LIST_INDEX[:nd]
     args_ = [', '.join('int %s' % i for i in l_idx[:dim]) for dim in l_dim]
-    idx_ = ['[%s]' % ']['.join(l_idx[:dim]) for dim in l_dim]
     l_ret = ['%s ret_%s;' % (CDT2CTYPE[cdt], cdt) for cdt in l_cdt]
-    l_arr = [
-        '%s %s;' % (
-            CDT2CTYPE[cdt],
-            ', '.join('*' * dim + cdt + '%dd' % dim for dim in l_dim))
-        for cdt in l_cdt]
+    if carrtype == "flat":
+        idx_ = [idx_flat(dim, l_idx[:dim], "self->num_") for dim in l_dim]
+        l_arr = [
+            '%s %s;' % (
+                CDT2CTYPE[cdt],
+                ', '.join('*' + cdt + '%dd' % dim for dim in l_dim))
+            for cdt in l_cdt]
+    else:
+        idx_ = ['[%s]' % ']['.join(l_idx[:dim]) for dim in l_dim]
+        l_arr = [
+            '%s %s;' % (
+                CDT2CTYPE[cdt],
+                ', '.join('*' * dim + cdt + '%dd' % dim for dim in l_dim))
+            for cdt in l_cdt]
     # include
     codefile.write('#include <stdlib.h>\n')
     if c99:
@@ -62,19 +92,20 @@ def gene_arrayaccess(filepath, nd, l_cdt, c99):
         )
 
 
-def main(filepath, c99):
+def main(filepath, c99, carrtype):
     nd = 5
     l_cdt = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
              'float', 'double', 'longdouble', 'size_t']
     if c99:
         l_cdt += ['longlong', 'ulonglong', 'bool']
-    gene_arrayaccess(filepath, nd, l_cdt, c99)
+    gene_arrayaccess(filepath, nd, l_cdt, c99, carrtype)
 
 
 if __name__ == '__main__':
     from optparse import OptionParser
     parser = OptionParser()
     parser.add_option("--c99", default=False, action="store_true")
+    parser.add_option("--carrtype")
     (opts, args) = parser.parse_args()
     filepath = args[0]
-    main(filepath, opts.c99)
+    main(filepath, opts.c99, opts.carrtype)

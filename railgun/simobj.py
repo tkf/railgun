@@ -377,7 +377,10 @@ def get_struct_class(cmems_parsed_list, cstructname):
         if parsed.valtype == 'object':
             fields.append((parsed.vname, parsed.cdt._ctype_))
         else:
-            ctype = POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim)
+            if parsed.carrtype == "flat":
+                ctype = POINTER(CDT2CTYPE[parsed.cdt])
+            else:
+                ctype = POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim)
             fields.append((parsed.vname, ctype))
 
     class StructClass(Structure):
@@ -679,7 +682,9 @@ class SimObject(object):
                 dtype = CDT2DTYPE[parsed.cdt]
                 arr = numpy.zeros(shape, dtype=dtype)
                 self._cdatastore_[vname] = arr
-                if self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
+                if parsed.carrtype == "flat":
+                    ptr = arr.ctypes.data_as(POINTER(CDT2CTYPE[parsed.cdt]))
+                elif self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
                     cs = cstyle.CStyle(arr)
                     self._cdatastore_['CStyle:%s' % vname] = cs
                     ptr = cast(
