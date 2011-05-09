@@ -76,8 +76,21 @@
           `Relationships among C Data Type (CDT), numpy dtype and ctypes`_.
       **INDEX**: index, optional
           If the variable is an array, **INDEX** should be specified.
-          For the array with shape ``num_i1`` x ``num_i2`` x ... x `num_iN`,
-          **INDEX** should be ``[i1][i2]...[iN]``.
+          For the array with shape ``num_i1`` x ``num_i2`` x ... x ``num_iN``,
+          **INDEX** should be ``[i1][i2]...[iN]`` or ``[i1,i2,...,iN]``.
+
+          ``[i1][i2]...[iN]``: multidimensional array
+              You can access ``a[i][j]`` as ``self->a[i][j]`` from your C
+              code. This array data structure is called "`Iliffe vector`_" or
+              "display". Strictly speaking, this is not equivalent to
+              multidimensional array, but you can use as if it is.
+          ``[i1,i2,...,iN]``: flattened array
+              You can access ``a[i][j]`` as ``self->a[i * self->num_j + j]``
+              from your C code. Specifying correct index in C code is up to
+              you. Maybe you should use macro or inline function.
+
+          .. _`Iliffe vector`: http://en.wikipedia.org/wiki/Iliffe_vector
+
       **DEFAULT**: a number, optional
           A default number for the variable. If **VAR_NAME** is
           an array, it will be filled with this value when it is created.
