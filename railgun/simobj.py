@@ -268,8 +268,11 @@ def gene_cfpywrap(attrs, cfdec):
             else:
                 return
         else:
-            raise RuntimeError('c-function %s() terminates with code %d'
-                               % (cfname, rcode))
+            if rcode in self._cerrors_:
+                raise self._cerrors_[rcode]
+            else:
+                raise RuntimeError('c-function %s() terminates with code %d'
+                                   % (cfname, rcode))
     cfpywrap.func_name = cfdec.fname
     # wrap it if there is wrap function
     wrap_name = '_cwrap_%s' % cfdec.fname
@@ -542,6 +545,7 @@ class MetaSimObject(type):
 class SimObject(object):
     __metaclass__ = MetaSimObject
     _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
+    _cerrors_ = {}
 
     def __init__(self, **kwds):
         """

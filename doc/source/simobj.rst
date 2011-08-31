@@ -238,6 +238,39 @@
 
           your_c_function = _cwrap_your_c_function(your_c_function)
 
+   .. attribute:: _cerrors_
+
+      This is optional.
+      When C function returns non-zero value, RailGun raises error
+      which just tells the value returned (error code).
+      To make the error message readable, or to handle the error
+      better, you may want to use this attribute.
+
+      If C function returns the non-zero value ``error_code``, and it
+      is found ``_cerrors_``, RailGun will raise the error
+      ``_cerrors_[error_code]``.
+
+      Examples::
+
+          class YourSimObject(SimObject):
+
+              _clibname_ = '...'
+              _clibdir_ = '...'
+              _cmembers_ = [...]
+              _cfuncs_ = [...]
+
+              class YourExceptionClass(Exception):
+                  pass
+
+              _cerrors_ = {
+                  # set exception
+                  1: RuntimeError('error code 1 is raised'),
+                  # you can use your own exception class
+                  2: YourExceptionClass('your error message'),
+                  }
+
+      .. versionadded:: 0.1.7
+
 
 
 .. class:: railgun.SimObject
