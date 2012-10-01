@@ -3,9 +3,9 @@ python:
   - "2.6"
   - "2.7"
 before_install:
-  - pip install nose
-  - pip install numpy
-  - pip install matplotlib
-  - pip install sphinx
+  # As numpy is needed for running setup.py, it must be installed
+  # *before* running tox
+  pip --quiet install numpy
 script:
-  tools/railgun-ci.sh
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then tox -e py26 /tmp; fi
+  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then tox -e py27 /tmp; fi
