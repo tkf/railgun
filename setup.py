@@ -17,7 +17,7 @@ setup(
     keywords='numerical simulation, research, ctypes, numpy, c',
     license=__license__,
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux",
