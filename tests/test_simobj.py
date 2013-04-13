@@ -314,7 +314,8 @@ def test_empty_cfuncprefix():
     yield (raises_AttributeError, None)
 
 
-def test_fixed_shape():
+class TestVectCalcFixedShape(unittest.TestCase):
+
     """
     Array c-member can have fixed-shape
     """
@@ -333,12 +334,13 @@ def test_fixed_shape():
 
         _cfuncs_ = []
 
-    for num_i in range(4, 7):
-        vc = VectCalc(num_i=num_i)
-        assert vc.num("i") == num_i, 'vc.num("i") == num_i'
-        assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
-        assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
-        assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
+    def test(self):
+        for num_i in range(4, 7):
+            vc = self.VectCalc(num_i=num_i)
+            assert vc.num("i") == num_i, 'vc.num("i") == num_i'
+            assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
+            assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
+            assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
 
 
 def test_cmemsubset():
