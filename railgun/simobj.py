@@ -578,6 +578,7 @@ class SimObject(object):
 
     def __setstate__(self, state):
         (attrs, kwds) = state
+        self._cmemsubsets_parsed_ = attrs.pop('_cmemsubsets_parsed_')
         self._set_all(**kwds)
         self.__dict__.update(attrs)
 
