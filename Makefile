@@ -4,6 +4,15 @@ PROJECT = railgun
 test: cog
 	tox
 
+inplace-test: cog build-inplace test-ext
+	nosetests --with-doctest --with-xunit railgun tests
+
+build-inplace:
+	python setup.py build_ext -i
+
+test-ext:
+	make --directory=tests/ext/
+
 clean: clean-pycache
 	rm -rf *.egg-info .tox MANIFEST
 
