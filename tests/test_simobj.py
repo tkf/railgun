@@ -334,7 +334,7 @@ def test_fixed_shape():
 
         _cfuncs_ = []
 
-    for num_i in range(4,7):
+    for num_i in range(4, 7):
         vc = VectCalc(num_i=num_i)
         assert vc.num("i") == num_i, 'vc.num("i") == num_i'
         assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
@@ -400,6 +400,7 @@ def test_cmem_object():
 
     class Int1DimArrayAsObject(object):
         _ctype_ = POINTER(CDT2CTYPE['int'])
+
         def __init__(self, *args, **kwds):
             self.arr = arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
             self._cdata_ = arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
