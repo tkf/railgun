@@ -636,6 +636,11 @@ class SimObject(object):
         self._set_all(**kwds)
         self.__dict__.update(attrs)
 
+    def __copy__(self):
+        clone = self.__class__.__new__(self.__class__)
+        clone.__dict__.update(self.__dict__)
+        return clone
+
     def setv(self, **kwds):
         """
         Set variable named 'VAR' by ``set(VAR=VALUE)``
