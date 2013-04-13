@@ -129,6 +129,47 @@ class TestVectCalc(BaseTestVectCalc):
             ok_(v2 is vc.v2)
             ok_(v3 is vc.v3)
 
+    def test_check_argument_validity(self):
+        (vc, num_i, _, _, _) = self.mems()
+        subvec_error = raises(ValueError)(vc.subvec)
+        # no error
+        vc.subvec()
+        vc.subvec(i1=1, i2=num_i - 2)
+        # error
+        subvec_error(i1=-1)
+        subvec_error(i2=-1)
+        subvec_error(i1=num_i + 1)
+        subvec_error(i2=num_i + 1)
+
+    @classmethod
+    def check_init_kwds(cls, kwds):
+        vc = cls.simclass(**kwds)
+        for (key, desired) in kwds.iteritems():
+            if vc.array_alias(key):
+                pass
+            else:
+                actual = vc.getv(key)
+                if (isinstance(actual, numpy.ndarray) and
+                    not isinstance(desired, numpy.ndarray)):
+                    d = numpy.ones_like(actual) * desired
+                    assert_equal(actual, d)
+                else:
+                    assert_equal(actual, desired)
+
+    def test_init_kwds(self):
+        """Test if SimObject.__init__ works with various keywords"""
+        self.check_init_kwds({})
+        self.check_init_kwds(dict(num_i=10))
+        self.check_init_kwds(dict(ans=0))
+        self.check_init_kwds(dict(v1=0))
+        self.check_init_kwds(dict(num_i=5, v1=[2, 3, 5, 7, 11]))
+        self.check_init_kwds(dict(v1_0=0, v2_0=0, v3_0=0))
+        raises(ValueError)(self.check_init_kwds)(dict(num_i=5, v1=[2, 3, 5]))
+        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v1_10=0))
+        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v2_10=0))
+        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v3_10=0))
+        raises(ValueError)(self.check_init_kwds)(dict(undefinedvar=0))
+
 
 class TestVectCalcWithCwrap(BaseTestVectCalc):
 
@@ -165,22 +206,6 @@ class TestVectCalcWithCwrap(BaseTestVectCalc):
                         (key, i1, i2))
 
 
-def test_check_argument_validity():
-    vc = VectCalc()
-    num_i = vc.num_i
-    def subvec_noerror(kwds):
-        return vc.subvec(**kwds)
-    subvec_error = raises(ValueError)(subvec_noerror)
-    # no error
-    yield (subvec_noerror, {})
-    yield (subvec_noerror, dict(i1=1, i2=num_i - 2))
-    # error
-    yield (subvec_error, dict(i1=-1))
-    yield (subvec_error, dict(i2=-1))
-    yield (subvec_error, dict(i1=num_i + 1))
-    yield (subvec_error, dict(i2=num_i + 1))
-
-
 def check_init_wo_num(kwds):
     class VectCalc(SimObject):
         _clibname_ = 'vectclac.so'
@@ -209,36 +234,6 @@ def test_init_wo_num():
     yield (raises(ValueError)(check_init_wo_num), {})
     yield (check_init_wo_num, dict(num_i=0))
     yield (check_init_wo_num, dict(num_i=1))
-
-
-def check_init_kwds(kwds):
-    vc = VectCalc(**kwds)
-    for (key, desired) in kwds.iteritems():
-        if vc.array_alias(key):
-            pass
-        else:
-            actual = vc.getv(key)
-            if (isinstance(actual, numpy.ndarray) and
-                not isinstance(desired, numpy.ndarray)):
-                d = numpy.ones_like(actual) * desired
-                assert_equal(actual, d)
-            else:
-                assert_equal(actual, desired)
-
-
-def test_init_kwds():
-    """Test if SimObject.__init__ works with various keywords"""
-    yield (check_init_kwds, {})
-    yield (check_init_kwds, dict(num_i=10))
-    yield (check_init_kwds, dict(ans=0))
-    yield (check_init_kwds, dict(v1=0))
-    yield (check_init_kwds, dict(num_i=5, v1=[2,3,5,7,11]))
-    yield (raises(ValueError)(check_init_kwds), dict(num_i=5, v1=[2,3,5]))
-    yield (check_init_kwds, dict(v1_0=0, v2_0=0, v3_0=0))
-    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v1_10=0))
-    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v2_10=0))
-    yield (raises(IndexError)(check_init_kwds), dict(num_i=10, v3_10=0))
-    yield (raises(ValueError)(check_init_kwds), dict(undefinedvar=0))
 
 
 def test_set_array_alias():
