@@ -36,10 +36,14 @@ class BaseTestVectCalc(unittest.TestCase):
     Test `SimObject` using its example class `VectCalc`.
     """
 
-    simclass = VectCalc
+    VectCalc = VectCalc
+
+    def make(self, *args, **kwds):
+        return self._simclass(*args, **kwds)
 
     def setUp(self):
-        self.vc = self.simclass()
+        self._simclass = self.VectCalc
+        self.vc = self.make()
 
         # Make sure subclass does not use self.VectCalc to make objects
         self.VectCalc = None
@@ -144,9 +148,8 @@ class TestVectCalc(BaseTestVectCalc):
         subvec_error(i1=num_i + 1)
         subvec_error(i2=num_i + 1)
 
-    @classmethod
-    def check_init_kwds(cls, kwds):
-        vc = cls.simclass(**kwds)
+    def check_init_kwds(self, kwds):
+        vc = self.make(**kwds)
         for (key, desired) in kwds.iteritems():
             if vc.array_alias(key):
                 pass
@@ -174,7 +177,7 @@ class TestVectCalc(BaseTestVectCalc):
         raises(ValueError)(self.check_init_kwds)(dict(undefinedvar=0))
 
     def test_set_array_alias(self):
-        vc = self.simclass(num_i=5)
+        vc = self.make(num_i=5)
 
         desired_v1 = numpy.ones_like(vc.v1)
         desired_v1[:] = [10, 11, 12, 13, 14]
@@ -197,7 +200,7 @@ class TestVectCalcWithCwrap(BaseTestVectCalc):
                 return self.v3[i1:i2]
             return subvec
 
-    simclass = VectCalcWithCwrap
+    VectCalc = VectCalcWithCwrap
 
     def test_cwrap_with_subvec(self):
         vc = self.vc
@@ -339,7 +342,7 @@ class TestVectCalcFixedShape(BaseTestVectCalc):
 
     def test(self):
         for num_i in range(4, 7):
-            vc = self.simclass(num_i=num_i)
+            vc = self.make(num_i=num_i)
             assert vc.num("i") == num_i, 'vc.num("i") == num_i'
             assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
             assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
@@ -378,10 +381,8 @@ class TestVectCalcCMemSubSet(BaseTestVectCalc):
                      default=True),
             )
 
-    simclass = VectCalc
-
     def test_default(self):
-        vc = self.simclass()
+        vc = self.make()
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=True))
         vc.subvec_dot()
         raises(ValueError)(vc.vec)()
@@ -389,7 +390,7 @@ class TestVectCalcCMemSubSet(BaseTestVectCalc):
         raises(KeyError)(vc.getv)('v3')
 
     def test_cmemsubsets_dot(self):
-        vc = self.simclass(_cmemsubsets_dot=False)
+        vc = self.make(_cmemsubsets_dot=False)
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=False))
         raises(ValueError)(vc.subvec_dot)()
         raises(ValueError)(vc.vec)()
@@ -398,7 +399,7 @@ class TestVectCalcCMemSubSet(BaseTestVectCalc):
         raises(KeyError)(vc.getv)('v3')
 
     def test_cmemsubsets_vec(self):
-        vc = self.simclass(_cmemsubsets_vec=True)
+        vc = self.make(_cmemsubsets_vec=True)
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=True, dot=True))
         vc.subvec_dot()
         vc.vec()
@@ -439,8 +440,6 @@ class TestVectCalcCMemObject(BaseTestVectCalc):
             self.v1 = Int1DimArrayAsObject([0] * num_i)
             self.v2 = Int1DimArrayAsObject([0] * num_i)
             self.v3 = Int1DimArrayAsObject([0] * num_i)
-
-    simclass = VectCalc
 
     def test(self):
         vc = self.vc
