@@ -317,7 +317,7 @@ def test_empty_cfuncprefix():
     yield (raises_AttributeError, None)
 
 
-class TestVectCalcFixedShape(unittest.TestCase):
+class TestVectCalcFixedShape(BaseTestVectCalc):
 
     """
     Array c-member can have fixed-shape
@@ -339,7 +339,7 @@ class TestVectCalcFixedShape(unittest.TestCase):
 
     def test(self):
         for num_i in range(4, 7):
-            vc = self.VectCalc(num_i=num_i)
+            vc = self.simclass(num_i=num_i)
             assert vc.num("i") == num_i, 'vc.num("i") == num_i'
             assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
             assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
