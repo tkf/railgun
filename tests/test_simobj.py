@@ -442,7 +442,7 @@ def test_cmem_object():
 class TestCopy(unittest.TestCase):
 
     copyfunc = staticmethod(copy.copy)
-    clone_v1 = 20
+    clone_v1 = [20] * 10
 
     def test_copy(self):
         orig = VectCalc()
@@ -455,4 +455,4 @@ class TestCopy(unittest.TestCase):
 class TestDeepCopy(TestCopy):
 
     copyfunc = staticmethod(copy.deepcopy)
-    clone_v1 = 10
+    clone_v1 = [10] * 10
