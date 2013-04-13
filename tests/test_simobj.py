@@ -41,6 +41,9 @@ class BaseTestVectCalc(unittest.TestCase):
     def setUp(self):
         self.vc = self.simclass()
 
+        # Make sure subclass does not use self.VectCalc to make objects
+        self.VectCalc = None
+
     def mems(self):
         return [self.vc] + self.vc.getv('num_i', 'v1', 'v2', 'v3')
 
@@ -343,7 +346,7 @@ class TestVectCalcFixedShape(unittest.TestCase):
             assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
 
 
-class TestVectCalcCMemSubSet(unittest.TestCase):
+class TestVectCalcCMemSubSet(BaseTestVectCalc):
 
     class VectCalc(SimObject):
         _clibname_ = 'vectclac.so'
@@ -375,8 +378,10 @@ class TestVectCalcCMemSubSet(unittest.TestCase):
                      default=True),
             )
 
+    simclass = VectCalc
+
     def test_default(self):
-        vc = self.VectCalc()
+        vc = self.simclass()
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=True))
         vc.subvec_dot()
         raises(ValueError)(vc.vec)()
@@ -384,7 +389,7 @@ class TestVectCalcCMemSubSet(unittest.TestCase):
         raises(KeyError)(vc.getv)('v3')
 
     def test_cmemsubsets_dot(self):
-        vc = self.VectCalc(_cmemsubsets_dot=False)
+        vc = self.simclass(_cmemsubsets_dot=False)
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=False))
         raises(ValueError)(vc.subvec_dot)()
         raises(ValueError)(vc.vec)()
@@ -393,7 +398,7 @@ class TestVectCalcCMemSubSet(unittest.TestCase):
         raises(KeyError)(vc.getv)('v3')
 
     def test_cmemsubsets_vec(self):
-        vc = self.VectCalc(_cmemsubsets_vec=True)
+        vc = self.simclass(_cmemsubsets_vec=True)
         eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=True, dot=True))
         vc.subvec_dot()
         vc.vec()
