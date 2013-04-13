@@ -170,6 +170,16 @@ class TestVectCalc(BaseTestVectCalc):
         raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v3_10=0))
         raises(ValueError)(self.check_init_kwds)(dict(undefinedvar=0))
 
+    def test_set_array_alias(self):
+        vc = self.simclass(num_i=5)
+
+        desired_v1 = numpy.ones_like(vc.v1)
+        desired_v1[:] = [10, 11, 12, 13, 14]
+        vc.setv(v1_0=10, v1_1=11, v1_2=12, v1_3=13, v1_4=14)
+        assert_equal(vc.v1, desired_v1)
+
+        raises(IndexError)(vc.setv)(v1_5=0)
+
 
 class TestVectCalcWithCwrap(BaseTestVectCalc):
 
@@ -234,17 +244,6 @@ def test_init_wo_num():
     yield (raises(ValueError)(check_init_wo_num), {})
     yield (check_init_wo_num, dict(num_i=0))
     yield (check_init_wo_num, dict(num_i=1))
-
-
-def test_set_array_alias():
-    vc = VectCalc(num_i=5)
-
-    desired_v1 = numpy.ones_like(vc.v1)
-    desired_v1[:] = [10, 11, 12, 13, 14]
-    vc.setv(v1_0=10, v1_1=11, v1_2=12, v1_3=13, v1_4=14)
-    assert_equal(vc.v1, desired_v1)
-
-    raises(IndexError)(vc.setv)(v1_5=0)
 
 
 def check_cstructname_and_cfuncprefix(cstructname, cfuncprefix):
