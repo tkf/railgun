@@ -620,6 +620,22 @@ class SimObject(object):
         self.setv(**kwds_array_alias)
         self.setv(**kwds_object)
 
+    def __getstate__(self):
+        attrs = dict(
+            (k, v) for (k, v) in self.__dict__.items()
+            if k not in ['_struct_', '_struct_p_', '_cdatastore_'])
+        kwds = {}
+        kwds.update(self._cdatastore_)
+        kwds.update(
+            (k, getattr(self, k)) for (k, v) in self._cmems_parsed_.items()
+            if v.valtype == 'scalar')
+        return (attrs, kwds)
+
+    def __setstate__(self, state):
+        (attrs, kwds) = state
+        self._set_all(**kwds)
+        self.__dict__.update(attrs)
+
     def setv(self, **kwds):
         """
         Set variable named 'VAR' by ``set(VAR=VALUE)``
