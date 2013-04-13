@@ -1,3 +1,6 @@
+import copy
+import unittest
+
 import numpy
 from numpy.testing import assert_equal
 from nose.tools import raises, ok_  # , with_setup
@@ -434,3 +437,22 @@ def test_cmem_object():
         vc.fill(i, 'v%d' % i)
         v_i = getattr(vc, 'v%d' % i).arr
         assert_equal(v_i, numpy.array([i] * vc.num_i))
+
+
+class TestCopy(unittest.TestCase):
+
+    copyfunc = staticmethod(copy.copy)
+    clone_v1 = 20
+
+    def test_copy(self):
+        orig = VectCalc()
+        orig.v1 = 10
+        clone = self.copyfunc(orig)
+        orig.v1 = 20
+        assert_equal(clone.v1, self.clone_v1)
+
+
+class TestDeepCopy(TestCopy):
+
+    copyfunc = staticmethod(copy.deepcopy)
+    clone_v1 = 10
