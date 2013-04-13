@@ -26,4 +26,4 @@ C code
 
 Output
 ------
-.. plot:: source/samples/logistic_map/bifurcation_diagram.py
+.. plot:: samples/logistic_map/bifurcation_diagram.py

@@ -25,7 +25,7 @@ Running on "normal mode"
 .. literalinclude:: run.py
    :language: python
 
-.. plot:: source/samples/lode_rk4/run.py
+.. plot:: samples/lode_rk4/run.py
 
 
 Running on "debug mode"
@@ -36,7 +36,7 @@ to your class constructor.
 .. literalinclude:: run_debug.py
    :language: python
 
-.. plot:: source/samples/lode_rk4/run_debug.py
+.. plot:: samples/lode_rk4/run_debug.py
 
 
 Reference

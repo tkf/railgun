@@ -3,7 +3,7 @@ Linear Ordinary Differential Equation
 
 Output
 ------
-.. plot:: source/samples/lode/lode.py
+.. plot:: samples/lode/lode.py
 
 Python code
 -----------

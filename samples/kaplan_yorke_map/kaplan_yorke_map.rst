@@ -3,7 +3,7 @@ Kaplan-Yorke map
 
 Output
 ------
-.. plot:: source/samples/kaplan_yorke_map/kaplan_yorke_map.py
+.. plot:: samples/kaplan_yorke_map/kaplan_yorke_map.py
 
 Python code
 -----------
