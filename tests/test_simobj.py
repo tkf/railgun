@@ -93,6 +93,42 @@ class TestVectCalc(BaseTestVectCalc):
                                  'comparing result(v3) of subvec_%s(%d, %d)' %
                                  (key, i1, i2))
 
+    def test_cfunc_fill(self):
+        (vc, num_i, v1, v2, v3) = self.mems()
+        vc.fill(100)
+        assert_equal(v1, numpy.ones(num_i, dtype=int) * 100)
+        vc.fill(101, 'v1')
+        assert_equal(v1, numpy.ones(num_i, dtype=int) * 101)
+        vc.fill(102, 'v2')
+        assert_equal(v2, numpy.ones(num_i, dtype=int) * 102)
+        vc.fill(103, 'v3')
+        assert_equal(v3, numpy.ones(num_i, dtype=int) * 103)
+
+    def test_cfunc_subvec_dot(self):
+        (vc, num_i, v1, v2, v3) = self.mems()
+        l1 = range(1, 11)
+        l2 = range(11, 21)
+        vc.v1 = l1
+        vc.v2 = l2
+        assert_equal(v1, numpy.array(l1, dtype=int))
+        assert_equal(v2, numpy.array(l2, dtype=int))
+
+        for i1 in range(num_i):
+            for i2 in range(i1 + 1, num_i):
+                correct = numpy.dot(v1[i1:i2], v2[i1:i2])
+                vc.subvec_dot(i1, i2)
+                assert_equal(
+                    vc.ans, correct,
+                    'comparing result(ans) of subvec_dot(%d, %d)' % (i1, i2))
+
+    def test_getv(self):
+        vc = self.vc
+        for (v1, v2, v3) in [vc.getv('v1', 'v2', 'v3'),
+                             vc.getv('v1, v2, v3')]:
+            ok_(v1 is vc.v1)
+            ok_(v2 is vc.v2)
+            ok_(v3 is vc.v3)
+
 
 class TestVectCalcWithCwrap(BaseTestVectCalc):
 
@@ -127,40 +163,6 @@ class TestVectCalcWithCwrap(BaseTestVectCalc):
                         vc.subvec(op=key, i1=i1, i2=i2), v3d[key][i1:i2],
                         'comparing result(v3) of subvec_%s(%d, %d)' %
                         (key, i1, i2))
-
-
-def test_fill():
-    vc = VectCalc()
-    num_i = vc.num_i
-    vc.fill(100)
-    assert_equal(vc.v1, numpy.ones(num_i, dtype=int) * 100)
-    vc.fill(101, 'v1')
-    assert_equal(vc.v1, numpy.ones(num_i, dtype=int) * 101)
-    vc.fill(102, 'v2')
-    assert_equal(vc.v2, numpy.ones(num_i, dtype=int) * 102)
-    vc.fill(103, 'v3')
-    assert_equal(vc.v3, numpy.ones(num_i, dtype=int) * 103)
-
-
-def test_subvec_dot():
-    vc = VectCalc()
-    num_i = vc.num_i
-    v1 = vc.v1
-    v2 = vc.v2
-    l1 = range(1, 11)
-    l2 = range(11, 21)
-    vc.v1 = l1
-    vc.v2 = l2
-    assert_equal(v1, numpy.array(l1, dtype=int))
-    assert_equal(v2, numpy.array(l2, dtype=int))
-
-    for i1 in range(num_i):
-        for i2 in range(i1 + 1, num_i):
-            correct = numpy.dot(v1[i1:i2], v2[i1:i2])
-            vc.subvec_dot(i1, i2)
-            assert_equal(
-                vc.ans, correct,
-                'comparing result(ans) of subvec_dot(%d, %d)' % (i1, i2))
 
 
 def test_check_argument_validity():
@@ -207,14 +209,6 @@ def test_init_wo_num():
     yield (raises(ValueError)(check_init_wo_num), {})
     yield (check_init_wo_num, dict(num_i=0))
     yield (check_init_wo_num, dict(num_i=1))
-
-
-def test_get():
-    vc = VectCalc()
-    for (v1, v2, v3) in [vc.getv('v1', 'v2', 'v3'), vc.getv('v1, v2, v3')]:
-        ok_(v1 is vc.v1)
-        ok_(v2 is vc.v2)
-        ok_(v3 is vc.v3)
 
 
 def check_init_kwds(kwds):
