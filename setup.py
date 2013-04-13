@@ -13,7 +13,7 @@ setup(
     long_description=railgun.__doc__,
     author=__author__,
     author_email='aka.tkf@gmail.com',
-    url='http://bitbucket.org/tkf/railgun/src',
+    url='https://github.com/tkf/railgun',
     keywords='numerical simulation, research, ctypes, numpy, c',
     license=__license__,
     classifiers=[
