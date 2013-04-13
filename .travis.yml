@@ -1,14 +1,12 @@
 language: python
-python:
-  - "2.6"
-  - "2.7"
+env:
+  - TOXENV=py26
+  - TOXENV=py27
+  - TOXENV=doc
 before_install:
-  # As numpy is needed for running setup.py, it must be installed
-  # *before* running tox
-  - pip --quiet install numpy tox
+  - pip install --quiet --use-mirrors tox
   # Install GSL (and log it's version number)
   - apt-cache show libgsl0-dev | grep -i version
   - sudo apt-get install -qq libgsl0-dev
 script:
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.6' ]]; then tox -e py26 /tmp; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == '2.7' ]]; then tox -e py27 /tmp; fi
+  - tox
