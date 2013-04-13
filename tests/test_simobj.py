@@ -30,66 +30,72 @@ class VectCalc(SimObject):
         ]
 
 
-def test_default():
-    vc = VectCalc()
-    num_i = 10
-    eq_(vc.num_i, num_i, 'comparing num_i')
-    assert_equal(vc.v1, numpy.ones(num_i, dtype=int) * 1)
-    assert_equal(vc.v2, numpy.ones(num_i, dtype=int) * 2)
-    assert_equal(vc.v3, numpy.ones(num_i, dtype=int) * 0)
+class BaseTestVectCalc(unittest.TestCase):
+
+    """
+    Test `SimObject` using its example class `VectCalc`.
+    """
+
+    simclass = VectCalc
+
+    def setUp(self):
+        self.vc = self.simclass()
+
+    def mems(self):
+        return [self.vc] + self.vc.getv('num_i', 'v1', 'v2', 'v3')
+
+    def v3_desired(self):
+        (v1, v2) = self.vc.getv('v1', 'v2')
+        return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
 
 
-def v3_desired(v1, v2):
-    return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
+class TestVectCalc(BaseTestVectCalc):
+
+    def test_cmembers_default_value(self):
+        vc = self.vc
+        num_i = 10
+        self.assertEqual(vc.num_i, num_i, 'comparing num_i')
+        assert_equal(vc.v1, numpy.ones(num_i, dtype=int) * 1)
+        assert_equal(vc.v2, numpy.ones(num_i, dtype=int) * 2)
+        assert_equal(vc.v3, numpy.ones(num_i, dtype=int) * 0)
+
+    def test_cfunc_vec(self):
+        (vc, num_i, v1, v2, v3) = self.mems()
+        l1 = range(vc.num_i)
+        l2 = range(vc.num_i, vc.num_i * 2)
+        vc.v1 = l1
+        vc.v2 = l2
+        assert_equal(v1, numpy.array(l1, dtype=int))
+        assert_equal(v2, numpy.array(l2, dtype=int))
+
+        v3d = self.v3_desired()
+        for key in v3d:
+            vc.vec(op=key)
+            assert_equal(v3, v3d[key],
+                         'comparing result(v3) of vec_%s' % key)
+
+    def test_cfunc_subvec(self):
+        (vc, num_i, v1, v2, v3) = self.mems()
+        (num_i, v1, v2, v3) = vc.getv('num_i', 'v1', 'v2', 'v3')
+        l1 = range(1, 11)
+        l2 = range(11, 21)
+        vc.v1 = l1
+        vc.v2 = l2
+        assert_equal(v1, numpy.array(l1, dtype=int))
+        assert_equal(v2, numpy.array(l2, dtype=int))
+
+        v3d = self.v3_desired()
+        for i1 in range(num_i):
+            for i2 in range(i1 + 1, num_i):
+                for key in v3d:
+                    vc.subvec(op=key, i1=i1, i2=i2)
+                    assert_equal(v3[i1:i2], v3d[key][i1:i2],
+                                 'comparing result(v3) of subvec_%s(%d, %d)' %
+                                 (key, i1, i2))
 
 
-def check_vec(vc):
-    v1 = vc.v1
-    v2 = vc.v2
-    v3 = vc.v3
-    l1 = range(vc.num_i)
-    l2 = range(vc.num_i, vc.num_i * 2)
-    vc.v1 = l1
-    vc.v2 = l2
-    assert_equal(v1, numpy.array(l1, dtype=int))
-    assert_equal(v2, numpy.array(l2, dtype=int))
+class TestVectCalcWithCwrap(BaseTestVectCalc):
 
-    v3d = v3_desired(vc.v1, vc.v2)
-    for key in v3d:
-        vc.vec(op=key)
-        assert_equal(v3, v3d[key],
-                     'comparing result(v3) of vec_%s' % key)
-
-
-def test_vec():
-    vc = VectCalc()
-    check_vec(vc)
-
-
-def test_subvec():
-    vc = VectCalc()
-    num_i = vc.num_i
-    v1 = vc.v1
-    v2 = vc.v2
-    v3 = vc.v3
-    l1 = range(1, 11)
-    l2 = range(11, 21)
-    vc.v1 = l1
-    vc.v2 = l2
-    assert_equal(v1, numpy.array(l1, dtype=int))
-    assert_equal(v2, numpy.array(l2, dtype=int))
-
-    v3d = v3_desired(vc.v1, vc.v2)
-    for i1 in range(num_i):
-        for i2 in range(i1 + 1, num_i):
-            for key in v3d:
-                vc.subvec(op=key, i1=i1, i2=i2)
-                assert_equal(v3[i1:i2], v3d[key][i1:i2],
-                             'comparing result(v3) of subvec_%s(%d, %d)' %
-                             (key, i1, i2))
-
-
-def test_cwrap_with_subvec():
     class VectCalcWithCwrap(VectCalc):
         _cstructname_ = 'VectCalc'
 
@@ -101,24 +107,26 @@ def test_cwrap_with_subvec():
                 return self.v3[i1:i2]
             return subvec
 
-    vc = VectCalcWithCwrap()
-    num_i = vc.num_i
-    v1 = vc.v1
-    v2 = vc.v2
-    l1 = range(1, 11)
-    l2 = range(11, 21)
-    vc.v1 = l1
-    vc.v2 = l2
-    assert_equal(v1, numpy.array(l1, dtype=int))
-    assert_equal(v2, numpy.array(l2, dtype=int))
+    simclass = VectCalcWithCwrap
 
-    v3d = v3_desired(vc.v1, vc.v2)
-    for i1 in range(num_i):
-        for i2 in range(i1 + 1, num_i):
-            for key in v3d:
-                assert_equal(vc.subvec(op=key, i1=i1, i2=i2), v3d[key][i1:i2],
-                             'comparing result(v3) of subvec_%s(%d, %d)' %
-                             (key, i1, i2))
+    def test_cwrap_with_subvec(self):
+        vc = self.vc
+        (num_i, v1, v2, v3) = vc.getv('num_i', 'v1', 'v2', 'v3')
+        l1 = range(1, 11)
+        l2 = range(11, 21)
+        vc.v1 = l1
+        vc.v2 = l2
+        assert_equal(v1, numpy.array(l1, dtype=int))
+        assert_equal(v2, numpy.array(l2, dtype=int))
+
+        v3d = self.v3_desired()
+        for i1 in range(num_i):
+            for i2 in range(i1 + 1, num_i):
+                for key in v3d:
+                    assert_equal(
+                        vc.subvec(op=key, i1=i1, i2=i2), v3d[key][i1:i2],
+                        'comparing result(v3) of subvec_%s(%d, %d)' %
+                        (key, i1, i2))
 
 
 def test_fill():
