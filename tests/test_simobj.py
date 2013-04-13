@@ -343,7 +343,7 @@ class TestVectCalcFixedShape(unittest.TestCase):
             assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
 
 
-def test_cmemsubset():
+class TestVectCalcCMemSubSet(unittest.TestCase):
 
     class VectCalc(SimObject):
         _clibname_ = 'vectclac.so'
@@ -375,26 +375,29 @@ def test_cmemsubset():
                      default=True),
             )
 
-    vc = VectCalc()
-    eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=True))
-    vc.subvec_dot()
-    raises(ValueError)(vc.vec)()
-    vc.getv('v1, v2')
-    raises(KeyError)(vc.getv)('v3')
+    def test_default(self):
+        vc = self.VectCalc()
+        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=True))
+        vc.subvec_dot()
+        raises(ValueError)(vc.vec)()
+        vc.getv('v1, v2')
+        raises(KeyError)(vc.getv)('v3')
 
-    vc = VectCalc(_cmemsubsets_dot=False)
-    eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=False))
-    raises(ValueError)(vc.subvec_dot)()
-    raises(ValueError)(vc.vec)()
-    raises(KeyError)(vc.getv)('v1')
-    raises(KeyError)(vc.getv)('v2')
-    raises(KeyError)(vc.getv)('v3')
+    def test_cmemsubsets_dot(self):
+        vc = self.VectCalc(_cmemsubsets_dot=False)
+        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=False))
+        raises(ValueError)(vc.subvec_dot)()
+        raises(ValueError)(vc.vec)()
+        raises(KeyError)(vc.getv)('v1')
+        raises(KeyError)(vc.getv)('v2')
+        raises(KeyError)(vc.getv)('v3')
 
-    vc = VectCalc(_cmemsubsets_vec=True)
-    eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=True, dot=True))
-    vc.subvec_dot()
-    vc.vec()
-    vc.getv('v1, v2, v3')
+    def test_cmemsubsets_vec(self):
+        vc = self.VectCalc(_cmemsubsets_vec=True)
+        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=True, dot=True))
+        vc.subvec_dot()
+        vc.vec()
+        vc.getv('v1, v2, v3')
 
 
 def test_cmem_object():
