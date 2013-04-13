@@ -220,3 +220,12 @@ man_pages = [
     ('index', 'railgun', u'RailGun Documentation',
      [u'Takafumi Arakaki'], 1)
 ]
+
+
+# -- Options for plot directive -------------------------------------------
+
+# Set dummy value to __file__
+plot_pre_code = """
+import os
+__file__ = os.path.join(os.getcwdu(), 'dummy.py')
+"""
