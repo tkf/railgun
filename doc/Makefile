@@ -168,7 +168,7 @@ gh-pages-pull: _gh-pages-assert-repo
 gh-pages-update: _gh-pages-assert-repo clean html
 	@echo "Update gh-pages"
 	cd build/html/ && \
-		git add . && \
+		git -c core.excludesfile=/dev/null add . && \
 		if [ -n "$$(git ls-files --deleted)" ]; then \
 			git ls-files --deleted | xargs git rm; \
 		fi && \
