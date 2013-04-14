@@ -54,8 +54,8 @@ class BaseTestVectCalc(unittest.TestCase):
     def mems(self):
         return [self.vc] + self.vc.getv('num_i', 'v1', 'v2', 'v3')
 
-    def v3_desired(self):
-        (v1, v2) = self.vc.getv('v1', 'v2')
+    def v3_desired(self, vc=None):
+        (v1, v2) = (vc or self.vc).getv('v1', 'v2')
         return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
 
 
@@ -189,9 +189,6 @@ class TestVectCalc(BaseTestVectCalc):
 
         raises(IndexError)(vc.setv)(v1_5=0)
 
-
-class TestVectCalcWithCwrap(BaseTestVectCalc):
-
     class VectCalcWithCwrap(VectCalc):
         _cstructname_ = 'VectCalc'
 
@@ -203,10 +200,8 @@ class TestVectCalcWithCwrap(BaseTestVectCalc):
                 return self.v3[i1:i2]
             return subvec
 
-    VectCalc = VectCalcWithCwrap
-
     def test_cwrap_with_subvec(self):
-        vc = self.vc
+        vc = self.new(self.VectCalcWithCwrap)
         (num_i, v1, v2, v3) = vc.getv('num_i', 'v1', 'v2', 'v3')
         l1 = range(1, 11)
         l2 = range(11, 21)
@@ -215,7 +210,7 @@ class TestVectCalcWithCwrap(BaseTestVectCalc):
         assert_equal(v1, numpy.array(l1, dtype=int))
         assert_equal(v2, numpy.array(l2, dtype=int))
 
-        v3d = self.v3_desired()
+        v3d = self.v3_desired(vc)
         for i1 in range(num_i):
             for i2 in range(i1 + 1, num_i):
                 for key in v3d:

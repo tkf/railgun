@@ -1,7 +1,7 @@
 import copy
 
 from test_simobj import (
-    BaseTestVectCalc, TestVectCalc, TestVectCalcWithCwrap,
+    BaseTestVectCalc, TestVectCalc,
     TestVectCalcFixedShape, TestVectCalcCMemSubSet, TestVectCalcCMemObject)
 
 
@@ -19,10 +19,6 @@ class MixinCopyTest(object):
 
 
 class TestCopyVectCalc(MixinCopyTest, TestVectCalc):
-    pass
-
-
-class TestCopyVectCalcWithCwrap(MixinCopyTest, TestVectCalcWithCwrap):
     pass
 
 
@@ -48,10 +44,6 @@ class MixinDeepCopyTest(MixinCopyTest):
 
 
 class TestDeepCopyVectCalc(MixinDeepCopyTest, TestVectCalc):
-    pass
-
-
-class TestDeepCopyVectCalcWithCwrap(MixinDeepCopyTest, TestVectCalcWithCwrap):
     pass
 
 
