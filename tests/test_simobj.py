@@ -56,29 +56,16 @@ class VectCalcWithCwrap(VectCalc):
 
 class VectCalcNoDefaultNumI(SimObject):
     _cstructname_ = 'VectCalc'
-    _clibname_ = 'vectclac.so'
-    _clibdir_ = relpath('ext/build', __file__)
-
-    _cmembers_ = [
-        'num_i',
-        'int v1[i] = 1',
-        'int v2[i] = 2',
-        'int v3[i]',
-        'int ans',
-        ]
-
-    _cfuncs_ = [
-        "vec_{op | plus, minus, times, divide}()",
-        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-        "fill_{vec | v1, v2, v3}(int s)",
-        "ans subvec_dot(i i1=0, i< i2=num_i)",
-        ]
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cmembers_ = ['num_i'] + VectCalc._cmembers_[1:]
+    _cfuncs_ = VectCalc._cfuncs_
 
 
 class VectCalcFixedShape(SimObject):
     _cstructname_ = 'VectCalc'
-    _clibname_ = 'vectclac.so'
-    _clibdir_ = relpath('ext/build', __file__)
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
 
     _cmembers_ = [
         'num_i = 5',
@@ -93,23 +80,10 @@ class VectCalcFixedShape(SimObject):
 
 class VectCalcCMemSubSet(SimObject):
     _cstructname_ = 'VectCalc'
-    _clibname_ = 'vectclac.so'
-    _clibdir_ = relpath('ext/build', __file__)
-
-    _cmembers_ = [
-        'num_i = 10',
-        'int v1[i] = 1',
-        'int v2[i] = 2',
-        'int v3[i]',
-        'int ans',
-        ]
-
-    _cfuncs_ = [
-        "vec_{op | plus, minus, times, divide}()",
-        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-        "fill_{vec | v1, v2, v3}(int s)",
-        "ans subvec_dot(i i1=0, i< i2=num_i)",
-        ]
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cmembers_ = VectCalc._cmembers_
+    _cfuncs_ = VectCalc._cfuncs_
 
     _cmemsubsets_ = dict(
         vec=dict(members=['v1', 'v2', 'v3'],
@@ -125,8 +99,9 @@ class VectCalcCMemSubSet(SimObject):
 
 class VectCalcCMemObject(SimObject):
     _cstructname_ = 'VectCalc'
-    _clibname_ = 'vectclac.so'
-    _clibdir_ = relpath('ext/build', __file__)
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cfuncs_ = VectCalc._cfuncs_
 
     _cmembers_ = [
         'num_i',
@@ -134,13 +109,6 @@ class VectCalcCMemObject(SimObject):
         cmem(Int1DimArrayAsObject, 'v2'),
         cmem(Int1DimArrayAsObject, 'v3'),
         'int ans',
-        ]
-
-    _cfuncs_ = [
-        "vec_{op | plus, minus, times, divide}()",
-        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-        "fill_{vec | v1, v2, v3}(int s)",
-        "ans subvec_dot(i i1=0, i< i2=num_i)",
         ]
 
     def __init__(self, num_i=10, **kwds):
