@@ -3,15 +3,15 @@
 
 .. class:: yourcode.YourSimObject
 
-   To load your C shared library, please define this class which
-   override :class:`railgun.SimObject`.
-   You will need to define four attribute: :attr:`_clibname_`,
+   To load your C shared library, define a class inheriting
+   :class:`railgun.SimObject`.
+   You need to define four attribute: :attr:`_clibname_`,
    :attr:`_clibdir_`, :attr:`_cmembers_` and :attr:`_cfuncs_`.
 
    .. note::
 
       In this document, :class:`yourcode.YourSimObject` means the class
-      *you need to define*. It is not the class in RailGun.
+      *you need to define*.  This class is not in RailGun.
 
    Example::
 
@@ -52,42 +52,42 @@
 
    .. attribute:: _clibdir_
 
-      Path of the directory where your C library are.
+      Path to the directory where your C library locates.
       If you want to specify relative path from where
       this python module file are, you can use :func:`relpath`.
 
    .. attribute:: _cmembers_
 
       This is a list of the definitions of C variables with
-      following syntax::
+      the following syntax::
 
            [CDT] VAR_NAME[INDEX] [= DEFAULT]
 
       **VAR_NAME**: name of variable
-          You can access the C variable by `obj.VAR_NAME`.
+          This let you access the C variable by `obj.VAR_NAME`.
 
-          Name of the member starts with ``num_`` define an index which
-          is a letter(s) comes after this. For example, ``num_i`` defines
+          Starting the name of the member with ``num_`` defines an index
+          whose name is what comes after this. For example, ``num_i`` defines
           index ``i``. Value of ``num_i`` is the size of array(s) along
           the index ``i``. For the member named ``num_*``, you can omit
           **CDT** (``int``).
       **CDT**: C Data Type, (optional if **VAR_NAME** starts with ``num_``)
           Choose CDT from the list in
-          `Relationships among C Data Type (CDT), numpy dtype and ctypes`_.
+          `Relationships between C Data Type (CDT), numpy dtype and ctypes`_.
       **INDEX**: index, optional
           If the variable is an array, **INDEX** should be specified.
-          For the array with shape ``num_i1`` x ``num_i2`` x ... x ``num_iN``,
+          For an array with shape ``num_i1 x num_i2 x ... x num_iN``,
           **INDEX** should be ``[i1][i2]...[iN]`` or ``[i1,i2,...,iN]``.
 
           ``[i1][i2]...[iN]``: multidimensional array
-              You can access ``a[i][j]`` as ``self->a[i][j]`` from your C
+              You can access ``a[i][j]`` as ``self->a[i][j]`` in C
               code. This array data structure is called "`Iliffe vector`_" or
               "display". Strictly speaking, this is not equivalent to
               multidimensional array, but you can use as if it is.
           ``[i1,i2,...,iN]``: flattened array
               You can access ``a[i][j]`` as ``self->a[i * self->num_j + j]``
-              from your C code. Specifying correct index in C code is up to
-              you. Maybe you should use macro or inline function.
+              in C code. Specifying correct index in C code is up to
+              you.  It is recommended to use macro or inline function.
 
           .. _`Iliffe vector`: http://en.wikipedia.org/wiki/Iliffe_vector
 
@@ -97,7 +97,8 @@
 
       .. warning::
 
-         The order must be the same as in the C struct.
+         The order and number of the variables in :attr:`_cmembers_`
+         must be the same as in the C struct.
 
       Example::
 
@@ -117,23 +118,22 @@
    .. attribute:: _cfuncs_
 
       This is a list of the definitions of C functions with
-      following syntax::
+      the following syntax::
 
-          [RETURN_VAR] FUNC_NAME([ARG, ARG, ...])
+          [RETURN_VAR] FUNC_NAME(ARG, [ARG[, ...]])
 
       **FUNC_NAME**: string
           Name of C function to be loaded.
           You don't need to write the name of the `struct`.
-          The name of the `struct` will be automatically added.
+          The name of the `struct` will be automatically prepended.
 
           See also: :ref:`choices`.
       **RETURN_VAR**: string, optional
           Name from C struct members.
-          If specified, python wrapper function of **FUNC_NAME** will
-          returns value of **RETURN_VAR** after **FUNC_NAME** function
-          called.
+          If specified, python wrapper function named **FUNC_NAME**
+          returns value of **RETURN_VAR**.
       **ARG**:
-          Argument of C function with following syntax::
+          Argument of C function, specified by the following syntax::
 
               CDT_OR_INDEX ARG_NAME [= DEFAULT]
 
@@ -148,7 +148,7 @@
               Default value for the argument.
 
           You don't need to write ``self`` which will be automatically
-          added.
+          passed as the first argument of C function.
 
       Example::
 
@@ -195,9 +195,14 @@
                    ...
                    ]
 
-   .. attribute:: _cmemsubsets_
+   .. This documentation is not clear and I don't remember why
+      I want to add `_cmemsubsets_`.  So let's comment it out for now.
 
-      dict of dict of list, optional
+   .. .. attribute:: _cmemsubsets_
+   ..
+
+      dict of dict of list, optional.
+
       Definition of subset of C members for controlling which
       C members to be loaded. Example::
 
@@ -278,15 +283,16 @@
 
    .. method:: setv(**kwds)
 
-      This is used for setting values of C struct members.
+      This is used for setting values of C struct members or any other
+      Python attributes.
 
-      Following two lines have same effects::
+      The following two lines have same effects::
 
            obj.setv(scalar=1, array=[1, 2, 3])
            obj.scalar = 1; obj.array = [1, 2, 3]
 
-      Alias for element of array is available
-      (Following lines have same effects)::
+      You can use alias for elements of array.
+      The following lines have same effect::
 
            obj.setv(var_0_1=1)
            obj.var[0][1] = 1
@@ -294,15 +300,17 @@
 
    .. method:: getv(*args)
 
-      Get the C variable by specifying the name
-      (Following lines have same effects)::
+      Get the C variable by specifying the name or any other
+      Python attributes.
+
+      The following lines have same effect::
 
            var = obj.var
            var = obj.getv('var')
 
       This is useful when you want to load multiple variables to
-      local variable at once
-      (Following lines have same effects)::
+      local variable at once.
+      The Following lines have same effect::
 
            (a, b, c) = (obj.a, obj.b, obj.c)
            (a, b, c) = obj.getv('a', 'b', 'c')
@@ -311,25 +319,25 @@
 
    .. method:: num(*args)
 
-      Get the size along index
-      (Following lines have same effects)::
+      Get the size along index.
+      The Following lines have same effect::
 
            num_i = obj.num_i
            num_i = obj.num('i')
 
-      You can specify multiple indices
-      (Following lines have same effects)::
+      You can specify multiple indices.
+      The Following lines have same effect::
 
            (num_i, num_j, num_k) = (obj.num_i, obj.num_j, obj.num_k)
            (num_i, num_j, num_k) = obj.num('i', 'j', 'k')
            (num_i, num_j, num_k) = obj.num('i, j, k')
 
 
-Relationships among C Data Type (CDT), numpy dtype and ctypes
--------------------------------------------------------------
+Relationships between C Data Type (CDT), numpy dtype and ctypes
+---------------------------------------------------------------
 
 To specify C-language type of C struct members and C function arguments,
-following C Data Types (**CDTs**) are available.
+the following C Data Types (**CDTs**) are available.
 
 ================ ============================== ============= ================
  CDT              C-language type                numpy dtype   ctypes
@@ -353,5 +361,5 @@ following C Data Types (**CDTs**) are available.
 
 .. note::
 
-   Corresponding Numpy dtypes of CDTs ``long`` and ``ulong`` are chosen
+   Numpy dtypes corresponding to CDTs ``long`` and ``ulong`` are chosen
    based on the variable returned by :func:`platform.architecture`.
