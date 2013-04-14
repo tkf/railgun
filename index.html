@@ -1,0 +1,248 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to RailGun’s documentation! &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="#" />
+    <link rel="next" title="RailGun Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="RailGun Tutorial"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="welcome-to-railgun-s-documentation">
+<h1>Welcome to RailGun&#8217;s documentation!<a class="headerlink" href="#welcome-to-railgun-s-documentation" title="Permalink to this headline">¶</a></h1>
+<table border="1" class="docutils">
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td><p class="first">Write less code in <em>C</em></p>
+<div class="last highlight-c"><div class="highlight"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">linearode_</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_d</span><span class="p">,</span> <span class="n">num_s</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">dt</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">a</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">LinearODE</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">LinearODE_run</span><span class="p">(</span><span class="n">LinearODE</span> <span class="o">*</span><span class="n">self</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">s</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_s</span><span class="p">;</span> <span class="o">++</span><span class="n">s</span><span class="p">){</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">d1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d1</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d1</span><span class="p">){</span>
+      <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d1</span><span class="p">];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">d2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d2</span><span class="p">){</span>
+        <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">dt</span> <span class="o">*</span> \
+          <span class="n">self</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">d1</span><span class="p">][</span><span class="n">d2</span><span class="p">]</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d2</span><span class="p">];</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</td>
+<td><p class="first">... <em>and in Python</em>!</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span>
+
+
+<span class="k">class</span> <span class="nc">LinearODE</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblode.so&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;num_d&#39;</span><span class="p">,</span>
+        <span class="s">&#39;num_s = 10000&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double dt = 0.001&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double a[d][d]&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double x[s][d]&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;x run()&quot;</span><span class="p">]</span>
+
+<span class="n">lode</span> <span class="o">=</span> <span class="n">LinearODE</span><span class="p">(</span><span class="n">num_d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The above pair of C and python code is very short but yet <em>complete</em> example!</p>
+<p>If you want to write fast program for numerical simulations, you will
+always end up with writing it in C (or C++ or FORTRAN, these low-level
+languages). Although we have great python packages (not only) for
+numerical simulation such as Numpy/Scipy, Pyrex, Cython, Psyco and so
+on, sometimes these are not enough. On the other hand, writing code in
+C is stressful, especially things like allocating memory and
+read/write data which do not require speed so much. So, next thing you
+want is to call C function from python and let python do all these
+stuff (which python is good at!). Using ctypes, this is very easy.</p>
+<p>On top of what ctypes provides, RailGun adds more features to kill
+boilerplate that you normally need for simulation coding.</p>
+<p>For example, when you write simulation code, you may face situation
+like this many times:</p>
+<blockquote>
+<div>I am accessing array like <tt class="docutils literal"><span class="pre">x[i][j]</span></tt> and <tt class="docutils literal"><span class="pre">y[j][k]</span></tt>, so I want
+the second axis of the array <tt class="docutils literal"><span class="pre">x</span></tt> and the first axis of the array
+<tt class="docutils literal"><span class="pre">y</span></tt> to be of the same length.</div></blockquote>
+<p>RailGun solves this problem by keeping shape of all arrays to be
+consistent.  Memory allocation for these arrays is done automatically.</p>
+<p>RailGun also provides some value check before passing it to C function.
+For example, you may want to pass an index of some array to C function.
+When you do that, you need to check if the index is in a certain range,
+to avoid segmentation fault.  RailGun provides a short hand notation
+to check that automatically.  Also, you can wrap C function to put any
+kind of complex value check and pre/post-processing.</p>
+<p>With these features and other useful utilities provided by RailGun,
+you can really focus on guts of computation in C code.</p>
+<p>Installation:</p>
+<div class="highlight-python"><pre>easy_install railgun  # using setuptools
+pip install railgun   # using pip</pre>
+</div>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">RailGun Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#how-to-write-c-program-for-railgun">How to write C program for RailGun</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#how-to-use-your-c-functions-from-python">How to use your C functions from python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#using-generated-python-class">Using generated python class</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="simobj.html"><tt class="docutils literal"><span class="pre">SimObject</span></tt> &#8212; A class loads everything you need from C shared library</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="simobj.html#relationships-between-c-data-type-cdt-numpy-dtype-and-ctypes">Relationships between C Data Type (CDT), numpy dtype and ctypes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">Utility functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="samples/index.html">Samples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="samples/lode/lode.html">Linear Ordinary Differential Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples/lode_rk4/lode_rk4.html">Runge-Kutta method (usage of <tt class="docutils literal"><span class="pre">_cmemsubsets_</span></tt>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples/logistic_map/logistic_map.html">Logistic map with additive noise (usage of <tt class="docutils literal"><span class="pre">railgun.cmem()</span></tt>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples/gslctypes/gslctypes.html">Using RailGun with GSL (GNU Scientific Library)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="samples/kaplan_yorke_map/kaplan_yorke_map.html">Kaplan-Yorke map</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Change Log</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="changelog.html#v0-1-7">v0.1.7</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>RailGun&#8217;s repository is <a class="reference external" href="http://bitbucket.org/tkf/railgun/">http://bitbucket.org/tkf/railgun/</a>.
+See samples in source code or
+<a class="reference external" href="http://bitbucket.org/tkf/railgun/src/tip/samples/">here</a>.</p>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to RailGun&#8217;s documentation!</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">RailGun Tutorial</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="RailGun Tutorial"
+             >next</a> |</li>
+        <li><a href="#">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

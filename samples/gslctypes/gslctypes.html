@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Using RailGun with GSL (GNU Scientific Library) &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="../../index.html" />
+    <link rel="up" title="Samples" href="../index.html" />
+    <link rel="next" title="Kaplan-Yorke map" href="../kaplan_yorke_map/kaplan_yorke_map.html" />
+    <link rel="prev" title="Logistic map with additive noise (usage of railgun.cmem())" href="../logistic_map/logistic_map.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../kaplan_yorke_map/kaplan_yorke_map.html" title="Kaplan-Yorke map"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../logistic_map/logistic_map.html" title="Logistic map with additive noise (usage of railgun.cmem())"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Samples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="using-railgun-with-gsl-gnu-scientific-library">
+<span id="gslctypes"></span><h1>Using RailGun with GSL (GNU Scientific Library)<a class="headerlink" href="#using-railgun-with-gsl-gnu-scientific-library" title="Permalink to this headline">¶</a></h1>
+<p>Class <tt class="xref py py-class docutils literal"><span class="pre">gslctypes_rng.cmem</span></tt> defined in the following file
+(<tt class="docutils literal"><span class="pre">gslctypes_rng.py</span></tt>) is a class you can give to <tt class="xref py py-func docutils literal"><span class="pre">railgun.cmem()</span></tt>.
+See <a class="reference internal" href="../logistic_map/logistic_map.html#logistic-map"><em>Logistic map with additive noise (usage of railgun.cmem())</em></a> for usage.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">from</span> <span class="nn">ctypes</span> <span class="kn">import</span> <span class="p">(</span><span class="n">POINTER</span><span class="p">,</span> <span class="n">c_char_p</span><span class="p">,</span> <span class="n">c_size_t</span><span class="p">,</span> <span class="n">c_int</span><span class="p">,</span> <span class="n">c_long</span><span class="p">,</span> <span class="n">c_ulong</span><span class="p">,</span>
+                    <span class="n">c_double</span><span class="p">,</span> <span class="n">c_void_p</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">ctypes.util</span> <span class="kn">import</span> <span class="n">find_library</span>
+
+
+<span class="k">class</span> <span class="nc">_c_gsl_rng_type</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="n">c_char_p</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;max&#39;</span><span class="p">,</span> <span class="n">c_long</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;min&#39;</span><span class="p">,</span> <span class="n">c_size_t</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;__set&#39;</span><span class="p">,</span> <span class="n">c_void_p</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;__get&#39;</span><span class="p">,</span> <span class="n">c_void_p</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;__get_double&#39;</span><span class="p">,</span> <span class="n">c_void_p</span><span class="p">),</span>
+                <span class="p">]</span>
+<span class="n">_c_gsl_rng_type_p</span> <span class="o">=</span> <span class="n">POINTER</span><span class="p">(</span><span class="n">_c_gsl_rng_type</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_c_gsl_rng</span><span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">Structure</span><span class="p">):</span>
+    <span class="n">_fields_</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;type&#39;</span><span class="p">,</span> <span class="n">_c_gsl_rng_type_p</span><span class="p">),</span>
+                <span class="p">(</span><span class="s">&#39;state&#39;</span><span class="p">,</span> <span class="n">c_void_p</span><span class="p">)]</span>
+<span class="n">_c_gsl_rng_p</span> <span class="o">=</span> <span class="n">POINTER</span><span class="p">(</span><span class="n">_c_gsl_rng</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_GSLFuncLoader</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="c"># see: http://code.activestate.com/recipes/576549-gsl-with-python3/</span>
+    <span class="n">gslcblas</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">find_library</span><span class="p">(</span><span class="s">&#39;gslcblas&#39;</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="n">ctypes</span><span class="o">.</span><span class="n">RTLD_GLOBAL</span><span class="p">)</span>
+    <span class="n">gsl</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">CDLL</span><span class="p">(</span><span class="n">find_library</span><span class="p">(</span><span class="s">&#39;gsl&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_load_1</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">argtypes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">restype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="n">func</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gsl</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">argtypes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">func</span><span class="o">.</span><span class="n">argtypes</span> <span class="o">=</span> <span class="n">argtypes</span>
+        <span class="k">if</span> <span class="n">restype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">func</span><span class="o">.</span><span class="n">restype</span> <span class="o">=</span> <span class="n">restype</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">def</span> <span class="nf">_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">argtypes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">restype</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">name</span> <span class="p">,</span><span class="nb">basestring</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_1</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">argtypes</span><span class="p">,</span> <span class="n">restype</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_load_1</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">argtypes</span><span class="p">,</span> <span class="n">restype</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">name</span><span class="p">]</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;name=</span><span class="si">%r</span><span class="s"> should be a string or iterative &#39;</span>
+                                 <span class="s">&#39;of string&#39;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+
+
+<span class="n">func</span> <span class="o">=</span> <span class="n">_GSLFuncLoader</span><span class="p">()</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="s">&#39;gsl_strerror&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">c_int</span><span class="p">],</span> <span class="n">c_char_p</span><span class="p">)</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="s">&#39;gsl_rng_alloc&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">_c_gsl_rng_type_p</span><span class="p">],</span> <span class="n">_c_gsl_rng_p</span><span class="p">)</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="s">&#39;gsl_rng_set&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">_c_gsl_rng_p</span><span class="p">,</span> <span class="n">c_ulong</span><span class="p">])</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="s">&#39;gsl_rng_free&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">_c_gsl_rng_p</span><span class="p">])</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">(</span><span class="s">&#39;gsl_rng_types_setup&#39;</span><span class="p">,</span>
+           <span class="n">restype</span><span class="o">=</span><span class="n">c_void_p</span><span class="p">)</span>  <span class="c"># POINTER(_c_gsl_rng_p)</span>
+<span class="n">func</span><span class="o">.</span><span class="n">_load</span><span class="p">([</span><span class="s">&#39;gsl_ran_gaussian&#39;</span><span class="p">,</span>
+            <span class="s">&#39;gsl_ran_gaussian_ziggurat&#39;</span><span class="p">,</span>
+            <span class="s">&#39;gsl_ran_gaussian_ratio_method&#39;</span><span class="p">],</span>
+           <span class="p">[</span><span class="n">_c_gsl_rng_p</span><span class="p">,</span> <span class="n">c_double</span><span class="p">],</span>
+           <span class="n">c_double</span><span class="p">)</span>
+
+
+<span class="n">gsl_strerror</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_strerror</span>
+
+
+<span class="k">def</span> <span class="nf">_get_gsl_rng_type_p_dict</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get all ``gsl_rng_type`` as dict which has pointer to each object</span>
+
+<span class="sd">    This is equivalent to C code bellow which is from GSL document:</span>
+
+<span class="sd">    .. sourcecode:: c</span>
+
+<span class="sd">          const gsl_rng_type **t, **t0;</span>
+<span class="sd">          t0 = gsl_rng_types_setup ();</span>
+<span class="sd">          for (t = t0; *t != 0; t++)</span>
+<span class="sd">            {</span>
+<span class="sd">              printf (&quot;%s\n&quot;, (*t)-&gt;name);  /* instead, store t to dict */</span>
+<span class="sd">            }</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_rng_types_setup</span><span class="p">()</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">sizeof</span><span class="p">(</span><span class="n">c_void_p</span><span class="p">)</span>
+    <span class="n">dct</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">a</span> <span class="o">=</span> <span class="n">c_void_p</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">t</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">a</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">c_char_p</span><span class="o">.</span><span class="n">from_address</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">dct</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">_c_gsl_rng_type_p</span><span class="p">)</span>
+        <span class="n">t</span> <span class="o">+=</span> <span class="n">dt</span>
+    <span class="k">return</span> <span class="n">dct</span>
+
+
+<span class="k">class</span> <span class="nc">gsl_rng</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">_gsl_rng_alloc</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_rng_alloc</span>
+    <span class="n">_gsl_rng_set</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_rng_set</span>
+    <span class="n">_gsl_rng_free</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_rng_free</span>
+    <span class="n">_gsl_rng_type_p_dict</span> <span class="o">=</span> <span class="n">_get_gsl_rng_type_p_dict</span><span class="p">()</span>
+    <span class="n">_ctype_</span> <span class="o">=</span> <span class="n">_c_gsl_rng_p</span>  <span class="c"># for railgun</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;mt19937&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_type_p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_type_p_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cdata_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_alloc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_type_p</span><span class="p">)</span>
+        <span class="c"># the name &#39;_cdata_&#39; is for railgun</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_free</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cdata_</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seed</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_rng_set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_cdata_</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+
+    <span class="n">_gsl_ran_gaussian</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;&#39;</span><span class="p">:</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_ran_gaussian</span><span class="p">,</span>
+        <span class="s">&#39;ziggurat&#39;</span><span class="p">:</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_ran_gaussian_ziggurat</span><span class="p">,</span>
+        <span class="s">&#39;ratio_method&#39;</span><span class="p">:</span> <span class="n">func</span><span class="o">.</span><span class="n">gsl_ran_gaussian_ratio_method</span><span class="p">,</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">ran_gaussian</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gsl_ran_gaussian</span><span class="p">[</span><span class="n">method</span><span class="p">](</span><span class="bp">self</span><span class="o">.</span><span class="n">_cdata_</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../logistic_map/logistic_map.html"
+                        title="previous chapter">Logistic map with additive noise (usage of <tt class="docutils literal"><span class="pre">railgun.cmem()</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../kaplan_yorke_map/kaplan_yorke_map.html"
+                        title="next chapter">Kaplan-Yorke map</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/samples/gslctypes/gslctypes.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../kaplan_yorke_map/kaplan_yorke_map.html" title="Kaplan-Yorke map"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../logistic_map/logistic_map.html" title="Logistic map with additive noise (usage of railgun.cmem())"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Samples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

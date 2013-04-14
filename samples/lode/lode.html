@@ -1,0 +1,392 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Linear Ordinary Differential Equation &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="../../index.html" />
+    <link rel="up" title="Samples" href="../index.html" />
+    <link rel="next" title="Runge-Kutta method (usage of _cmemsubsets_)" href="../lode_rk4/lode_rk4.html" />
+    <link rel="prev" title="Samples" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../lode_rk4/lode_rk4.html" title="Runge-Kutta method (usage of _cmemsubsets_)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Samples"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Samples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="linear-ordinary-differential-equation">
+<h1>Linear Ordinary Differential Equation<a class="headerlink" href="#linear-ordinary-differential-equation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>(<a class="reference external" href="../../samples/lode/lode.py">Source code</a>, <a class="reference external" href="../../samples/lode/lode.png">png</a>, <a class="reference external" href="../../samples/lode/lode.hires.png">hires.png</a>, <a class="reference external" href="../../samples/lode/lode.pdf">pdf</a>)</p>
+<div class="figure">
+<img alt="../../_images/lode.png" src="../../_images/lode.png" />
+</div>
+</div>
+<div class="section" id="python-code">
+<h2>Python code<a class="headerlink" href="#python-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span>
+
+<span class="k">class</span> <span class="nc">LinearODE</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve D-dimensional linear ordinary differential equations</span>
+
+<span class="sd">    Equation::</span>
+
+<span class="sd">        dX/dt(t) = A X(t)</span>
+<span class="sd">        X: D-dimensional vector</span>
+<span class="sd">        A: DxD matrix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblode.so&#39;</span>  <span class="c"># name of shared library</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>  <span class="c"># library directory</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring members of struct</span>
+        <span class="s">&#39;num_d&#39;</span><span class="p">,</span>  <span class="c"># num_* as size of array (no need to write `int`)</span>
+        <span class="s">&#39;num_s = 10000&#39;</span><span class="p">,</span>  <span class="c"># setting default value</span>
+        <span class="s">&#39;double dt = 0.001&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double a[d][d]&#39;</span><span class="p">,</span>  <span class="c"># num_d x num_d array</span>
+        <span class="s">&#39;double x[s][d]&#39;</span><span class="p">,</span>  <span class="c"># num_s x num_d array</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring functions to load</span>
+        <span class="s">&quot;x run(s&lt; s_end=num_s)&quot;</span>
+        <span class="c"># argument `s_end` has index `s` type and default is `num_s`</span>
+        <span class="c"># &#39;&lt;&#39; means it is upper bound of the index so the range is [1, num_s]</span>
+        <span class="c"># this function returns member x</span>
+        <span class="p">]</span>
+
+
+<span class="n">lode</span> <span class="o">=</span> <span class="n">LinearODE</span><span class="p">(</span><span class="n">num_d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c"># set num_d</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c"># access c-member &quot;VAR&quot; via lode.VAR</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">a_0_0</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c"># set lode.a[i][j]=v via lode.set(a_&#39;i&#39;_&#39;j&#39;=v)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">]):</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-code">
+<h2>C code<a class="headerlink" href="#c-code" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">linearode_</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_d</span><span class="p">,</span> <span class="n">num_s</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">dt</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">a</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">LinearODE</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">LinearODE_run</span><span class="p">(</span><span class="n">LinearODE</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">s_end</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">s</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="n">s_end</span><span class="p">;</span> <span class="o">++</span><span class="n">s</span><span class="p">){</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">d1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d1</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d1</span><span class="p">){</span>
+      <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d1</span><span class="p">];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">d2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d2</span><span class="p">){</span>
+        <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">dt</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">d1</span><span class="p">][</span><span class="n">d2</span><span class="p">]</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d2</span><span class="p">];</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-simobject-cstructname">
+<h2>Using <tt class="xref py py-attr docutils literal"><span class="pre">SimObject._cstructname_</span></tt><a class="headerlink" href="#using-simobject-cstructname" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h3>Python code<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span>
+
+<span class="k">class</span> <span class="nc">LinearOrdinaryDifferentialEquation</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>  <span class="c"># != LinearODE</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve D-dimensional linear ordinary differential equations</span>
+
+<span class="sd">    Equation::</span>
+
+<span class="sd">        dX/dt(t) = A X(t)</span>
+<span class="sd">        X: D-dimensional vector</span>
+<span class="sd">        A: DxD matrix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblode.so&#39;</span>  <span class="c"># name of shared library</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>  <span class="c"># library directory</span>
+    <span class="n">_cstructname_</span> <span class="o">=</span> <span class="s">&#39;LinearODE&#39;</span>  <span class="c"># specify the C struct name</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring members of struct</span>
+        <span class="s">&#39;num_d&#39;</span><span class="p">,</span>  <span class="c"># num_* as size of array (no need to write `int`)</span>
+        <span class="s">&#39;num_s = 10000&#39;</span><span class="p">,</span>  <span class="c"># setting default value</span>
+        <span class="s">&#39;double dt = 0.001&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double a[d][d]&#39;</span><span class="p">,</span>  <span class="c"># num_d x num_d array</span>
+        <span class="s">&#39;double x[s][d]&#39;</span><span class="p">,</span>  <span class="c"># num_s x num_d array</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring functions to load</span>
+        <span class="s">&quot;x run(s&lt; s_end=num_s)&quot;</span>
+        <span class="c"># argument `s_end` has index `s` type and default is `num_s`</span>
+        <span class="c"># &#39;&lt;&#39; means it is upper bound of the index so the range is [1, num_s]</span>
+        <span class="c"># this function returns member x</span>
+        <span class="p">]</span>
+
+
+<span class="n">lode</span> <span class="o">=</span> <span class="n">LinearOrdinaryDifferentialEquation</span><span class="p">(</span><span class="n">num_d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c"># set num_d</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c"># access c-member &quot;VAR&quot; via lode.VAR</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">a_0_0</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c"># set lode.a[i][j]=v via lode.set(a_&#39;i&#39;_&#39;j&#39;=v)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">]):</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>What is the difference from the normal version? (... just three lines!):</p>
+<div class="highlight-diff"><div class="highlight"><pre><span class="gd">--- lode_cstructname.py	2011-04-17 15:39:05.942934998 +0900</span>
+<span class="gi">+++ lode.py	2011-04-16 21:53:58.707407999 +0900</span>
+<span class="gu">@@ -1,6 +1,6 @@</span>
+ from railgun import SimObject, relpath
+ 
+<span class="gd">-class LinearOrdinaryDifferentialEquation(SimObject):  # != LinearODE</span>
+<span class="gi">+class LinearODE(SimObject):</span>
+     &quot;&quot;&quot;
+     Solve D-dimensional linear ordinary differential equations
+ 
+<span class="gu">@@ -14,7 +14,6 @@</span>
+ 
+     _clibname_ = &#39;liblode.so&#39;  # name of shared library
+     _clibdir_ = relpath(&#39;.&#39;, __file__)  # library directory
+<span class="gd">-    _cstructname_ = &#39;LinearODE&#39;  # specify the C struct name</span>
+     _cmembers_ = [  # declaring members of struct
+         &#39;num_d&#39;,  # num_* as size of array (no need to write `int`)
+         &#39;num_s = 10000&#39;,  # setting default value
+<span class="gu">@@ -30,7 +29,7 @@</span>
+         ]
+ 
+ 
+<span class="gd">-lode = LinearOrdinaryDifferentialEquation(num_d=2)  # set num_d</span>
+<span class="gi">+lode = LinearODE(num_d=2)  # set num_d</span>
+ lode.x[0] = [1, 0]  # access c-member &quot;VAR&quot; via lode.VAR
+ lode.a = [[0, 1], [-1, 0]]
+ x1 = lode.run().copy()
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="using-simobject-cfuncprefix">
+<h2>Using <tt class="xref py py-attr docutils literal"><span class="pre">SimObject._cfuncprefix_</span></tt><a class="headerlink" href="#using-simobject-cfuncprefix" title="Permalink to this headline">¶</a></h2>
+<p>How to omit the name of the struct in the C functions.</p>
+<div class="section" id="id2">
+<h3>Python code<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>Please notice that <tt class="docutils literal"><span class="pre">_cfuncprefix_</span> <span class="pre">=</span> <span class="pre">''</span></tt> is added to omit the name of
+the struct name.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span>
+
+<span class="k">class</span> <span class="nc">LinearODE</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Solve D-dimensional linear ordinary differential equations</span>
+
+<span class="sd">    Equation::</span>
+
+<span class="sd">        dX/dt(t) = A X(t)</span>
+<span class="sd">        X: D-dimensional vector</span>
+<span class="sd">        A: DxD matrix</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblode_cfuncprefix.so&#39;</span>  <span class="c"># name of shared library</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>  <span class="c"># library directory</span>
+    <span class="n">_cfuncprefix_</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>  <span class="c"># no prefix for C functions!</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring members of struct</span>
+        <span class="s">&#39;num_d&#39;</span><span class="p">,</span>  <span class="c"># num_* as size of array (no need to write `int`)</span>
+        <span class="s">&#39;num_s = 10000&#39;</span><span class="p">,</span>  <span class="c"># setting default value</span>
+        <span class="s">&#39;double dt = 0.001&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double a[d][d]&#39;</span><span class="p">,</span>  <span class="c"># num_d x num_d array</span>
+        <span class="s">&#39;double x[s][d]&#39;</span><span class="p">,</span>  <span class="c"># num_s x num_d array</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>  <span class="c"># declaring functions to load</span>
+        <span class="s">&quot;x run(s&lt; s_end=num_s)&quot;</span>
+        <span class="c"># argument `s_end` has index `s` type and default is `num_s`</span>
+        <span class="c"># &#39;&lt;&#39; means it is upper bound of the index so the range is [1, num_s]</span>
+        <span class="c"># this function returns member x</span>
+        <span class="p">]</span>
+
+
+<span class="n">lode</span> <span class="o">=</span> <span class="n">LinearODE</span><span class="p">(</span><span class="n">num_d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>  <span class="c"># set num_d</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>  <span class="c"># access c-member &quot;VAR&quot; via lode.VAR</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">x1</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">a_0_0</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">)</span>  <span class="c"># set lode.a[i][j]=v via lode.set(a_&#39;i&#39;_&#39;j&#39;=v)</span>
+<span class="n">x2</span> <span class="o">=</span> <span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">pylab</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">x1</span><span class="p">,</span> <span class="n">x2</span><span class="p">]):</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span>
+    <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h3>C code<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>The function is simply <tt class="docutils literal"><span class="pre">run</span></tt> without the prefix now.</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">linearode_</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_d</span><span class="p">,</span> <span class="n">num_s</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">dt</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">a</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">LinearODE</span><span class="p">;</span>
+
+<span class="kt">int</span> <span class="nf">run</span><span class="p">(</span><span class="n">LinearODE</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">s_end</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">s</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="n">s_end</span><span class="p">;</span> <span class="o">++</span><span class="n">s</span><span class="p">){</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">d1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d1</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d1</span><span class="p">){</span>
+      <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d1</span><span class="p">];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">d2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d2</span><span class="p">){</span>
+        <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">dt</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">d1</span><span class="p">][</span><span class="n">d2</span><span class="p">]</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d2</span><span class="p">];</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Linear Ordinary Differential Equation</a><ul>
+<li><a class="reference internal" href="#output">Output</a></li>
+<li><a class="reference internal" href="#python-code">Python code</a></li>
+<li><a class="reference internal" href="#c-code">C code</a></li>
+<li><a class="reference internal" href="#using-simobject-cstructname">Using <tt class="docutils literal"><span class="pre">SimObject._cstructname_</span></tt></a><ul>
+<li><a class="reference internal" href="#id1">Python code</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-simobject-cfuncprefix">Using <tt class="docutils literal"><span class="pre">SimObject._cfuncprefix_</span></tt></a><ul>
+<li><a class="reference internal" href="#id2">Python code</a></li>
+<li><a class="reference internal" href="#id3">C code</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../index.html"
+                        title="previous chapter">Samples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../lode_rk4/lode_rk4.html"
+                        title="next chapter">Runge-Kutta method (usage of <tt class="docutils literal"><span class="pre">_cmemsubsets_</span></tt>)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/samples/lode/lode.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../lode_rk4/lode_rk4.html" title="Runge-Kutta method (usage of _cmemsubsets_)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../index.html" title="Samples"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Samples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

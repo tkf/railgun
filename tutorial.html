@@ -1,0 +1,304 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>RailGun Tutorial &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="index.html" />
+    <link rel="next" title="SimObject — A class loads everything you need from C shared library" href="simobj.html" />
+    <link rel="prev" title="Welcome to RailGun’s documentation!" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simobj.html" title="SimObject — A class loads everything you need from C shared library"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to RailGun’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="railgun-tutorial">
+<h1>RailGun Tutorial<a class="headerlink" href="#railgun-tutorial" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="how-to-write-c-program-for-railgun">
+<h2>How to write C program for RailGun<a class="headerlink" href="#how-to-write-c-program-for-railgun" title="Permalink to this headline">¶</a></h2>
+<p>RailGun requires the following constraints in C library to be loaded.</p>
+<div class="section" id="constraints-on-data-structure-c-s-struct">
+<h3>Constraints on data structure (C&#8217;s <cite>struct</cite>)<a class="headerlink" href="#constraints-on-data-structure-c-s-struct" title="Permalink to this headline">¶</a></h3>
+<p>This is an example of a <cite>struct</cite>:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="k">typedef</span> <span class="k">struct</span> <span class="n">linearode_</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_d</span><span class="p">,</span> <span class="n">num_s</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">dt</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">a</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">**</span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">LinearODE</span><span class="p">;</span>
+</pre></div>
+</div>
+<p>Here, variable named as <cite>num_d</cite> has special meaning in RailGun.
+This is the size of array along index <cite>d</cite>.</p>
+<p>You can have temporary variables in your C code, but if you want to
+get or set C variable from python, you must add that variable to the
+<cite>struct</cite>.</p>
+</div>
+<div class="section" id="constraints-on-c-functions">
+<span id="how-to-write-cfunc"></span><h3>Constraints on C functions<a class="headerlink" href="#constraints-on-c-functions" title="Permalink to this headline">¶</a></h3>
+<p>If you want to use some functions from python, the function must
+take a pointer of the <cite>struct</cite> as its first argument, like this:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="n">NameOfStruct_name_of_function</span><span class="p">(</span><span class="n">NameOfStruct</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="p">...)</span>
+</pre></div>
+</div>
+<p>If this function returns non-zero value, RailGun raises an error.</p>
+<p>Here is an example:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="nf">LinearODE_run</span><span class="p">(</span><span class="n">LinearODE</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">s_end</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">s</span><span class="p">,</span> <span class="n">d1</span><span class="p">,</span> <span class="n">d2</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">s</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">s</span> <span class="o">&lt;</span> <span class="n">s_end</span><span class="p">;</span> <span class="o">++</span><span class="n">s</span><span class="p">){</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">d1</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d1</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d1</span><span class="p">){</span>
+      <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d1</span><span class="p">];</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">d2</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">d2</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_d</span><span class="p">;</span> <span class="o">++</span><span class="n">d2</span><span class="p">){</span>
+        <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="p">][</span><span class="n">d1</span><span class="p">]</span> <span class="o">+=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">dt</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">[</span><span class="n">d1</span><span class="p">][</span><span class="n">d2</span><span class="p">]</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">[</span><span class="n">s</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="n">d2</span><span class="p">];</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">You don&#8217;t need to check if <cite>s_end</cite> above is in the range of
+<em>[1, self-&gt;num_s]</em>.  We will see how you can leave it to RailGun.</p>
+</div>
+</div>
+</div>
+<div class="section" id="how-to-use-your-c-functions-from-python">
+<h2>How to use your C functions from python<a class="headerlink" href="#how-to-use-your-c-functions-from-python" title="Permalink to this headline">¶</a></h2>
+<p>All you need to import from RailGun is these two:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span>
+</pre></div>
+</div>
+<p>To load your c function above, all you need to do is define a
+class which inherits <a class="reference internal" href="simobj.html#railgun.SimObject" title="railgun.SimObject"><tt class="xref py py-class docutils literal"><span class="pre">railgun.SimObject</span></tt></a>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">LinearODE</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblode.so&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;num_d&#39;</span><span class="p">,</span>
+        <span class="s">&#39;num_s = 10000&#39;</span>
+        <span class="s">&#39;double dt = 0.001&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double a[d][d]&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double x[s][d]&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;x run(int s_end=num_s)&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>Name of the class</dt>
+<dd>should be same as name of the C struct.</dd>
+<dt><cite>_clibname_</cite>: a string</dt>
+<dd>Name of your C shared library.</dd>
+<dt><cite>_clibdir_</cite>: a string</dt>
+<dd>Path of the directory where your C library are.
+If you want to specify relative path from where
+this python module file are, you can use
+<tt class="docutils literal"><span class="pre">relpath('relative/path',</span> <span class="pre">__file__)</span></tt>.</dd>
+<dt><cite>_cmembers_</cite>: a list of string</dt>
+<dd>This is the definitions of your C variables.
+<strong>The order must be the same as in the C struct</strong>.
+For the member named <cite>num_*</cite> you can omit <tt class="docutils literal"><span class="pre">int</span></tt>.
+You can set the default value as <tt class="docutils literal"><span class="pre">double</span> <span class="pre">dt</span> <span class="pre">=</span> <span class="pre">0.001</span></tt>.
+Indices of C array have meaning. Size of the first axis of
+<tt class="docutils literal"><span class="pre">x[s][d]</span></tt> is <tt class="docutils literal"><span class="pre">num_s</span></tt>, and the second is <tt class="docutils literal"><span class="pre">num_d</span></tt>.</dd>
+<dt><cite>_cfuncs_</cite>: a list of string</dt>
+<dd><p class="first">This is the definitions of your C functions which
+take the form <cite>ret func_name(arg, ...)</cite> where</p>
+<ul class="last simple">
+<li><cite>ret</cite> is the returned value of the function which is a name
+of C <cite>struct</cite> member. You can leave it empty.</li>
+<li><cite>func_name</cite> is the name of the C function(s).
+You don&#8217;t need to write the name of the <cite>struct</cite>.
+The name of the <cite>struct</cite> will be automatically added.
+You can specify several functions using special notations.</li>
+<li><cite>arg</cite> is the definition of the arguments for the C function.
+This is essentially same as function declaration of C,
+but with special features. One of the feature is default
+value. You can specify default value like python:
+<tt class="docutils literal"><span class="pre">int</span> <span class="pre">s_end=num_s</span></tt> or <tt class="docutils literal"><span class="pre">int</span> <span class="pre">s_start=0</span></tt>.</li>
+</ul>
+</dd>
+</dl>
+<div class="section" id="loading-several-c-functions-at-once-func-key-c1-c2-notation-choices">
+<span id="choices"></span><h3>Loading several C functions at once: <tt class="docutils literal"><span class="pre">func_{key|c1,c2}</span></tt>-notation (choices)<a class="headerlink" href="#loading-several-c-functions-at-once-func-key-c1-c2-notation-choices" title="Permalink to this headline">¶</a></h3>
+<p>If you have several C functions of <em>same type</em> such as:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="kt">int</span> <span class="n">NameOfStruct_func_method1</span><span class="p">(</span><span class="n">NameOfStruct</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+<span class="kt">int</span> <span class="n">NameOfStruct_func_method2</span><span class="p">(</span><span class="n">NameOfStruct</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+<span class="kt">int</span> <span class="n">NameOfStruct_func_method3</span><span class="p">(</span><span class="n">NameOfStruct</span> <span class="o">*</span><span class="n">self</span><span class="p">,</span> <span class="kt">int</span> <span class="n">a</span><span class="p">,</span> <span class="kt">int</span> <span class="n">b</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can load all these functions like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&#39;func_{meth | method1, method2, method3}(int a, int b)&#39;</span>
+</pre></div>
+</div>
+<p>Generated python function will be like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">NameOfStruct</span><span class="o">.</span><span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">meth</span><span class="o">=</span><span class="s">&#39;method1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>as you see, you can specify &#8220;method&#8221; by option of the python function.
+The <tt class="docutils literal"><span class="pre">func_{key|c1,c2}</span></tt>-notation is called &#8220;choice set&#8221;.</p>
+</div>
+<div class="section" id="automatically-check-argument-consistency">
+<h3>Automatically check argument consistency<a class="headerlink" href="#automatically-check-argument-consistency" title="Permalink to this headline">¶</a></h3>
+<p>You can use name of the index as a type of argument like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;run(s end)&quot;</span>
+</pre></div>
+</div>
+<p>so that <cite>end</cite> is always in the range <cite>[0, num_s)</cite>.</p>
+<p>If <cite>end</cite> is an &#8220;upper bound&#8221; of the index, you want it to be in the
+range <cite>(0, num_s]</cite>.  You can specify this with <cite>&lt;</cite> like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="s">&quot;run(s&lt; end)&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="using-generated-python-class">
+<h2>Using generated python class<a class="headerlink" href="#using-generated-python-class" title="Permalink to this headline">¶</a></h2>
+<p>An instance of the simulation class can be created like any other
+Python classes.  Note that <cite>num_*</cite> arguments are required:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lode</span> <span class="o">=</span> <span class="n">LinearODE</span><span class="p">(</span><span class="n">num_d</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you specified the default values for <cite>num_*</cite>, you can make an
+instance without passing its value.</p>
+<p>Once you create an instance, you can change C variables in
+various ways:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lode</span><span class="o">.</span><span class="n">a</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">a_0_0</span><span class="o">=-</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that <cite>lode.setv(a_0_0=-0.5)</cite> and <cite>lode.a[0,0] = -0.5</cite> are
+the same.</p>
+<p>Calling function is easy.  Number of arguments are the number of
+arguments of C function puls number of the &#8220;choice set&#8221;.  The first
+arguments are used for C function and then the last arguments are used
+for &#8220;choice set&#8221;.  You can also use keyword-style arguments:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">lode</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">s_end</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">RailGun Tutorial</a><ul>
+<li><a class="reference internal" href="#how-to-write-c-program-for-railgun">How to write C program for RailGun</a><ul>
+<li><a class="reference internal" href="#constraints-on-data-structure-c-s-struct">Constraints on data structure (C&#8217;s <cite>struct</cite>)</a></li>
+<li><a class="reference internal" href="#constraints-on-c-functions">Constraints on C functions</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#how-to-use-your-c-functions-from-python">How to use your C functions from python</a><ul>
+<li><a class="reference internal" href="#loading-several-c-functions-at-once-func-key-c1-c2-notation-choices">Loading several C functions at once: <tt class="docutils literal"><span class="pre">func_{key|c1,c2}</span></tt>-notation (choices)</a></li>
+<li><a class="reference internal" href="#automatically-check-argument-consistency">Automatically check argument consistency</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-generated-python-class">Using generated python class</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to RailGun&#8217;s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="simobj.html"
+                        title="next chapter"><tt class="docutils literal docutils literal"><span class="pre">SimObject</span></tt> &#8212; A class loads everything you need from C shared library</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="simobj.html" title="SimObject — A class loads everything you need from C shared library"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to RailGun’s documentation!"
+             >previous</a> |</li>
+        <li><a href="index.html">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

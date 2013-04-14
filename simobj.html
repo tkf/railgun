@@ -1,0 +1,622 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>SimObject — A class loads everything you need from C shared library &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="index.html" />
+    <link rel="next" title="Utility functions" href="utils.html" />
+    <link rel="prev" title="RailGun Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="RailGun Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simobject-a-class-loads-everything-you-need-from-c-shared-library">
+<h1><tt class="xref py py-class docutils literal"><span class="pre">SimObject</span></tt> &#8212; A class loads everything you need from C shared library<a class="headerlink" href="#simobject-a-class-loads-everything-you-need-from-c-shared-library" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="yourcode.YourSimObject">
+<em class="property">class </em><tt class="descclassname">yourcode.</tt><tt class="descname">YourSimObject</tt><a class="headerlink" href="#yourcode.YourSimObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>To load your C shared library, define a class inheriting
+<a class="reference internal" href="#railgun.SimObject" title="railgun.SimObject"><tt class="xref py py-class docutils literal"><span class="pre">railgun.SimObject</span></tt></a>.
+You need to define four attribute: <a class="reference internal" href="#yourcode.YourSimObject._clibname_" title="yourcode.YourSimObject._clibname_"><tt class="xref py py-attr docutils literal"><span class="pre">_clibname_</span></tt></a>,
+<a class="reference internal" href="#yourcode.YourSimObject._clibdir_" title="yourcode.YourSimObject._clibdir_"><tt class="xref py py-attr docutils literal"><span class="pre">_clibdir_</span></tt></a>, <a class="reference internal" href="#yourcode.YourSimObject._cmembers_" title="yourcode.YourSimObject._cmembers_"><tt class="xref py py-attr docutils literal"><span class="pre">_cmembers_</span></tt></a> and <a class="reference internal" href="#yourcode.YourSimObject._cfuncs_" title="yourcode.YourSimObject._cfuncs_"><tt class="xref py py-attr docutils literal"><span class="pre">_cfuncs_</span></tt></a>.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">In this document, <a class="reference internal" href="#yourcode.YourSimObject" title="yourcode.YourSimObject"><tt class="xref py py-class docutils literal"><span class="pre">yourcode.YourSimObject</span></tt></a> means the class
+<em>you need to define</em>.  This class is not in RailGun.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;name_of_shared_library.so&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="s">&#39;path/to/shared/library&#39;</span>
+
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;num_i&#39;</span><span class="p">,</span>
+        <span class="s">&#39;num_j&#39;</span><span class="p">,</span>
+        <span class="s">&#39;int scalar&#39;</span><span class="p">,</span>
+        <span class="s">&#39;int vector[i]&#39;</span><span class="p">,</span>
+        <span class="s">&#39;int matrix[i][j]&#39;</span><span class="p">,</span>
+        <span class="o">...</span>
+        <span class="p">]</span>
+
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;name_of_c_function&#39;</span><span class="p">,</span>
+        <span class="o">...</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_i</span><span class="p">,</span> <span class="n">num_j</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="n">SimObject</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_i</span><span class="o">=</span><span class="n">num_i</span><span class="p">,</span> <span class="n">num_j</span><span class="o">=</span><span class="n">num_j</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">some_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="o">...</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li>You can override <tt class="xref py py-meth docutils literal"><span class="pre">railgun.SimObject.__init__()</span></tt>.</li>
+<li>You can define additional python methods or members.
+But be careful with name: <a class="reference internal" href="#railgun.SimObject" title="railgun.SimObject"><tt class="xref py py-class docutils literal"><span class="pre">railgun.SimObject</span></tt></a> will overwrite
+the methods or members of your class with name in
+<a class="reference internal" href="#yourcode.YourSimObject._cmembers_" title="yourcode.YourSimObject._cmembers_"><tt class="xref py py-attr docutils literal"><span class="pre">_cmembers_</span></tt></a> and <a class="reference internal" href="#yourcode.YourSimObject._cfuncs_" title="yourcode.YourSimObject._cfuncs_"><tt class="xref py py-attr docutils literal"><span class="pre">_cfuncs_</span></tt></a>.</li>
+</ul>
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._clibname_">
+<tt class="descname">_clibname_</tt><a class="headerlink" href="#yourcode.YourSimObject._clibname_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Name of your C shared library.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._clibdir_">
+<tt class="descname">_clibdir_</tt><a class="headerlink" href="#yourcode.YourSimObject._clibdir_" title="Permalink to this definition">¶</a></dt>
+<dd><p>Path to the directory where your C library locates.
+If you want to specify relative path from where
+this python module file are, you can use <tt class="xref py py-func docutils literal"><span class="pre">relpath()</span></tt>.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cmembers_">
+<tt class="descname">_cmembers_</tt><a class="headerlink" href="#yourcode.YourSimObject._cmembers_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a list of the definitions of C variables with
+the following syntax:</p>
+<div class="highlight-python"><pre>[CDT] VAR_NAME[INDEX] [= DEFAULT]</pre>
+</div>
+<dl class="docutils">
+<dt><strong>VAR_NAME</strong>: name of variable</dt>
+<dd><p class="first">This let you access the C variable by <cite>obj.VAR_NAME</cite>.</p>
+<p class="last">Starting the name of the member with <tt class="docutils literal"><span class="pre">num_</span></tt> defines an index
+whose name is what comes after this. For example, <tt class="docutils literal"><span class="pre">num_i</span></tt> defines
+index <tt class="docutils literal"><span class="pre">i</span></tt>. Value of <tt class="docutils literal"><span class="pre">num_i</span></tt> is the size of array(s) along
+the index <tt class="docutils literal"><span class="pre">i</span></tt>. For the member named <tt class="docutils literal"><span class="pre">num_*</span></tt>, you can omit
+<strong>CDT</strong> (<tt class="docutils literal"><span class="pre">int</span></tt>).</p>
+</dd>
+<dt><strong>CDT</strong>: C Data Type, (optional if <strong>VAR_NAME</strong> starts with <tt class="docutils literal"><span class="pre">num_</span></tt>)</dt>
+<dd>Choose CDT from the list in
+<a class="reference internal" href="#relationships-between-c-data-type-cdt-numpy-dtype-and-ctypes">Relationships between C Data Type (CDT), numpy dtype and ctypes</a>.</dd>
+<dt><strong>INDEX</strong>: index, optional</dt>
+<dd><p class="first">If the variable is an array, <strong>INDEX</strong> should be specified.
+For an array with shape <tt class="docutils literal"><span class="pre">num_i1</span> <span class="pre">x</span> <span class="pre">num_i2</span> <span class="pre">x</span> <span class="pre">...</span> <span class="pre">x</span> <span class="pre">num_iN</span></tt>,
+<strong>INDEX</strong> should be <tt class="docutils literal"><span class="pre">[i1][i2]...[iN]</span></tt> or <tt class="docutils literal"><span class="pre">[i1,i2,...,iN]</span></tt>.</p>
+<dl class="last docutils">
+<dt><tt class="docutils literal"><span class="pre">[i1][i2]...[iN]</span></tt>: multidimensional array</dt>
+<dd>You can access <tt class="docutils literal"><span class="pre">a[i][j]</span></tt> as <tt class="docutils literal"><span class="pre">self-&gt;a[i][j]</span></tt> in C
+code. This array data structure is called &#8220;<a class="reference external" href="http://en.wikipedia.org/wiki/Iliffe_vector">Iliffe vector</a>&#8221; or
+&#8220;display&#8221;. Strictly speaking, this is not equivalent to
+multidimensional array, but you can use as if it is.</dd>
+<dt><tt class="docutils literal"><span class="pre">[i1,i2,...,iN]</span></tt>: flattened array</dt>
+<dd>You can access <tt class="docutils literal"><span class="pre">a[i][j]</span></tt> as <tt class="docutils literal"><span class="pre">self-&gt;a[i</span> <span class="pre">*</span> <span class="pre">self-&gt;num_j</span> <span class="pre">+</span> <span class="pre">j]</span></tt>
+in C code. Specifying correct index in C code is up to
+you.  It is recommended to use macro or inline function.</dd>
+</dl>
+</dd>
+<dt><strong>DEFAULT</strong>: a number, optional</dt>
+<dd>A default number for the variable. If <strong>VAR_NAME</strong> is
+an array, it will be filled with this value when it is created.</dd>
+</dl>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The order and number of the variables in <a class="reference internal" href="#yourcode.YourSimObject._cmembers_" title="yourcode.YourSimObject._cmembers_"><tt class="xref py py-attr docutils literal"><span class="pre">_cmembers_</span></tt></a>
+must be the same as in the C struct.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&#39;num_i&#39;</span><span class="p">,</span> <span class="s">&#39;num_j&#39;</span><span class="p">,</span> <span class="s">&#39;num_k&#39;</span><span class="p">,</span>
+    <span class="s">&#39;int int_scalar&#39;</span><span class="p">,</span>
+    <span class="s">&#39;int int_vector1[i]&#39;</span><span class="p">,</span>
+    <span class="s">&#39;int int_vector2[j] = 0&#39;</span><span class="p">,</span>
+    <span class="s">&#39;int int_matrix[i][j]&#39;</span><span class="p">,</span>
+    <span class="s">&#39;double double_scalar = 0.1&#39;</span><span class="p">,</span>
+    <span class="s">&#39;double double_vector[k] = 18.2&#39;</span><span class="p">,</span>
+    <span class="s">&#39;double double_matrix[k][i] = -4.1&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>See also: <a class="reference internal" href="utils.html#railgun.cmems" title="railgun.cmems"><tt class="xref py py-func docutils literal"><span class="pre">railgun.cmems()</span></tt></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cfuncs_">
+<tt class="descname">_cfuncs_</tt><a class="headerlink" href="#yourcode.YourSimObject._cfuncs_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is a list of the definitions of C functions with
+the following syntax:</p>
+<div class="highlight-python"><pre>[RETURN_VAR] FUNC_NAME(ARG, [ARG[, ...]])</pre>
+</div>
+<dl class="docutils">
+<dt><strong>FUNC_NAME</strong>: string</dt>
+<dd><p class="first">Name of C function to be loaded.
+You don&#8217;t need to write the name of the <cite>struct</cite>.
+The name of the <cite>struct</cite> will be automatically prepended.</p>
+<p class="last">See also: <a class="reference internal" href="tutorial.html#choices"><em>Loading several C functions at once: func_{key|c1,c2}-notation (choices)</em></a>.</p>
+</dd>
+<dt><strong>RETURN_VAR</strong>: string, optional</dt>
+<dd>Name from C struct members.
+If specified, python wrapper function named <strong>FUNC_NAME</strong>
+returns value of <strong>RETURN_VAR</strong>.</dd>
+<dt><strong>ARG</strong>:</dt>
+<dd><p class="first">Argument of C function, specified by the following syntax:</p>
+<div class="highlight-python"><pre>CDT_OR_INDEX ARG_NAME [= DEFAULT]</pre>
+</div>
+<dl class="docutils">
+<dt><strong>CDT_OR_INDEX</strong>: string</dt>
+<dd>C Data Type or index.
+If index <tt class="docutils literal"><span class="pre">i</span></tt> (<tt class="docutils literal"><span class="pre">i&lt;</span></tt>) is used here, error will be rasied if
+the argument <cite>x</cite> does not satisfy <cite>0 &lt;= x &lt; num_i</cite>
+(<cite>0 &lt; x &lt;= num_i</cite>).</dd>
+<dt><strong>ARG_NAME</strong>: string</dt>
+<dd>Name of the argument.</dd>
+<dt><strong>DEFAULT</strong>: a number or member of C struct, optional</dt>
+<dd>Default value for the argument.</dd>
+</dl>
+<p class="last">You don&#8217;t need to write <tt class="docutils literal"><span class="pre">self</span></tt> which will be automatically
+passed as the first argument of C function.</p>
+</dd>
+</dl>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&quot;func_spam()&quot;</span><span class="p">,</span>
+    <span class="s">&quot;bar func_foo()&quot;</span><span class="p">,</span>
+    <span class="s">&quot;func_with_args(int a, double b, i start=0, i&lt; end=num_i)&quot;</span><span class="p">,</span>
+    <span class="s">&quot;func_{key | c1, c2, c3}()&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+</pre></div>
+</div>
+<p>See also: <a class="reference internal" href="tutorial.html#how-to-write-cfunc"><em>Constraints on C functions</em></a></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cstructname_">
+<tt class="descname">_cstructname_</tt><a class="headerlink" href="#yourcode.YourSimObject._cstructname_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is optional. This is used to specify the name of C struct
+explicitly:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">CStructName</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>  <span class="c"># &#39;CStructName&#39; is name of c-struct</span>
+    <span class="o">...</span>
+
+<span class="k">class</span> <span class="nc">OtherNameForPyClass</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">_cstructname_</span> <span class="o">=</span> <span class="s">&#39;CStructName&#39;</span>  <span class="c"># this is name of c-struct</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cfuncprefix_">
+<tt class="descname">_cfuncprefix_</tt><a class="headerlink" href="#yourcode.YourSimObject._cfuncprefix_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is optional. This is used to specify the prefix of C functions
+explicitly (default is name of C Struct + <tt class="docutils literal"><span class="pre">_</span></tt>):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">_cfuncprefix_</span> <span class="o">=</span> <span class="s">&#39;MyPrefix&#39;</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&quot;FuncName()&quot;</span><span class="p">,</span>  <span class="c"># &#39;MyPrefixFuncName&#39; will be loaded</span>
+        <span class="o">...</span>
+        <span class="p">]</span>
+
+<span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="n">_cfuncprefix_</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&quot;FuncName()&quot;</span><span class="p">,</span>  <span class="c"># &#39;FuncName&#39; will be loaded</span>
+        <span class="o">...</span>
+        <span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cmemsubsets_">
+<tt class="descname">_cmemsubsets_</tt><a class="headerlink" href="#yourcode.YourSimObject._cmemsubsets_" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict of dict of list, optional.</p>
+<p>It defines the subset of C functions and struct variables to be
+accessible.  It must be of the following format:</p>
+<div class="highlight-py"><div class="highlight"><pre><span class="p">{</span><span class="s">&#39;&lt;SUBSET_KEY_1&gt;&#39;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&#39;funcs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;&lt;FUNCTION_1&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;FUNCTION_2&gt;&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="s">&#39;members&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;&lt;MEMBER_1&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;MEMBER_2&gt;&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span>
+    <span class="s">&#39;default&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>  <span class="c"># optional (default is False)</span>
+    <span class="p">},</span>
+ <span class="s">&#39;&lt;SUBSET_KEY_2&gt;&#39;</span><span class="p">:</span> <span class="p">{</span><span class="o">...</span><span class="p">},</span>
+ <span class="o">...</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>This is useful when some subset of functions needs some
+subset of struct members.  For example, when in &#8220;debugging
+mode&#8221;, you may want to record all temporal variables.  However,
+allocating temporal variables can be wasteful if you are not
+debugging.  Using <a class="reference internal" href="#yourcode.YourSimObject._cmemsubsets_" title="yourcode.YourSimObject._cmemsubsets_"><tt class="xref py py-attr docutils literal"><span class="pre">_cmemsubsets_</span></tt></a>, you can allocate
+temporal variables when in the debugging mode and make sure
+that the functions that requires temporal variables are callable
+only in the debugging mode.  It helps you to avoid segmentation
+fault due to accessing invalid pointer.  <a class="reference internal" href="#yourcode.YourSimObject._cmemsubsets_" title="yourcode.YourSimObject._cmemsubsets_"><tt class="xref py py-attr docutils literal"><span class="pre">_cmemsubsets_</span></tt></a>
+can be thought as machinery for &#8220;access levels&#8221;.</p>
+<dl class="docutils">
+<dt><strong>SUBSET_KEY</strong> <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
+<dd>You can pass boolean argument named <tt class="docutils literal"><span class="pre">_cmemsubsets_SUBSET_KEY</span></tt>
+to <tt class="xref py py-meth docutils literal"><span class="pre">railgun.SimObject.__init__()</span></tt> to enable or disable
+the corresponding subset.</dd>
+<dt><strong>FUNCTION</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
+<dd>These functions are accessible from Python when the corresponding
+subset is enabled.
+You can use short-hand notation <tt class="docutils literal"><span class="pre">'func_{a,</span> <span class="pre">b,</span> <span class="pre">c}'</span></tt> to
+specify functions <tt class="docutils literal"><span class="pre">'func_a'</span></tt>, <tt class="docutils literal"><span class="pre">'func_b'</span></tt> and <tt class="docutils literal"><span class="pre">'func_c'</span></tt>.</dd>
+<dt><strong>MEMBER</strong> <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span></dt>
+<dd>These struct members are allocated and accessible from Python
+when the corresponding subset is enabled.</dd>
+<dt><strong>DEFAULT</strong> <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
+<dd>It is <cite>False</cite> when not specified, meaning that the C members
+in this subset is not accessible.</dd>
+</dl>
+<p>Here is an example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="c"># ...</span>
+        <span class="s">&#39;temp[j][k]&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;run_{ mode | normal, debug }()&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="n">_cmemsubsets_</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;debug&#39;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s">&#39;funcs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;run_debug&#39;</span><span class="p">],</span>
+            <span class="s">&#39;members&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;temp&#39;</span><span class="p">],</span>
+            <span class="p">},</span>
+        <span class="p">}</span>
+
+<span class="c"># Run simulation in debugging mode:</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">YourSimObject</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">_cmemsubsets_debug</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">sim</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s">&#39;debug&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="yourcode.YourSimObject._cwrap_C_FUNC_NAME">
+<tt class="descname">_cwrap_C_FUNC_NAME</tt><big>(</big><em>func</em><big>)</big><a class="headerlink" href="#yourcode.YourSimObject._cwrap_C_FUNC_NAME" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is optional. If you want to wrap C function <tt class="docutils literal"><span class="pre">C_FUNC_NAME</span></tt>,
+define this wrapper function.</p>
+<p>Example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;...&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="s">&#39;...&#39;</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;num_i&#39;</span><span class="p">,</span>
+        <span class="s">&#39;int vec[i]&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;your_c_function&#39;</span><span class="p">,</span>
+        <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_cwrap_your_c_function</span><span class="p">(</span><span class="n">old_c_function</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">your_c_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+            <span class="n">old_c_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">vec</span><span class="p">[:]</span>  <span class="c"># return copy</span>
+        <span class="k">return</span> <span class="n">your_c_function</span>
+</pre></div>
+</div>
+<p>After <cite>your_c_function</cite> is loaded from C library, your wrapper function
+will be called like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">your_c_function</span> <span class="o">=</span> <span class="n">_cwrap_your_c_function</span><span class="p">(</span><span class="n">your_c_function</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="yourcode.YourSimObject._cerrors_">
+<tt class="descname">_cerrors_</tt><a class="headerlink" href="#yourcode.YourSimObject._cerrors_" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is optional.
+When C function returns non-zero value, RailGun raises error
+which just tells the value returned (error code).
+To make the error message readable, or to handle the error
+better, you may want to use this attribute.</p>
+<p>If C function returns the non-zero value <tt class="docutils literal"><span class="pre">error_code</span></tt>, and it
+is found <tt class="docutils literal"><span class="pre">_cerrors_</span></tt>, RailGun will raise the error
+<tt class="docutils literal"><span class="pre">_cerrors_[error_code]</span></tt>.</p>
+<p>Examples:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">class</span> <span class="nc">YourSimObject</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;...&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="s">&#39;...&#39;</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span><span class="o">...</span><span class="p">]</span>
+
+    <span class="k">class</span> <span class="nc">YourExceptionClass</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="n">_cerrors_</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="c"># set exception</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s">&#39;error code 1 is raised&#39;</span><span class="p">),</span>
+        <span class="c"># you can use your own exception class</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="n">YourExceptionClass</span><span class="p">(</span><span class="s">&#39;your error message&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+</pre></div>
+</div>
+<p class="versionadded">
+<span class="versionmodified">New in version 0.1.7.</span></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="railgun.SimObject">
+<em class="property">class </em><tt class="descclassname">railgun.</tt><tt class="descname">SimObject</tt><a class="headerlink" href="#railgun.SimObject" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="method">
+<dt id="railgun.SimObject.setv">
+<tt class="descname">setv</tt><big>(</big><em>**kwds</em><big>)</big><a class="headerlink" href="#railgun.SimObject.setv" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is used for setting values of C struct members or any other
+Python attributes.</p>
+<p>The following two lines have same effects:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">obj</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">scalar</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">array</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+<span class="n">obj</span><span class="o">.</span><span class="n">scalar</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">obj</span><span class="o">.</span><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>You can use alias for elements of array.
+The following lines have same effect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">obj</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="n">var_0_1</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">obj</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="railgun.SimObject.getv">
+<tt class="descname">getv</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#railgun.SimObject.getv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the C variable by specifying the name or any other
+Python attributes.</p>
+<p>The following lines have same effect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">var</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">var</span>
+<span class="n">var</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">getv</span><span class="p">(</span><span class="s">&#39;var&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is useful when you want to load multiple variables to
+local variable at once.
+The Following lines have same effect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">c</span><span class="p">)</span>
+<span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">getv</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">getv</span><span class="p">(</span><span class="s">&#39;a, b, c&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="railgun.SimObject.num">
+<tt class="descname">num</tt><big>(</big><em>*args</em><big>)</big><a class="headerlink" href="#railgun.SimObject.num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the size along index.
+The Following lines have same effect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">num_i</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">num_i</span>
+<span class="n">num_i</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">num</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can specify multiple indices.
+The Following lines have same effect:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="p">(</span><span class="n">num_i</span><span class="p">,</span> <span class="n">num_j</span><span class="p">,</span> <span class="n">num_k</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">num_i</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">num_j</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">num_k</span><span class="p">)</span>
+<span class="p">(</span><span class="n">num_i</span><span class="p">,</span> <span class="n">num_j</span><span class="p">,</span> <span class="n">num_k</span><span class="p">)</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">num</span><span class="p">(</span><span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">,</span> <span class="s">&#39;k&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="n">num_i</span><span class="p">,</span> <span class="n">num_j</span><span class="p">,</span> <span class="n">num_k</span><span class="p">)</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">num</span><span class="p">(</span><span class="s">&#39;i, j, k&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<div class="section" id="relationships-between-c-data-type-cdt-numpy-dtype-and-ctypes">
+<h2>Relationships between C Data Type (CDT), numpy dtype and ctypes<a class="headerlink" href="#relationships-between-c-data-type-cdt-numpy-dtype-and-ctypes" title="Permalink to this headline">¶</a></h2>
+<p>To specify C-language type of C struct members and C function arguments,
+the following C Data Types (<strong>CDTs</strong>) are available.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="40%" />
+<col width="17%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">CDT</th>
+<th class="head">C-language type</th>
+<th class="head">numpy dtype</th>
+<th class="head">ctypes</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">char</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">char</span></tt></td>
+<td><cite>character</cite></td>
+<td><cite>c_char</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">short</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">short</span></tt></td>
+<td><cite>short</cite></td>
+<td><cite>c_short</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">ushort</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">unsigned</span> <span class="pre">short</span></tt></td>
+<td><cite>ushort</cite></td>
+<td><cite>c_ushort</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">int</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">int</span></tt></td>
+<td><cite>int32</cite></td>
+<td><cite>c_int</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">uint</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">unsigned</span> <span class="pre">int</span></tt></td>
+<td><cite>uint32</cite></td>
+<td><cite>c_uint</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">long</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">long</span></tt></td>
+<td><cite>int32</cite> or
+<cite>int64</cite></td>
+<td><cite>c_long</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">ulong</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">unsigned</span> <span class="pre">long</span></tt></td>
+<td><cite>uint32</cite> or
+<cite>uint64</cite></td>
+<td><cite>c_ulong</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">longlong</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">long</span> <span class="pre">long</span></tt></td>
+<td><cite>longlong</cite></td>
+<td><cite>c_longlong</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">ulonglong</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">unsigned</span> <span class="pre">long</span> <span class="pre">long</span></tt></td>
+<td><cite>ulonglong</cite></td>
+<td><cite>c_ulonglong</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">float</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">float</span></tt></td>
+<td><cite>float32</cite></td>
+<td><cite>c_float</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">double</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">double</span></tt></td>
+<td><cite>float</cite></td>
+<td><cite>c_double</cite></td>
+</tr>
+<tr class="row-odd"><td><tt class="docutils literal"><span class="pre">longdouble</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">long</span> <span class="pre">double</span></tt></td>
+<td><cite>longdouble</cite></td>
+<td><cite>c_longdouble</cite></td>
+</tr>
+<tr class="row-even"><td><tt class="docutils literal"><span class="pre">bool</span></tt></td>
+<td><tt class="xref c c-type docutils literal"><span class="pre">bool</span></tt></td>
+<td><cite>bool</cite></td>
+<td><cite>c_bool</cite></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Numpy dtypes corresponding to CDTs <tt class="docutils literal"><span class="pre">long</span></tt> and <tt class="docutils literal"><span class="pre">ulong</span></tt> are chosen
+based on the variable returned by <tt class="xref py py-func docutils literal"><span class="pre">platform.architecture()</span></tt>.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#"><tt class="docutils literal"><span class="pre">SimObject</span></tt> &#8212; A class loads everything you need from C shared library</a><ul>
+<li><a class="reference internal" href="#relationships-between-c-data-type-cdt-numpy-dtype-and-ctypes">Relationships between C Data Type (CDT), numpy dtype and ctypes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">RailGun Tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utils.html"
+                        title="next chapter">Utility functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/simobj.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="utils.html" title="Utility functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="RailGun Tutorial"
+             >previous</a> |</li>
+        <li><a href="index.html">RailGun 0.1.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

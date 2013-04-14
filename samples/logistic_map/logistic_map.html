@@ -1,0 +1,249 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Logistic map with additive noise (usage of railgun.cmem()) &mdash; RailGun 0.1.7 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="RailGun 0.1.7 documentation" href="../../index.html" />
+    <link rel="up" title="Samples" href="../index.html" />
+    <link rel="next" title="Using RailGun with GSL (GNU Scientific Library)" href="../gslctypes/gslctypes.html" />
+    <link rel="prev" title="Runge-Kutta method (usage of _cmemsubsets_)" href="../lode_rk4/lode_rk4.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../gslctypes/gslctypes.html" title="Using RailGun with GSL (GNU Scientific Library)"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../lode_rk4/lode_rk4.html" title="Runge-Kutta method (usage of _cmemsubsets_)"
+             accesskey="P">previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Samples</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="logistic-map-with-additive-noise-usage-of-railgun-cmem">
+<span id="logistic-map"></span><h1>Logistic map with additive noise (usage of <tt class="xref py py-func docutils literal"><span class="pre">railgun.cmem()</span></tt>)<a class="headerlink" href="#logistic-map-with-additive-noise-usage-of-railgun-cmem" title="Permalink to this headline">¶</a></h1>
+<p>You will need the file <tt class="docutils literal"><span class="pre">gslctypes_rng.py</span></tt> (see <a class="reference internal" href="../gslctypes/gslctypes.html#gslctypes"><em>Using RailGun with GSL (GNU Scientific Library)</em></a>).</p>
+<div class="section" id="python-code">
+<h2>Python code<a class="headerlink" href="#python-code" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">logistic_map.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">railgun</span> <span class="kn">import</span> <span class="n">SimObject</span><span class="p">,</span> <span class="n">relpath</span><span class="p">,</span> <span class="n">cmem</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">gslctypes_rng</span> <span class="kn">import</span> <span class="n">gsl_rng</span>
+
+<span class="k">class</span> <span class="nc">LogisticMap</span><span class="p">(</span><span class="n">SimObject</span><span class="p">):</span>
+
+    <span class="n">_clibname_</span> <span class="o">=</span> <span class="s">&#39;liblogistic_map.so&#39;</span>
+    <span class="n">_clibdir_</span> <span class="o">=</span> <span class="n">relpath</span><span class="p">(</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">__file__</span><span class="p">)</span>
+    <span class="n">_cmembers_</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s">&#39;num_i&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double xt[i]&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double mu&#39;</span><span class="p">,</span>
+        <span class="s">&#39;double sigma&#39;</span><span class="p">,</span>
+        <span class="n">cmem</span><span class="p">(</span><span class="n">gsl_rng</span><span class="p">,</span> <span class="s">&#39;rng&#39;</span><span class="p">),</span>
+        <span class="p">]</span>
+    <span class="n">_cfuncs_</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;xt gene_seq()&quot;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_i</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="n">SimObject</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_i</span><span class="o">=</span><span class="n">num_i</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">gsl_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">),</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_cwrap_gene_seq</span><span class="p">(</span><span class="n">old_gene_seq</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">gene_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+            <span class="c"># use the previous &quot;last state&quot; as initial state, but setv</span>
+            <span class="c"># may overwrite this by `xt_0=SOMEVAL`</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xt</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setv</span><span class="p">(</span><span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">old_gene_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gene_seq</span>
+
+    <span class="k">def</span> <span class="nf">bifurcation_diagram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu_start</span><span class="p">,</span> <span class="n">mu_stop</span><span class="p">,</span> <span class="n">mu_num</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="n">mu_list</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">mu_start</span><span class="p">,</span> <span class="n">mu_stop</span><span class="p">,</span> <span class="n">mu_num</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gene_seq</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">mu_list</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>  <span class="c"># through first steps away</span>
+        <span class="n">xt_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gene_seq</span><span class="p">(</span><span class="n">mu</span><span class="o">=</span><span class="n">mu</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">for</span> <span class="n">mu</span> <span class="ow">in</span> <span class="n">mu_list</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">mu_list</span><span class="p">,</span> <span class="n">xt_list</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">plot_bifurcation_diagram</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mu_start</span><span class="p">,</span> <span class="n">mu_stop</span><span class="p">,</span> <span class="n">mu_num</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+        <span class="kn">import</span> <span class="nn">pylab</span>
+        <span class="n">bd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bifurcation_diagram</span><span class="p">(</span><span class="n">mu_start</span><span class="p">,</span> <span class="n">mu_stop</span><span class="p">,</span> <span class="n">mu_num</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span>
+        <span class="n">ones</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_i</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">mu</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="o">*</span><span class="n">bd</span><span class="p">):</span>
+            <span class="n">pylab</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">ones</span> <span class="o">*</span> <span class="n">mu</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="s">&#39;ko&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="n">pylab</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">bifurcation_diagram.py</span></tt>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">logistic_map</span> <span class="kn">import</span> <span class="n">LogisticMap</span>
+<span class="kn">import</span> <span class="nn">pylab</span>
+
+<span class="n">lmap</span> <span class="o">=</span> <span class="n">LogisticMap</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">lmap</span><span class="o">.</span><span class="n">plot_bifurcation_diagram</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">)</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">r&#39;$\sigma=10^{-5}$&#39;</span><span class="p">)</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">lmap</span><span class="o">.</span><span class="n">plot_bifurcation_diagram</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">r&#39;$\sigma=10^{-3}$&#39;</span><span class="p">)</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">lmap</span><span class="o">.</span><span class="n">plot_bifurcation_diagram</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">)</span>
+<span class="n">pylab</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s">r&#39;$\sigma=10^{-2}$&#39;</span><span class="p">)</span>
+
+<span class="n">pylab</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-code">
+<h2>C code<a class="headerlink" href="#c-code" title="Permalink to this headline">¶</a></h2>
+<p><tt class="docutils literal"><span class="pre">logistic_map.c</span></tt>:</p>
+<div class="highlight-c"><div class="highlight"><pre><span class="cp">#include &lt;gsl/gsl_rng.h&gt;</span>
+<span class="cp">#include &lt;gsl/gsl_randist.h&gt;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">logisticmap_</span><span class="p">{</span>
+  <span class="kt">int</span> <span class="n">num_i</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="o">*</span><span class="n">xt</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">mu</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">sigma</span><span class="p">;</span>
+  <span class="n">gsl_rng</span> <span class="o">*</span><span class="n">rng</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">LogisticMap</span><span class="p">;</span>
+
+
+<span class="kt">int</span> <span class="nf">LogisticMap_gene_seq</span><span class="p">(</span><span class="n">LogisticMap</span> <span class="o">*</span><span class="n">self</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="kt">int</span> <span class="n">i</span><span class="p">;</span>
+  <span class="kt">double</span> <span class="n">eta</span><span class="p">;</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">num_i</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">){</span>
+    <span class="n">eta</span> <span class="o">=</span> <span class="n">gsl_ran_gaussian_ziggurat</span><span class="p">(</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">rng</span><span class="p">,</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">sigma</span><span class="p">);</span>
+    <span class="n">self</span><span class="o">-&gt;</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">mu</span> <span class="o">*</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">self</span><span class="o">-&gt;</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> <span class="n">eta</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="o">-&gt;</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">){</span>
+      <span class="n">self</span><span class="o">-&gt;</span><span class="n">xt</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="output">
+<h2>Output<a class="headerlink" href="#output" title="Permalink to this headline">¶</a></h2>
+<p>(<a class="reference external" href="../../samples/logistic_map/bifurcation_diagram.py">Source code</a>)</p>
+<div class="figure">
+<img alt="../../_images/bifurcation_diagram_00.png" src="../../_images/bifurcation_diagram_00.png" />
+<p class="caption">(<a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_00.png">png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_00.hires.png">hires.png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_00.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="../../_images/bifurcation_diagram_01.png" src="../../_images/bifurcation_diagram_01.png" />
+<p class="caption">(<a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_01.png">png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_01.hires.png">hires.png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_01.pdf">pdf</a>)</p>
+</div>
+<div class="figure">
+<img alt="../../_images/bifurcation_diagram_02.png" src="../../_images/bifurcation_diagram_02.png" />
+<p class="caption">(<a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_02.png">png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_02.hires.png">hires.png</a>, <a class="reference external" href="../../samples/logistic_map/bifurcation_diagram_02.pdf">pdf</a>)</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Logistic map with additive noise (usage of <tt class="docutils literal"><span class="pre">railgun.cmem()</span></tt>)</a><ul>
+<li><a class="reference internal" href="#python-code">Python code</a></li>
+<li><a class="reference internal" href="#c-code">C code</a></li>
+<li><a class="reference internal" href="#output">Output</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../lode_rk4/lode_rk4.html"
+                        title="previous chapter">Runge-Kutta method (usage of <tt class="docutils literal docutils literal docutils literal"><span class="pre">_cmemsubsets_</span></tt>)</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../gslctypes/gslctypes.html"
+                        title="next chapter">Using RailGun with GSL (GNU Scientific Library)</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../../_sources/samples/logistic_map/logistic_map.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../gslctypes/gslctypes.html" title="Using RailGun with GSL (GNU Scientific Library)"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../lode_rk4/lode_rk4.html" title="Runge-Kutta method (usage of _cmemsubsets_)"
+             >previous</a> |</li>
+        <li><a href="../../index.html">RailGun 0.1.7 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Samples</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2010, Takafumi Arakaki.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
