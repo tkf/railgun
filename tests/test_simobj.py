@@ -409,9 +409,13 @@ class TestVectCalcCMemSubSet(BaseTestVectCalc):
 class Int1DimArrayAsObject(object):
     _ctype_ = POINTER(CDT2CTYPE['int'])
 
+    @property
+    def _cdata_(self):
+        # Define _cdata_ as a property to make this object deepcopy-able.
+        return self.arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
+
     def __init__(self, *args, **kwds):
         self.arr = arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
-        self._cdata_ = arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
 
 
 class TestVectCalcCMemObject(BaseTestVectCalc):
