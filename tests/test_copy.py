@@ -13,8 +13,8 @@ class MixinCopyTest(object):
 
     copyfunc = staticmethod(copy.copy)
 
-    def make(self, *args, **kwds):
-        self.orig_vc = super(MixinCopyTest, self).make(*args, **kwds)
+    def new(self, simclass, *args, **kwds):
+        self.orig_vc = super(MixinCopyTest, self).new(simclass, *args, **kwds)
         return self.copyfunc(self.orig_vc)
 
 

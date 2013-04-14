@@ -38,8 +38,11 @@ class BaseTestVectCalc(unittest.TestCase):
 
     VectCalc = VectCalc
 
+    def new(self, simclass, *args, **kwds):
+        return simclass(*args, **kwds)
+
     def make(self, *args, **kwds):
-        return self._simclass(*args, **kwds)
+        return self.new(self._simclass, *args, **kwds)
 
     def setUp(self):
         self._simclass = self.VectCalc
