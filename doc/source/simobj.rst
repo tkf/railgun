@@ -195,23 +195,52 @@
                    ...
                    ]
 
-   .. This documentation is not clear and I don't remember why
-      I want to add `_cmemsubsets_`.  So let's comment it out for now.
-
-   .. .. attribute:: _cmemsubsets_
-   ..
+   .. attribute:: _cmemsubsets_
 
       dict of dict of list, optional.
 
-      Definition of subset of C members for controlling which
-      C members to be loaded. Example::
+      It defines the subset of C functions and struct variables to be
+      accessible.  It must be of the following format:
 
-          { 'name1': { 'funcs': ['f', 'g', 'h'], 'members': ['x', 'y'] },
-            'name2': { 'funcs': ['f', 'j', 'k'], 'members': ['y', 'z'] } }
+      .. sourcecode:: py
 
-      Here, ``name1, name2`` are the name of C member subset,
-      ``f, g, h, j, k`` are the name of C functions, and
-      ``x, y, z`` are the name of C members.
+         {'<SUBSET_KEY_1>': {
+             'funcs': ['<FUNCTION_1>', '<FUNCTION_2>', ...],
+             'members': ['<MEMBER_1>', '<MEMBER_2>', ...],
+             'default': True,  # optional (default is False)
+             },
+          '<SUBSET_KEY_2>': {...},
+          ...}
+
+      This is useful when some subset of functions needs some
+      subset of struct members.  For example, when in "debugging
+      mode", you may want to record all temporal variables.  However,
+      allocating temporal variables can be wasteful if you are not
+      debugging.  Using :attr:`_cmemsubsets_`, you can allocate
+      temporal variables when in the debugging mode and make sure
+      that the functions that requires temporal variables are callable
+      only in the debugging mode.  It helps you to avoid segmentation
+      fault due to accessing invalid pointer.  :attr:`_cmemsubsets_`
+      can be thought as machinery for "access levels".
+
+      **SUBSET_KEY** : string
+          You can pass boolean argument named ``_cmemsubsets_SUBSET_KEY``
+          to :meth:`railgun.SimObject.__init__` to enable or disable
+          the corresponding subset.
+
+      **FUNCTION** : list of strings
+          These functions are accessible from Python when the corresponding
+          subset is enabled.
+          You can use short-hand notation ``'func_{a, b, c}'`` to
+          specify functions ``'func_a'``, ``'func_b'`` and ``'func_c'``.
+
+      **MEMBER** : list of strings
+          These struct members are allocated and accessible from Python
+          when the corresponding subset is enabled.
+
+      **DEFAULT** : bool, optional
+         It is `False` when not specified, meaning that the C members
+         in this subset is not accessible.
 
    .. method:: _cwrap_C_FUNC_NAME(func)
 
