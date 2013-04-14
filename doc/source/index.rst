@@ -99,9 +99,14 @@ you can really focus on guts of computation in C code.
 
 Installation::
 
-    easy_install railgun  # using setuptools
     pip install railgun   # using pip
+    easy_install railgun  # using setuptools (if you must)
 
+
+Requirement:
+
+- Numpy
+- (matplotlib for sample code)
 
 Contents:
 
@@ -113,10 +118,6 @@ Contents:
    utils
    samples/index
    changelog
-
-RailGun's repository is http://bitbucket.org/tkf/railgun/.
-See samples in source code or
-`here <http://bitbucket.org/tkf/railgun/src/tip/samples/>`_.
 
 
 Indices and tables
