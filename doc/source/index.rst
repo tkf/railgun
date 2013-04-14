@@ -61,7 +61,7 @@ Welcome to RailGun's documentation!
         pylab.show()
 
 
-The pair of c and python code above is a very short and *complete* example!
+The above pair of C and python code is very short but yet *complete* example!
 
 If you want to write fast program for numerical simulations, you will
 always end up with writing it in C (or C++ or FORTRAN, these low-level
@@ -73,13 +73,28 @@ read/write data which do not require speed so much. So, next thing you
 want is to call C function from python and let python do all these
 stuff (which python is good at!). Using ctypes, this is very easy.
 
-But you may want much easier way! RailGun automatically generates a
-python class which loads functions from C shared library, allocate
-consistent arrays, provide argument checks at python side before the
-argument is passed to C function, and let you easily access C
-variables via python. All you need to do is to follow certain coding
-style when you write C program so that RailGun can load functions
-automatically.
+On top of what ctypes provides, RailGun adds more features to kill
+boilerplate that you normally need for simulation coding.
+
+For example, when you write simulation code, you may face situation
+like this many times:
+
+    I am accessing array like ``x[i][j]`` and ``y[j][k]``, so I want
+    the second axis of the array ``x`` and the first axis of the array
+    ``y`` to be of the same length.
+
+RailGun solves this problem by keeping shape of all arrays to be
+consistent.  Memory allocation for these arrays is done automatically.
+
+RailGun also provides some value check before passing it to C function.
+For example, you may want to pass an index of some array to C function.
+When you do that, you need to check if the index is in a certain range,
+to avoid segmentation fault.  RailGun provides a short hand notation
+to check that automatically.  Also, you can wrap C function to put any
+kind of complex value check and pre/post-processing.
+
+With these features and other useful utilities provided by RailGun,
+you can really focus on guts of computation in C code.
 
 
 Installation::
