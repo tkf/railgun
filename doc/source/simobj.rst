@@ -242,6 +242,28 @@
          It is `False` when not specified, meaning that the C members
          in this subset is not accessible.
 
+      Here is an example::
+
+        class YourSimObject(SimObject):
+
+            _cmembers_ = [
+                # ...
+                'temp[j][k]',
+                ]
+            _cfuncs_ = [
+                'run_{ mode | normal, debug }()',
+                ]
+            _cmemsubsets_ = {
+                'debug': {
+                    'funcs': ['run_debug'],
+                    'members': ['temp'],
+                    },
+                }
+
+        # Run simulation in debugging mode:
+        sim = YourSimObject(..., _cmemsubsets_debug=True)
+        sim.run(mode='debug')
+
    .. method:: _cwrap_C_FUNC_NAME(func)
 
       This is optional. If you want to wrap C function ``C_FUNC_NAME``,
