@@ -250,14 +250,8 @@ class TestVectCalc(BaseTestVectCalc):
         self.check_init_wo_num(num_i=0)
         self.check_init_wo_num(num_i=1)
 
-
-class TestVectCalcFixedShape(BaseTestVectCalc):
-
-    """
-    Array c-member can have fixed-shape
-    """
-
-    class VectCalc(SimObject):
+    class VectCalcFixedShape(SimObject):
+        _cstructname_ = 'VectCalc'
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
 
@@ -271,9 +265,12 @@ class TestVectCalcFixedShape(BaseTestVectCalc):
 
         _cfuncs_ = []
 
-    def test(self):
+    def test_fixed_shape(self):
+        """
+        Array c-member can have fixed-shape.
+        """
         for num_i in range(4, 7):
-            vc = self.make(num_i=num_i)
+            vc = self.new(self.VectCalcFixedShape, num_i=num_i)
             assert vc.num("i") == num_i, 'vc.num("i") == num_i'
             assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
             assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
