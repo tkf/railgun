@@ -112,6 +112,7 @@ Contents:
    simobj
    utils
    samples/index
+   changelog
 
 RailGun's repository is http://bitbucket.org/tkf/railgun/.
 See samples in source code or
