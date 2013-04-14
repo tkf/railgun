@@ -42,6 +42,114 @@ class VectCalc(SimObject):
         ]
 
 
+class VectCalcWithCwrap(VectCalc):
+    _cstructname_ = 'VectCalc'
+
+    def _cwrap_subvec(old_subvec):
+        def subvec(self, i1=0, i2=None, op='plus'):
+            if i2 is None:
+                i2 = self.num_i
+            old_subvec(self, i1=i1, i2=i2, op=op)
+            return self.v3[i1:i2]
+        return subvec
+
+
+class VectCalcNoDefaultNumI(SimObject):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = 'vectclac.so'
+    _clibdir_ = relpath('ext/build', __file__)
+
+    _cmembers_ = [
+        'num_i',
+        'int v1[i] = 1',
+        'int v2[i] = 2',
+        'int v3[i]',
+        'int ans',
+        ]
+
+    _cfuncs_ = [
+        "vec_{op | plus, minus, times, divide}()",
+        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+        "fill_{vec | v1, v2, v3}(int s)",
+        "ans subvec_dot(i i1=0, i< i2=num_i)",
+        ]
+
+
+class VectCalcFixedShape(SimObject):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = 'vectclac.so'
+    _clibdir_ = relpath('ext/build', __file__)
+
+    _cmembers_ = [
+        'num_i = 5',
+        'int v1[0]',
+        'int v2[1]',
+        'int v3[5]',
+        'int ans',
+        ]
+
+    _cfuncs_ = []
+
+
+class VectCalcCMemSubSet(SimObject):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = 'vectclac.so'
+    _clibdir_ = relpath('ext/build', __file__)
+
+    _cmembers_ = [
+        'num_i = 10',
+        'int v1[i] = 1',
+        'int v2[i] = 2',
+        'int v3[i]',
+        'int ans',
+        ]
+
+    _cfuncs_ = [
+        "vec_{op | plus, minus, times, divide}()",
+        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+        "fill_{vec | v1, v2, v3}(int s)",
+        "ans subvec_dot(i i1=0, i< i2=num_i)",
+        ]
+
+    _cmemsubsets_ = dict(
+        vec=dict(members=['v1', 'v2', 'v3'],
+                 funcs=['vec_{plus, minus, times, divide}',
+                        'subvec_{plus, minus, times, divide}',
+                        'fill_{v1, v2, v3}'],
+                 default=False),
+        dot=dict(members=['v1', 'v2'],
+                 funcs=['subvec_dot'],
+                 default=True),
+        )
+
+
+class VectCalcCMemObject(SimObject):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = 'vectclac.so'
+    _clibdir_ = relpath('ext/build', __file__)
+
+    _cmembers_ = [
+        'num_i',
+        cmem(Int1DimArrayAsObject, 'v1'),
+        cmem(Int1DimArrayAsObject, 'v2'),
+        cmem(Int1DimArrayAsObject, 'v3'),
+        'int ans',
+        ]
+
+    _cfuncs_ = [
+        "vec_{op | plus, minus, times, divide}()",
+        "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
+        "fill_{vec | v1, v2, v3}(int s)",
+        "ans subvec_dot(i i1=0, i< i2=num_i)",
+        ]
+
+    def __init__(self, num_i=10, **kwds):
+        SimObject.__init__(self, num_i=num_i, **kwds)
+        self.v1 = Int1DimArrayAsObject([0] * num_i)
+        self.v2 = Int1DimArrayAsObject([0] * num_i)
+        self.v3 = Int1DimArrayAsObject([0] * num_i)
+
+
 class BaseTestVectCalc(unittest.TestCase):
 
     """
@@ -72,6 +180,12 @@ class BaseTestVectCalc(unittest.TestCase):
 
 
 class TestVectCalc(BaseTestVectCalc):
+
+    VectCalcWithCwrap = VectCalcWithCwrap
+    VectCalcNoDefaultNumI = VectCalcNoDefaultNumI
+    VectCalcFixedShape = VectCalcFixedShape
+    VectCalcCMemSubSet = VectCalcCMemSubSet
+    VectCalcCMemObject = VectCalcCMemObject
 
     def test_cmembers_default_value(self):
         vc = self.vc
@@ -201,17 +315,6 @@ class TestVectCalc(BaseTestVectCalc):
 
         raises(IndexError)(vc.setv)(v1_5=0)
 
-    class VectCalcWithCwrap(VectCalc):
-        _cstructname_ = 'VectCalc'
-
-        def _cwrap_subvec(old_subvec):
-            def subvec(self, i1=0, i2=None, op='plus'):
-                if i2 is None:
-                    i2 = self.num_i
-                old_subvec(self, i1=i1, i2=i2, op=op)
-                return self.v3[i1:i2]
-            return subvec
-
     def test_cwrap_with_subvec(self):
         vc = self.new(self.VectCalcWithCwrap)
         (num_i, v1, v2, v3) = vc.getv('num_i', 'v1', 'v2', 'v3')
@@ -231,26 +334,6 @@ class TestVectCalc(BaseTestVectCalc):
                         'comparing result(v3) of subvec_%s(%d, %d)' %
                         (key, i1, i2))
 
-    class VectCalcNoDefaultNumI(SimObject):
-        _cstructname_ = 'VectCalc'
-        _clibname_ = 'vectclac.so'
-        _clibdir_ = relpath('ext/build', __file__)
-
-        _cmembers_ = [
-            'num_i',
-            'int v1[i] = 1',
-            'int v2[i] = 2',
-            'int v3[i]',
-            'int ans',
-            ]
-
-        _cfuncs_ = [
-            "vec_{op | plus, minus, times, divide}()",
-            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-            "fill_{vec | v1, v2, v3}(int s)",
-            "ans subvec_dot(i i1=0, i< i2=num_i)",
-            ]
-
     def check_init_wo_num(self, **kwds):
         self.new(self.VectCalcNoDefaultNumI, **kwds)
 
@@ -262,21 +345,6 @@ class TestVectCalc(BaseTestVectCalc):
         self.check_init_wo_num(num_i=0)
         self.check_init_wo_num(num_i=1)
 
-    class VectCalcFixedShape(SimObject):
-        _cstructname_ = 'VectCalc'
-        _clibname_ = 'vectclac.so'
-        _clibdir_ = relpath('ext/build', __file__)
-
-        _cmembers_ = [
-            'num_i = 5',
-            'int v1[0]',
-            'int v2[1]',
-            'int v3[5]',
-            'int ans',
-            ]
-
-        _cfuncs_ = []
-
     def test_fixed_shape(self):
         """
         Array c-member can have fixed-shape.
@@ -287,37 +355,6 @@ class TestVectCalc(BaseTestVectCalc):
             assert vc.v1.shape == (0,), 'vc.v1.shape != (0,)'
             assert vc.v2.shape == (1,), 'vc.v2.shape != (1,)'
             assert vc.v3.shape == (5,), 'vc.v3.shape != (5,)'
-
-    class VectCalcCMemSubSet(SimObject):
-        _cstructname_ = 'VectCalc'
-        _clibname_ = 'vectclac.so'
-        _clibdir_ = relpath('ext/build', __file__)
-
-        _cmembers_ = [
-            'num_i = 10',
-            'int v1[i] = 1',
-            'int v2[i] = 2',
-            'int v3[i]',
-            'int ans',
-            ]
-
-        _cfuncs_ = [
-            "vec_{op | plus, minus, times, divide}()",
-            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-            "fill_{vec | v1, v2, v3}(int s)",
-            "ans subvec_dot(i i1=0, i< i2=num_i)",
-            ]
-
-        _cmemsubsets_ = dict(
-            vec=dict(members=['v1', 'v2', 'v3'],
-                     funcs=['vec_{plus, minus, times, divide}',
-                            'subvec_{plus, minus, times, divide}',
-                            'fill_{v1, v2, v3}'],
-                     default=False),
-            dot=dict(members=['v1', 'v2'],
-                     funcs=['subvec_dot'],
-                     default=True),
-            )
 
     def test_cmemsubsets_default(self):
         vc = self.new(self.VectCalcCMemSubSet)
@@ -342,32 +379,6 @@ class TestVectCalc(BaseTestVectCalc):
         vc.subvec_dot()
         vc.vec()
         vc.getv('v1, v2, v3')
-
-    class VectCalcCMemObject(SimObject):
-        _cstructname_ = 'VectCalc'
-        _clibname_ = 'vectclac.so'
-        _clibdir_ = relpath('ext/build', __file__)
-
-        _cmembers_ = [
-            'num_i',
-            cmem(Int1DimArrayAsObject, 'v1'),
-            cmem(Int1DimArrayAsObject, 'v2'),
-            cmem(Int1DimArrayAsObject, 'v3'),
-            'int ans',
-            ]
-
-        _cfuncs_ = [
-            "vec_{op | plus, minus, times, divide}()",
-            "subvec_{op | plus, minus, times, divide}(i i1=0, i< i2=num_i)",
-            "fill_{vec | v1, v2, v3}(int s)",
-            "ans subvec_dot(i i1=0, i< i2=num_i)",
-            ]
-
-        def __init__(self, num_i=10, **kwds):
-            SimObject.__init__(self, num_i=num_i, **kwds)
-            self.v1 = Int1DimArrayAsObject([0] * num_i)
-            self.v2 = Int1DimArrayAsObject([0] * num_i)
-            self.v3 = Int1DimArrayAsObject([0] * num_i)
 
     def test_cmemobject(self):
         vc = self.new(self.VectCalcCMemObject)
