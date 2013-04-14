@@ -10,6 +10,18 @@ from railgun import SimObject, relpath, cmem
 from railgun.simobj import CDT2CTYPE, CDT2DTYPE, POINTER
 
 
+class Int1DimArrayAsObject(object):
+    _ctype_ = POINTER(CDT2CTYPE['int'])
+
+    @property
+    def _cdata_(self):
+        # Define _cdata_ as a property to make this object deepcopy-able.
+        return self.arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
+
+    def __init__(self, *args, **kwds):
+        self.arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
+
+
 class VectCalc(SimObject):
     _clibname_ = 'vectclac.so'
     _clibdir_ = relpath('ext/build', __file__)
@@ -331,22 +343,8 @@ class TestVectCalc(BaseTestVectCalc):
         vc.vec()
         vc.getv('v1, v2, v3')
 
-
-class Int1DimArrayAsObject(object):
-    _ctype_ = POINTER(CDT2CTYPE['int'])
-
-    @property
-    def _cdata_(self):
-        # Define _cdata_ as a property to make this object deepcopy-able.
-        return self.arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
-
-    def __init__(self, *args, **kwds):
-        self.arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
-
-
-class TestVectCalcCMemObject(BaseTestVectCalc):
-
-    class VectCalc(SimObject):
+    class VectCalcCMemObject(SimObject):
+        _cstructname_ = 'VectCalc'
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
 
@@ -371,8 +369,8 @@ class TestVectCalcCMemObject(BaseTestVectCalc):
             self.v2 = Int1DimArrayAsObject([0] * num_i)
             self.v3 = Int1DimArrayAsObject([0] * num_i)
 
-    def test(self):
-        vc = self.vc
+    def test_cmemobject(self):
+        vc = self.new(self.VectCalcCMemObject)
         for i in [1, 2, 3]:
             vc.fill(i, 'v%d' % i)
             v_i = getattr(vc, 'v%d' % i).arr
