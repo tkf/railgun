@@ -1,10 +1,8 @@
 # import numpy
 # from numpy.testing import assert_equal
-from nose.tools import ok_  # , raises, with_setup
 
-from tsutils import eq_
-from test_simobj import check_vec
 from railgun import SimObject, relpath
+from test_simobj import TestVectCalc
 
 
 class VectCalc(SimObject):
@@ -40,19 +38,26 @@ class VectCalc(SimObject):
         return AnotherClass
 
 
-def test_another_clib():
-    clibname = 'vectclac-O3.so'
-    AnotherClass = VectCalc.another_clib(clibname)
-    vc = AnotherClass()
-    ok_(vc._cdll_._name.endswith(clibname))
-    check_vec(vc)
+class TestVectCalcSubClass(TestVectCalc):
+    simclass = VectCalc
 
+    def check_init(self, vc, num_i):
+        self.vc = vc
+        self.assertEqual(self.vc.num_i, num_i)
+        self.test_cfunc_vec()
 
-def test():
-    vc = VectCalc()
-    eq_(vc.num_i, 10)
-    vc = VectCalc(20)
-    eq_(vc.num_i, 20)
-    vc = VectCalc(num_i=30)
-    eq_(vc.num_i, 30)
-    check_vec(vc)
+    def test_init_no_arg(self):
+        self.check_init(self.simclass(), 10)
+
+    def test_init_positional(self):
+        self.check_init(self.simclass(20), 20)
+
+    def test_init_keyword(self):
+        self.check_init(self.simclass(num_i=30), 30)
+
+    def test_another_clib(self):
+        clibname = 'vectclac-O3.so'
+        AnotherClass = self.simclass.another_clib(clibname)
+        self.vc = vc = AnotherClass()
+        self.assertTrue(vc._cdll_._name.endswith(clibname))
+        self.test_cfunc_vec()

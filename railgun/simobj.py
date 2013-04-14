@@ -576,6 +576,28 @@ class SimObject(object):
 
         self._set_all(**kwds)
 
+    def __setstate__(self, state):
+        (attrs, kwds) = state
+        self._cmemsubsets_parsed_ = attrs.pop('_cmemsubsets_parsed_')
+        self._set_all(**kwds)
+        self.__dict__.update(attrs)
+
+    def __getstate__(self):
+        attrs = dict(
+            (k, v) for (k, v) in self.__dict__.items()
+            if k not in ['_struct_', '_struct_p_', '_cdatastore_'])
+        kwds = {}
+        kwds.update(self._cdatastore_)
+        kwds.update(
+            (k, getattr(self, k)) for (k, v) in self._cmems_parsed_.items()
+            if v.valtype == 'scalar')
+        return (attrs, kwds)
+
+    def __copy__(self):
+        clone = self.__class__.__new__(self.__class__)
+        clone.__dict__.update(self.__dict__)
+        return clone
+
     def _is_cmem_scalar(self, name):
         return (name in self._cmems_parsed_ and
                 self._cmems_parsed_[name].valtype == 'scalar')
