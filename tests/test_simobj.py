@@ -219,9 +219,8 @@ class TestVectCalc(BaseTestVectCalc):
                         'comparing result(v3) of subvec_%s(%d, %d)' %
                         (key, i1, i2))
 
-
-def check_init_wo_num(kwds):
-    class VectCalc(SimObject):
+    class VectCalcNoDefaultNumI(SimObject):
+        _cstructname_ = 'VectCalc'
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
 
@@ -240,14 +239,16 @@ def check_init_wo_num(kwds):
             "ans subvec_dot(i i1=0, i< i2=num_i)",
             ]
 
-    VectCalc(**kwds)
+    def check_init_wo_num(self, **kwds):
+        self.new(self.VectCalcNoDefaultNumI, **kwds)
 
-
-def test_init_wo_num():
-    """SimObject.__init__ should raise ValueError if num_* are not specified"""
-    yield (raises(ValueError)(check_init_wo_num), {})
-    yield (check_init_wo_num, dict(num_i=0))
-    yield (check_init_wo_num, dict(num_i=1))
+    def test_init_wo_num(self):
+        """
+        SimObject.__init__ should raise ValueError if num_* are not specified.
+        """
+        raises(ValueError)(self.check_init_wo_num)()
+        self.check_init_wo_num(num_i=0)
+        self.check_init_wo_num(num_i=1)
 
 
 def check_cstructname_and_cfuncprefix(cstructname, cfuncprefix):
