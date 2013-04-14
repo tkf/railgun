@@ -34,7 +34,7 @@ help:
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 
 clean: samples-clean
-	-rm -rf $(BUILDDIR)/*/* $(BUILDDIR)/*/.*
+	-rm -rf $(BUILDDIR)/*/*
 
 html: samples
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
@@ -147,3 +147,32 @@ google-analytics-on:
 
 google-analytics-off:
 	@[ -L source/_templates ] && rm source/_templates || echo 'not on'
+
+
+## GitHub Pages
+REPO_URL = git@github.com:tkf/railgun.git
+
+# Check if build/html is really a git repository.  Otherwise,
+# committing files in there is pretty dangerous as it might goes into
+# master branch.
+_gh-pages-assert-repo:
+	test -d build/html/.git
+
+gh-pages-clone:
+	rm -rf build/html
+	git clone --branch gh-pages $(REPO_URL) build/html
+
+gh-pages-pull: _gh-pages-assert-repo
+	cd build/html && git pull
+
+gh-pages-update: _gh-pages-assert-repo clean html
+	@echo "Update gh-pages"
+	cd build/html/ && \
+		git add . && \
+		if [ -n "$$(git ls-files --deleted)" ]; then \
+			git ls-files --deleted | xargs git rm; \
+		fi && \
+		git commit -m "Update"
+
+gh-pages-push: _gh-pages-assert-repo
+	cd build/html && git push -u origin gh-pages
