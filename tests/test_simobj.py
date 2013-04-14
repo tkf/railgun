@@ -415,7 +415,7 @@ class Int1DimArrayAsObject(object):
         return self.arr.ctypes.data_as(POINTER(CDT2CTYPE['int']))
 
     def __init__(self, *args, **kwds):
-        self.arr = arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
+        self.arr = numpy.array(*args, dtype=CDT2DTYPE['int'], **kwds)
 
 
 class TestVectCalcCMemObject(BaseTestVectCalc):
