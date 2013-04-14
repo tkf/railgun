@@ -163,7 +163,7 @@ gh-pages-clone:
 	git clone --branch gh-pages $(REPO_URL) build/html
 
 gh-pages-pull: _gh-pages-assert-repo
-	cd build/html && git pull
+	cd build/html && git pull origin gh-pages
 
 gh-pages-update: _gh-pages-assert-repo clean html
 	@echo "Update gh-pages"
