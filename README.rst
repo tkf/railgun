@@ -4,9 +4,9 @@ RailGun: Accelerate your simulation programing
 
 .. sidebar:: Links:
 
-   * `Documentation <http://tkf.bitbucket.org/railgun-doc/>`_
+   * `Documentation <http://tkf.github.io/railgun/>`_
 
-     - `Examples <http://tkf.bitbucket.org/railgun-doc/samples/>`_
+     - `Examples <http://tkf.github.io/railgun/samples/>`_
      - (`Japanese version <http://tkf.bitbucket.org/railgun-doc-ja/>`_)
 
    * `Repository <https://github.com/tkf/railgun>`_ (at GitHub)
