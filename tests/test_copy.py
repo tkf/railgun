@@ -1,4 +1,5 @@
 import copy
+import cPickle as pickle
 
 from test_simobj import BaseTestVectCalc, TestVectCalc
 
@@ -33,6 +34,21 @@ class TestDeepCopyVectCalc(MixinDeepCopyTest, TestVectCalc):
     pass
 
 
+class MixinPickleTest(MixinCopyTest):
+
+    """
+    Test that SimObject can be pickled.
+    """
+
+    @staticmethod
+    def copyfunc(obj):
+        return pickle.loads(pickle.dumps(obj))
+
+
+class TestPickleVectCalc(MixinPickleTest, TestVectCalc):
+    pass
+
+
 class MixinTestCopyTest(object):
 
     """
@@ -48,4 +64,8 @@ class TestCopyTest(MixinTestCopyTest, MixinCopyTest, BaseTestVectCalc):
 
 
 class TestDeepCopyTest(MixinTestCopyTest, MixinDeepCopyTest, BaseTestVectCalc):
+    pass
+
+
+class TestPickleTest(MixinTestCopyTest, MixinPickleTest, BaseTestVectCalc):
     pass
