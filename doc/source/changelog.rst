@@ -1,6 +1,11 @@
 Change Log
 ==========
 
+v0.1.8
+------
+
+- Fix deep copy / pickle bug with multi-dimensional arrays.
+
 v0.1.7
 ------
 
