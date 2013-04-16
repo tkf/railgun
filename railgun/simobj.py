@@ -587,7 +587,8 @@ class SimObject(object):
             (k, v) for (k, v) in self.__dict__.items()
             if k not in ['_struct_', '_struct_p_', '_cdatastore_'])
         kwds = {}
-        kwds.update(self._cdatastore_)
+        kwds.update((k, v) for (k, v) in self._cdatastore_.items()
+                    if not k.startswith('CStyle:'))
         kwds.update(
             (k, getattr(self, k)) for (k, v) in self._cmems_parsed_.items()
             if v.valtype == 'scalar')
