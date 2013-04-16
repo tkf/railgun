@@ -182,6 +182,60 @@ def check_num(clibname, list_num, list_cdt, carrtype=None):
     eq_(tuple(aa.num(', '.join(LIST_IDX[:nd]))), tuple(list_num))
 
 
+class BaseArrayAccess(SimObject):
+
+    _cstructname_ = 'ArrayAccess'
+    _clibdir_ = relpath('ext/build', __file__)
+
+    list_cdt = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
+                'float', 'double', 'longdouble', 'size_t']
+
+    def __init__(self, **kwds):
+        for name in self.num_names:
+            kwds.setdefault(name, 2)
+        super(BaseArrayAccess, self).__init__(**kwds)
+
+    def arr(self, cdt, dim):
+        """Get array member '{cdt}{dim}d' (e.g., 'int2d')"""
+        return getattr(self, '%s%dd' % (cdt, dim))
+
+    def arr_via_ret(self, cdt, dim):
+        """Get copy of array using 'get_{cdt}{dim}d' c-function"""
+        get = getattr(self, 'get_%s%dd' % (cdt, dim))
+        arr = self.arr(cdt, dim)
+        garr = numpy.zeros_like(arr)
+        for idx in numpy.ndindex(*arr.shape):
+            get(*idx)  # call get_* c-func. which store val. in ret_{cdt}
+            garr[idx] = getattr(self, 'ret_%s' % cdt)
+        return garr
+
+    def fill(self):
+        """Fill array members using arange"""
+        for cdt in self.list_cdt:
+            if cdt == 'char':
+                arange = alpharange
+            elif cdt == 'bool':
+                arange = lambda n: numpy.arange(n) % 2
+            else:
+                arange = numpy.arange
+            for dim in range(1, 1 + self.ndim):
+                arr = self.arr(cdt, dim)
+                arr.flat = arange(arr.size)
+
+
+class DefaultArrayAccess(BaseArrayAccess):
+
+    ndim = 3
+    list_cdt = BaseArrayAccess.list_cdt
+    carrtype = None  # or 'flat'
+
+    nd = ndim
+    _clibname_ = 'arrayaccess.so'
+    _cmembers_ = gene_cmembers(nd, list_cdt, carrtype)
+    _cfuncs_ = gene_cfuncs(nd, list_cdt)
+    num_names = gene_nums(nd)
+
+
 if __name__ == '__main__':
     from pprint import pprint
     list_cdt = ['char', 'int', 'double']
