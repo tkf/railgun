@@ -13,3 +13,5 @@ before_install:
     fi
 script:
   - tox
+after_script:
+  - ls .tox/$TOXENV/lib/*/site-packages/
