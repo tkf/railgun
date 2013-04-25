@@ -543,7 +543,7 @@ class MetaSimObject(type):
         for (fname, parsed) in cfuncs_parsed.iteritems():
             funcattrs[fname] = gene_cfpywrap(attrs, parsed)
         cbase = type("DummyCBase", (object,), funcattrs)
-        bases = (cbase,) + bases
+        bases = bases + (cbase,)
 
         return type.__new__(cls, clsname, bases, attrs)
 
