@@ -536,8 +536,11 @@ class MetaSimObject(type):
             _cmemsubsets_parsed_=CMemSubSets(
                 cmemsubsets, set(cfunc_loaded), set(cmems_parsed)),
             )
+        funcattrs = {}
         for (fname, parsed) in cfuncs_parsed.iteritems():
-            attrs[fname] = gene_cfpywrap(attrs, parsed)
+            funcattrs[fname] = gene_cfpywrap(attrs, parsed)
+        cbase = type("DummyCBase", (object,), funcattrs)
+        bases = (cbase,) + bases
 
         return type.__new__(cls, clsname, bases, attrs)
 
