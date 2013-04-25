@@ -489,6 +489,9 @@ class MetaSimObject(type):
         cfuncs = attr_from_attrs_or_bases(bases, attrs, '_cfuncs_')
         if any(c is None for c in [clibdir, clibname, cmembers, cfuncs]):
             return type.__new__(cls, clsname, bases, attrs)
+        mandatory_attrs = ['_clibdir_', '_clibname_', '_cmembers_', '_cfuncs_']
+        if all(name not in attrs for name in  mandatory_attrs):
+            return type.__new__(cls, clsname, bases, attrs)
         cstructname = attr_from_attrs_or_bases(
             bases, attrs, '_cstructname_', clsname)
         cfuncprefix = attr_from_attrs_or_bases(
