@@ -66,6 +66,28 @@ class VectCalcSuperInSubClass(VectCalc):
         return self.v3[i1:i2]
 
 
+class BaseVectCalcUsingSuper(SimObject):
+
+    def subvec(self, i1=0, i2=None, op='plus'):
+        if i2 is None:
+            i2 = self.num_i
+        super(BaseVectCalcUsingSuper, self).subvec(i1=i1, i2=i2, op=op)
+        return self.v3[i1:i2]
+    """
+    NOTE: BaseVectCalcUsingSuper.subvec is equivalent to
+    VectCalcSuperInSubClass.subvec, but as `super` is different, I can't
+    copy it from there.
+    """
+
+
+class VectCalcSuperInBaseClass(BaseVectCalcUsingSuper):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cmembers_ = VectCalc._cmembers_
+    _cfuncs_ = VectCalc._cfuncs_
+
+
 class VectCalcNoDefaultNumI(SimObject):
     _cstructname_ = 'VectCalc'
     _clibname_ = VectCalc._clibname_
@@ -163,6 +185,7 @@ class TestVectCalc(BaseTestVectCalc):
 
     VectCalcWithCwrap = VectCalcWithCwrap
     VectCalcSuperInSubClass = VectCalcSuperInSubClass
+    VectCalcSuperInBaseClass = VectCalcSuperInBaseClass
     VectCalcNoDefaultNumI = VectCalcNoDefaultNumI
     VectCalcFixedShape = VectCalcFixedShape
     VectCalcCMemSubSet = VectCalcCMemSubSet
@@ -301,6 +324,9 @@ class TestVectCalc(BaseTestVectCalc):
 
     def test_super_in_subclass(self):
         self.check_subvec_ret_value(self.VectCalcSuperInSubClass)
+
+    def test_super_in_baseclass(self):
+        self.check_subvec_ret_value(self.VectCalcSuperInBaseClass)
 
     def check_subvec_ret_value(self, simclass):
         vc = self.new(simclass)
