@@ -41,8 +41,12 @@ class VectCalc(SimObject):
         ]
 
 
-class VectCalcWithCwrap(VectCalc):
+class VectCalcWithCwrap(SimObject):
     _cstructname_ = 'VectCalc'
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cmembers_ = VectCalc._cmembers_
+    _cfuncs_ = VectCalc._cfuncs_
 
     def _cwrap_subvec(old_subvec):
         def subvec(self, i1=0, i2=None, op='plus'):
@@ -51,6 +55,37 @@ class VectCalcWithCwrap(VectCalc):
             old_subvec(self, i1=i1, i2=i2, op=op)
             return self.v3[i1:i2]
         return subvec
+
+
+class VectCalcSuperInSubClass(VectCalc):
+
+    def subvec(self, i1=0, i2=None, op='plus'):
+        if i2 is None:
+            i2 = self.num_i
+        super(VectCalcSuperInSubClass, self).subvec(i1=i1, i2=i2, op=op)
+        return self.v3[i1:i2]
+
+
+class BaseVectCalcUsingSuper(SimObject):
+
+    def subvec(self, i1=0, i2=None, op='plus'):
+        if i2 is None:
+            i2 = self.num_i
+        super(BaseVectCalcUsingSuper, self).subvec(i1=i1, i2=i2, op=op)
+        return self.v3[i1:i2]
+    """
+    NOTE: BaseVectCalcUsingSuper.subvec is equivalent to
+    VectCalcSuperInSubClass.subvec, but as `super` is different, I can't
+    copy it from there.
+    """
+
+
+class VectCalcSuperInBaseClass(BaseVectCalcUsingSuper):
+    _cstructname_ = 'VectCalc'
+    _clibname_ = VectCalc._clibname_
+    _clibdir_ = VectCalc._clibdir_
+    _cmembers_ = VectCalc._cmembers_
+    _cfuncs_ = VectCalc._cfuncs_
 
 
 class VectCalcNoDefaultNumI(SimObject):
@@ -149,6 +184,8 @@ class BaseTestVectCalc(unittest.TestCase):
 class TestVectCalc(BaseTestVectCalc):
 
     VectCalcWithCwrap = VectCalcWithCwrap
+    VectCalcSuperInSubClass = VectCalcSuperInSubClass
+    VectCalcSuperInBaseClass = VectCalcSuperInBaseClass
     VectCalcNoDefaultNumI = VectCalcNoDefaultNumI
     VectCalcFixedShape = VectCalcFixedShape
     VectCalcCMemSubSet = VectCalcCMemSubSet
@@ -283,7 +320,16 @@ class TestVectCalc(BaseTestVectCalc):
         raises(IndexError)(vc.setv)(v1_5=0)
 
     def test_cwrap_with_subvec(self):
-        vc = self.new(self.VectCalcWithCwrap)
+        self.check_subvec_ret_value(self.VectCalcWithCwrap)
+
+    def test_super_in_subclass(self):
+        self.check_subvec_ret_value(self.VectCalcSuperInSubClass)
+
+    def test_super_in_baseclass(self):
+        self.check_subvec_ret_value(self.VectCalcSuperInBaseClass)
+
+    def check_subvec_ret_value(self, simclass):
+        vc = self.new(simclass)
         (num_i, v1, v2, v3) = vc.getv('num_i', 'v1', 'v2', 'v3')
         l1 = range(1, 11)
         l2 = range(11, 21)

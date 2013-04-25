@@ -487,8 +487,20 @@ class MetaSimObject(type):
         clibname = attr_from_attrs_or_bases(bases, attrs, '_clibname_')
         cmembers = attr_from_attrs_or_bases(bases, attrs, '_cmembers_')
         cfuncs = attr_from_attrs_or_bases(bases, attrs, '_cfuncs_')
+
         if any(c is None for c in [clibdir, clibname, cmembers, cfuncs]):
+            # Required attributes are not set.  It is not possible to
+            # setup C wrappers.  So, do not process anything at this
+            # point.  This class is like abstract base class.
             return type.__new__(cls, clsname, bases, attrs)
+
+        mandatory_attrs = ['_clibdir_', '_clibname_', '_cmembers_', '_cfuncs_']
+        if all(name not in attrs for name in  mandatory_attrs):
+            # All required attributes already exist in base classes.
+            # Therefore, C wrappers are already ready.  There is
+            # nothing to do other than the normal inheritance.
+            return type.__new__(cls, clsname, bases, attrs)
+
         cstructname = attr_from_attrs_or_bases(
             bases, attrs, '_cstructname_', clsname)
         cfuncprefix = attr_from_attrs_or_bases(
@@ -536,8 +548,11 @@ class MetaSimObject(type):
             _cmemsubsets_parsed_=CMemSubSets(
                 cmemsubsets, set(cfunc_loaded), set(cmems_parsed)),
             )
+        funcattrs = {}
         for (fname, parsed) in cfuncs_parsed.iteritems():
-            attrs[fname] = gene_cfpywrap(attrs, parsed)
+            funcattrs[fname] = gene_cfpywrap(attrs, parsed)
+        cbase = type("DummyCBase", (object,), funcattrs)
+        bases = bases + (cbase,)
 
         return type.__new__(cls, clsname, bases, attrs)
 
