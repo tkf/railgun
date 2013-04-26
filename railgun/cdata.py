@@ -5,6 +5,8 @@ RE_CDDEC = re.compile(
     r'(?: *= *(?P<default>[\w\.\-+]*))?$',
     )  ## matches 'int a[i][j] = 3'
 
+INT_LIKE_CDTS = ['int', 'uint', 'long', 'ulong', 'longlong', 'ulonglong']
+
 
 class _CDataDeclaration(object):
     """
@@ -68,9 +70,11 @@ class _CDataDeclaration(object):
         self.cdt = cdt
         self.vname = vname
         if vname.startswith('num_'):
-            if not (cdt != 'int' or cdt is not None):
-                raise ValueError ("type of '%s' should be int" % vname)
-            self.cdt = 'int'
+            if cdt is None:
+                self.cdt = 'int'
+            elif cdt not in INT_LIKE_CDTS:
+                raise ValueError(
+                    "type of '{0}' must be int-like type".format(vname))
 
     @classmethod
     def from_string(cls, cdstr):

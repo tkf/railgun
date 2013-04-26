@@ -2,7 +2,9 @@ from nose.tools import ok_  #, raises, with_setup
 ## from pprint import pformat
 
 from tsutils import eq_
-from railgun.cdata import RE_CDDEC, cddec_idx_parse, cddec_parse, cmem
+from railgun.simobj import CDT2CTYPE
+from railgun.cdata import (
+    RE_CDDEC, INT_LIKE_CDTS, cddec_idx_parse, cddec_parse, cmem)
 
 
 def dict_re_cddec(cdt, vname, idx=None, default=None):
@@ -118,3 +120,7 @@ def check_cddec_parse(cdstr, correct):
 def test_cddec_parse():
     for (cdstr, correct) in DATA_TEST_CDEC_PARSE:
         yield (check_cddec_parse, cdstr, correct)
+
+
+def test_int_like_cdts():
+    assert set(INT_LIKE_CDTS) < set(CDT2CTYPE)
