@@ -27,6 +27,7 @@ import sys, os
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     'sphinx.ext.pngmath',
+    'sphinx.ext.autodoc',
     'matplotlib.sphinxext.plot_directive',
     ]
 
