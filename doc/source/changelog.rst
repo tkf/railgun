@@ -5,6 +5,13 @@ v0.1.9
 ------
 
 - :attr:`.SimObject.cinfo` is added.
+- Types other than `int` can be used for `num_*`.
+- C functions can be accessed via :func:`super`.  This eliminates the
+  need of the `cwrap_*` function.
+- `cwrap_*` function defined in subclasses are not executed anymore.
+  This change is backward-incompatible.
+
+  .. so maybe this is a good timing for bumping to 0.2?
 
 v0.1.8
 ------
