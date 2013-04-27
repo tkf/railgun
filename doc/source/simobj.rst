@@ -329,7 +329,7 @@
 
 
 
-.. class:: railgun.SimObject
+.. autoclass:: railgun.SimObject
 
 
    .. method:: setv(**kwds)

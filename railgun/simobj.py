@@ -558,6 +558,24 @@ class MetaSimObject(type):
 
 
 class SimObject(object):
+
+    """
+    Base class for wrapping simulator code written in C.
+
+    .. staticmethod:: array_alias(alias)
+
+       :type alias: str
+       :arg  alias:
+         string such as ``'a_1_2'``, which is an alias of ``a[1][2]``.
+
+       :rtype: 2-tuple or None
+       :return:
+         Tuple of strings ``(name, index)``.  ``name`` is a name of
+         the C member (e.g., ``'a'``) specified by :attr:`._cmembers_`.
+         ``index`` is a index of ints (e.g., ``(1, 2)``).
+
+    """
+
     __metaclass__ = MetaSimObject
     _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
     _cerrors_ = {}
