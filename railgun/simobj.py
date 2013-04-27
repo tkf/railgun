@@ -520,7 +520,10 @@ class MetaSimObject(type):
             _cmems_default_array_=cmems_default_array,
             _idxset_=idxset,
             array_alias=array_alias_from_cmems_parsed(cmems_parsed),
+            cinfo=CInfo(cmems_parsed_list, idxset),
             )
+        # FIXME: most of code in MetaSimObject.__new__ and top level
+        #        functions of this module must go into CInfo.
 
         ## set _struct_type_ and _struct_type_p_
         StructClass = get_struct_class(cmems_parsed_list, cstructname)
@@ -557,10 +560,55 @@ class MetaSimObject(type):
         return type.__new__(cls, clsname, bases, attrs)
 
 
+class CInfo(object):
+
+    def __init__(self, members, idxset):
+        self.members = members
+        """
+        List of :class:`._CDataDeclaration` instances.
+        """
+
+        self.indices = set(idxset)
+        """
+        Set of indices defined for this object (e.g., ``set(['i', 'j'])``).
+        """
+
+    def member_get(self, **kwds):
+        """
+        Return matched members.
+
+        You can specify keyword arguments to be matched with the
+        :class:`._CDataDeclaration` attributes (e.g., ``ndim=2``).
+
+        :return: iterative of :class:`._CDataDeclaration` instances.
+
+        """
+        for cmem in self.members:
+            for (key, val) in kwds.items():
+                try:
+                    if getattr(cmem, key) != val:
+                        break
+                except AttributeError:
+                    break
+            else:
+                yield cmem
+
+    def member_names(self, **kwds):
+        """
+        Same as :meth:`.member_get` but yield strings (names).
+        """
+        for mem in self.member_get(**kwds):
+            yield mem.vname
+
+
 class SimObject(object):
 
     """
     Base class for wrapping simulator code written in C.
+
+    .. attribute:: cinfo
+
+       Instance of :class:`.CInfo`.
 
     .. staticmethod:: array_alias(alias)
 
