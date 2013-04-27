@@ -77,7 +77,7 @@ See LICENSE.
 # [[[end]]]
 
 __author__  = "Takafumi Arakaki"
-__version__ = "0.1.9.dev1"
+__version__ = "0.1.9.dev2"
 __license__ = "MIT License"
 
 import os
