@@ -12,24 +12,53 @@ class _CDataDeclaration(object):
     """
     A class to sotre parsed information of C-data declaration
 
-    Attributes
-    ----------
-    cdt : str
+    .. attribute:: cdt
+
+        :type: str
+
         C Data Type
-    vname : str
+
+    .. attribute:: vname
+
+        :type: str
+
         variable name
-    valtype : {'scalar', 'array', 'object'}
+
+    .. attribute:: valtype
+
+        :type: {'scalar', 'array', 'object'}
+
         type of the variable.
         'object' is not basic c type, but user-defined variable type
-    idx : tuple of str
+
+    .. attribute:: idx
+
+        :type: tuple of str
+
         e.g., `('i', 'j', 'k')` for 'a[i][j][k]'
-    ndim : int
+
+    .. attribute:: ndim
+
+        :type: int
+
         this is `len(idx)`
-    default : obj
+
+    .. attribute:: default
+
+        :type: obj
+
         default value
-    has_default : bool
+
+    .. attribute:: has_default
+
+        :type: bool
+
         True if `default` is specified, False otherwise.
-    carrtype : {'iliffe', 'flat'}
+
+    .. attribute:: carrtype
+
+        :type: {'iliffe', 'flat'}
+
         'iliffe'
             array data structure is "Iliffe vector" or "display".
             you can access c array via `a[i][j]`.
@@ -103,9 +132,7 @@ class _CDataDeclaration(object):
         """
         Declaration of C member
 
-        Parameters
-        ----------
-        cdt : class
+        :arg type cdt:
             This class must have the following two attributes
 
             _ctype_ : ctype
@@ -118,7 +145,7 @@ class _CDataDeclaration(object):
                 (instance of `ctypes.Structure` subclass).
                 This is required only for instance of the class, so that
                 you can set this in `cdt.__init__`.
-        vname : str
+        :arg str vname:
             Name of C member
 
         """
