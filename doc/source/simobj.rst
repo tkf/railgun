@@ -383,6 +383,8 @@
            (num_i, num_j, num_k) = obj.num('i', 'j', 'k')
            (num_i, num_j, num_k) = obj.num('i, j, k')
 
+   .. automethod:: railgun.SimObject.reallocate
+
 
 Relationships between C Data Type (CDT), numpy dtype and ctypes
 ---------------------------------------------------------------
