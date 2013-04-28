@@ -879,7 +879,9 @@ class SimObject(object):
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         arrays = []
         for cmem in self.cinfo.members:
-            if indices & set(cmem.idx) and cmem_need_alloc(cmem.vname):
+            if (cmem.valtype == 'array' and
+                indices & set(cmem.idx) and
+                cmem_need_alloc(cmem.vname)):
                 arrays.append(cmem)
 
         self.__set_num(**nums)
