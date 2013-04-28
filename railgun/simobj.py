@@ -116,8 +116,16 @@ def _gene_prop_scalar(key):
     def fget(self):
         return getattr(self._struct_, key)
 
-    def fset(self, val):
-        setattr(self._struct_, key, val)
+    if key.startswith('num_'):
+        def fset(self, val):
+            raise AttributeError(
+                'Trying to change index length: {0}.'
+                'Attribute starts with `num_` cannot be changed directly. '
+                'Use `.reallocate({1}={2})` to reallocate arrays consistently.'
+                .format(key, key[len('num_'):], val))
+    else:
+        def fset(self, val):
+            setattr(self._struct_, key, val)
     return property(fget, fset)
 
 
@@ -711,7 +719,12 @@ class SimObject(object):
         num_lack = numkeyset - set(scalarvals)
         if num_lack:
             raise ValueError("%s are mandatory" % strset(num_lack))
-        self.setv(**scalarvals)
+        nums = dict((k[len('num_'):], v) for (k, v) in scalarvals.items()
+                    if k in numkeyset)
+        nonnum_scalarvals = dict((k, v) for (k, v) in scalarvals.items()
+                                 if k not in numkeyset)
+        self.__set_num(**nums)
+        self.setv(**nonnum_scalarvals)
         # allocate C array data and set the defaults
         self._set_cdata()
         cmems_default_array = self._cmems_default_array_
@@ -784,23 +797,27 @@ class SimObject(object):
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         for (vname, parsed) in self._cmems_parsed_.iteritems():
             if parsed.valtype == 'array' and cmem_need_alloc(vname):
-                shape = tuple(
-                    int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
-                    for i in parsed.idx)
-                dtype = CDT2DTYPE[parsed.cdt]
-                arr = numpy.zeros(shape, dtype=dtype)
-                self._cdatastore_[vname] = arr
-                if parsed.carrtype == "flat":
-                    ptr = arr.ctypes.data_as(POINTER(CDT2CTYPE[parsed.cdt]))
-                elif self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
-                    cs = cstyle.CStyle(arr)
-                    self._cdatastore_['CStyle:%s' % vname] = cs
-                    ptr = cast(
-                        cs.pointer,
-                        POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
-                else:
-                    ptr = ctype_getter(arr)
-                setattr(self._struct_, vname, ptr)
+                self.__set_carray(parsed)
+
+    def __set_carray(self, parsed):
+        vname = parsed.vname
+        shape = tuple(
+            int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
+            for i in parsed.idx)
+        dtype = CDT2DTYPE[parsed.cdt]
+        arr = numpy.zeros(shape, dtype=dtype)
+        self._cdatastore_[vname] = arr
+        if parsed.carrtype == "flat":
+            ptr = arr.ctypes.data_as(POINTER(CDT2CTYPE[parsed.cdt]))
+        elif self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
+            cs = cstyle.CStyle(arr)
+            self._cdatastore_['CStyle:%s' % vname] = cs
+            ptr = cast(
+                cs.pointer,
+                POINTER_nth(CDT2CTYPE[parsed.cdt], parsed.ndim))
+        else:
+            ptr = ctype_getter(arr)
+        setattr(self._struct_, vname, ptr)
 
     def _check_index_in_range(self, arg_val_list):
         """
@@ -834,3 +851,37 @@ class SimObject(object):
                         'index %s cannot be larger than or equal to '
                         '%s=%d where value is %s=%d'
                         % (idx, upper_name, upper_val, aname, val))
+
+    def __set_num(self, **nums):
+        for (key, val) in nums.items():
+            setattr(self._struct_, 'num_{0}'.format(key), val)
+
+    def reallocate(self, **nums):
+        """
+        Reallocate arrays consistently.
+
+        Usage:
+
+        >>> obj.reallocate(i=10, j=20)                     # doctest: +SKIP
+        >>> obj.num_i                                      # doctest: +SKIP
+        10
+        >>> obj.num_j                                      # doctest: +SKIP
+        20
+
+        """
+        indices = set(nums)
+        invalid = indices - self.cinfo.indices
+        if invalid:
+            raise ValueError(
+                'Indices {0} are invalid.  Must be one of {1}'
+                .format(indices, self.cinfo.indices))
+
+        cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
+        arrays = []
+        for cmem in self.cinfo.members:
+            if indices & set(cmem.idx) and cmem_need_alloc(cmem.vname):
+                arrays.append(cmem)
+
+        self.__set_num(**nums)
+        for parsed in arrays:
+            self.__set_carray(parsed)
