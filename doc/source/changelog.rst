@@ -4,6 +4,8 @@ Change Log
 v0.1.9
 ------
 
+- :meth:`.SimObject.reallocate` is added.
+- Changing `num_*` raises error, as it could cause segmentation fault.
 - :attr:`.SimObject.cinfo` is added.
 - Types other than `int` can be used for `num_*`.
 - C functions can be accessed via :func:`super`.  This eliminates the
