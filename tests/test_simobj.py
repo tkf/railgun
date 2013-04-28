@@ -399,3 +399,26 @@ class TestVectCalc(BaseTestVectCalc):
             vc.fill(i, 'v%d' % i)
             v_i = getattr(vc, 'v%d' % i).arr
             assert_equal(v_i, numpy.array([i] * vc.num_i))
+
+    def test_reallocation(self):
+        vc = self.vc
+        num_i = 10
+        self.assertEqual(vc.num_i, num_i)
+
+        new_num_i = 17
+        vc.reallocate(i=new_num_i)
+        self.assertEqual(vc.num_i, new_num_i)
+        self.assertEqual(vc.v1.shape, (new_num_i,))
+        self.assertEqual(vc.v2.shape, (new_num_i,))
+        self.assertEqual(vc.v3.shape, (new_num_i,))
+
+    def test_reallocation_cmemobject(self):
+        vc = self.new(self.VectCalcCMemObject)
+        num_i = 10
+        self.assertEqual(vc.num_i, num_i)
+
+        new_num_i = 17
+        vc.reallocate(i=new_num_i)
+        self.assertEqual(vc.num_i, new_num_i)
+        # NOTE: vc.v*.arr are uncharged, but that's ok.
+        #       It is just to check `vc.reallocate` doesn't fail.
