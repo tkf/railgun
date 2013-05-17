@@ -542,7 +542,7 @@ class MetaSimObject(type):
         cbase = type("DummyCBase", (object,), funcattrs)
         bases = bases + (cbase,)
 
-        return type.__new__(cls, clsname, bases, attrs)
+        return super(MetaSimObject, cls).__new__(cls, clsname, bases, attrs)
 
 
 class CInfo(object):
