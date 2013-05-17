@@ -511,6 +511,13 @@ class MetaSimObject(type):
             # Therefore, C wrappers are already ready.  There is
             # nothing to do other than the normal inheritance.
             return type.__new__(cls, clsname, bases, attrs)
+        # Otherwise, (1) at least one of the mandatory attribute is
+        # *newly* specified or (2) the following code is not executed
+        # against one of the super classes.
+        # FIXME: Some C functions in DummyCBase may not be used for
+        #        the case (1).  Setting _cfunc_loaded_ could be
+        #        enough, unless new functions are added in the current
+        #        `_cfuncs_`.
 
         cstructname = attr_from_attrs_or_bases(
             bases, attrs, '_cstructname_', clsname)
