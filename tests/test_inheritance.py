@@ -15,15 +15,15 @@ class MixinFullCFuncs(object):
     _cfuncs_ = VectCalc._cfuncs_
 
 
-class MixInEmptyCFuncs(object):
+class MixinEmptyCFuncs(object):
     _cfuncs_ = []
 
 
-class VectCalcEmptyCFuncs(MixInEmptyCFuncs, MixinFullCFuncs, VectCalcNoCFuncs):
+class VectCalcEmptyCFuncs(MixinEmptyCFuncs, MixinFullCFuncs, VectCalcNoCFuncs):
     pass
 
 
-class VectCalcFullCFuncs(MixinFullCFuncs, MixInEmptyCFuncs, VectCalcNoCFuncs):
+class VectCalcFullCFuncs(MixinFullCFuncs, MixinEmptyCFuncs, VectCalcNoCFuncs):
     pass
 
 
@@ -36,13 +36,13 @@ class TestInheritanceFullCFuncs(unittest.TestCase):
 
         .                                      SimObject
                                                    |
-        MixinFullCFuncs   MixInEmptyCFuncs  VectCalcNoCFuncs
+        MixinFullCFuncs   MixinEmptyCFuncs  VectCalcNoCFuncs
                        \         |         /
                         \        |        /
                          \       |       /
                         VectCalcEmptyCFuncs
 
-    In this case, ``MixInEmptyCFuncs._cfuncs_`` must be *ignored*.
+    In this case, ``MixinEmptyCFuncs._cfuncs_`` must be *ignored*.
 
     """
 
@@ -77,7 +77,7 @@ class VectCalcFullCFuncs2(MixinFullCFuncs, VectCalcNoCFuncs):
     pass
 
 
-class VectCalcEmptyCFuncs2(MixInEmptyCFuncs, VectCalcFullCFuncs2):
+class VectCalcEmptyCFuncs2(MixinEmptyCFuncs, VectCalcFullCFuncs2):
     pass
 
 
@@ -103,7 +103,7 @@ class TestInheritanceEmptyCFuncs2(TestInheritanceFullCFuncs):
                \              |
                 `-----------. |
                              \|
-        MixInEmptyCFuncs  VectCalcFullCFuncs2     : _cfuncs_ == [...]
+        MixinEmptyCFuncs  VectCalcFullCFuncs2     : _cfuncs_ == [...]
                \              |
                 `-----------. |
                              \|
