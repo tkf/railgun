@@ -34,7 +34,7 @@ class TestInheritanceEmptyCFuncs(unittest.TestCase):
 
     simclass = VectCalcEmptyCFuncs
     cfuncs = []
-    cfunc_names = ['vec', 'subvec', 'fill', 'ans']
+    cfunc_names = ['vec', 'subvec', 'fill', 'subvec_dot']
 
     def test_cfuncs(self):
         self.assertEqual(self.simclass._cfuncs_, self.cfuncs)
@@ -42,12 +42,10 @@ class TestInheritanceEmptyCFuncs(unittest.TestCase):
     def check_cfunc(self, name):
         return hasattr(self.simclass, name)
 
-    @unittest.skip('Known failure')
     def test_defined_methods(self):
         yeses = list(map(self.check_cfunc, self.cfunc_names))
         self.assertTrue(all(yeses))
 
-    @unittest.skip('Known failure')
     def test_processed_by_metaclass(self):
         self.assertTrue(hasattr(self.simclass, 'cinfo'))
 
