@@ -329,12 +329,12 @@ def latest_attr(iter_of_obj, name, default=None):
     >>> from railgun._helper import HybridObj
     >>> iter_of_obj = map(HybridObj, iter_of_dict)
     >>> latest_attr(iter_of_obj, 'a')
-    3
+    1
     >>> latest_attr(iter_of_obj, 'b')
     >>> latest_attr(iter_of_obj, 'b', 'Not Found')
     'Not Found'
     >>> latest_attr(iter_of_obj, 'c')
-    4
+    2
 
     """
     for obj in iter_of_obj:
