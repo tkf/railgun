@@ -505,7 +505,8 @@ class MetaSimObject(type):
             return type.__new__(cls, clsname, bases, attrs)
 
         mandatory_attrs = ['_clibdir_', '_clibname_', '_cmembers_', '_cfuncs_']
-        if all(name not in attrs for name in  mandatory_attrs):
+        if (all(name not in attrs for name in  mandatory_attrs) and
+            attr_from_attrs_or_bases(bases, attrs, 'cinfo')):
             # All required attributes already exist in base classes.
             # Therefore, C wrappers are already ready.  There is
             # nothing to do other than the normal inheritance.
