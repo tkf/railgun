@@ -337,7 +337,7 @@ def latest_attr(iter_of_obj, name, default=None):
     4
 
     """
-    for obj in iter_of_obj[::-1]:
+    for obj in iter_of_obj:
         if hasattr(obj, name):
             return getattr(obj, name)
     return default

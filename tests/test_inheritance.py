@@ -30,10 +30,10 @@ class VectCalcFullCFuncs(MixinFullCFuncs, MixInEmptyCFuncs, VectCalcNoCFuncs):
     pass
 
 
-class TestInheritanceEmptyCFuncs(unittest.TestCase):
+class TestInheritanceFullCFuncs(unittest.TestCase):
 
-    simclass = VectCalcEmptyCFuncs
-    cfuncs = []
+    simclass = VectCalcFullCFuncs
+    cfuncs = VectCalc._cfuncs_
     cfunc_names = ['vec', 'subvec', 'fill', 'subvec_dot']
 
     def test_cfuncs(self):
@@ -50,10 +50,10 @@ class TestInheritanceEmptyCFuncs(unittest.TestCase):
         self.assertTrue(hasattr(self.simclass, 'cinfo'))
 
 
-class TestInheritanceFullCFuncs(TestInheritanceEmptyCFuncs):
+class TestInheritanceEmptyCFuncs(TestInheritanceFullCFuncs):
 
-    simclass = VectCalcFullCFuncs
-    cfuncs = VectCalc._cfuncs_
+    simclass = VectCalcEmptyCFuncs
+    cfuncs = []
 
     def check_cfunc(self, name):
-        return not super(TestInheritanceFullCFuncs, self).check_cfunc(name)
+        return not super(TestInheritanceEmptyCFuncs, self).check_cfunc(name)
