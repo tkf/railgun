@@ -54,3 +54,52 @@ class TestInheritanceEmptyCFuncs(TestInheritanceFullCFuncs):
 
     def check_cfunc(self, name):
         return not super(TestInheritanceEmptyCFuncs, self).check_cfunc(name)
+
+
+class VectCalcFullCFuncs2(MixinFullCFuncs, VectCalcNoCFuncs):
+    pass
+
+
+class VectCalcEmptyCFuncs2(MixInEmptyCFuncs, VectCalcFullCFuncs2):
+    pass
+
+
+class TestInheritanceFullCFuncs2(TestInheritanceFullCFuncs):
+    simclass = VectCalcFullCFuncs2
+
+
+class TestInheritanceEmptyCFuncs2(TestInheritanceFullCFuncs):
+# class TestInheritanceEmptyCFuncs2(TestInheritanceEmptyCFuncs):
+
+    r"""
+    Test how redefining ``_cfuncs_=[]`` work.
+
+    Inheritance diagram::
+
+        SimObject
+              |
+        VectCalcNoCFuncs
+               \
+                `-------------.
+                              |
+        MixinFullCFuncs   VectCalcNoCFuncs        : _cfuncs_ is not defined
+               \              |
+                `-----------. |
+                             \|
+        MixInEmptyCFuncs  VectCalcFullCFuncs2     : _cfuncs_ == [...]
+               \              |
+                `-----------. |
+                             \|
+                          VectCalcEmptyCFuncs2    : _cfuncs_ == []
+
+    This test class should inherit from TestInheritanceEmptyCFuncs to
+    test that C methods (e.g. `vec`) are not loaded.  However as there
+    are Python methods defined at the point of VectCalcFullCFuncs2,
+    actually these *Python* methods are defined.  Note that calling
+    these function should raise an error, because the corresponding C
+    is not loaded.
+
+    """
+
+    simclass = VectCalcEmptyCFuncs2
+    cfuncs = []
