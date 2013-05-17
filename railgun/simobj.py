@@ -491,6 +491,8 @@ class MetaSimObject(type):
     """
 
     def __new__(cls, clsname, bases, attrs):
+        # FIXME: Remove `attr_from_attrs_or_bases` and let `type.__new__`
+        #        do the job.
         clibdir = attr_from_attrs_or_bases(bases, attrs, '_clibdir_')
         clibname = attr_from_attrs_or_bases(bases, attrs, '_clibname_')
         cmembers = attr_from_attrs_or_bases(bases, attrs, '_cmembers_')
