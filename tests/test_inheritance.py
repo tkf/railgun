@@ -11,9 +11,6 @@ class VectCalcNoCFuncs(SimObject):
     _cmembers_ = VectCalc._cmembers_
 
 
-CFUNC_NAMES = ['vec', 'subvec', 'fill', 'ans']
-
-
 class MixinFullCFuncs(object):
     _cfuncs_ = VectCalc._cfuncs_
 
