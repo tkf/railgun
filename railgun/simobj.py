@@ -321,36 +321,6 @@ def gene_array_alias(array_names, sep="_"):
     return array_alias
 
 
-def latest_attr(iter_of_obj, name, default=None):
-    """
-    Get a attribute of given name found in latter object in given iterative
-
-    >>> iter_of_dict = [{'a': 1}, {'c': 2}, {'a': 3}, {'c': 4}, {}]
-    >>> from railgun._helper import HybridObj
-    >>> iter_of_obj = map(HybridObj, iter_of_dict)
-    >>> latest_attr(iter_of_obj, 'a')
-    1
-    >>> latest_attr(iter_of_obj, 'b')
-    >>> latest_attr(iter_of_obj, 'b', 'Not Found')
-    'Not Found'
-    >>> latest_attr(iter_of_obj, 'c')
-    2
-
-    """
-    for obj in iter_of_obj:
-        if hasattr(obj, name):
-            return getattr(obj, name)
-    return default
-
-
-def attr_from_attrs_or_bases(bases, attrs, name, default=None):
-    """
-    Get an attribute from `attrs` or from `bases` if not found in `attrs`
-    """
-    latest = latest_attr(bases, name, default)
-    return attrs.get(name, latest)
-
-
 def parse_cfuncs(cfuncs):
     """Parse `_cfuncs_` using `cfuncs.cfdec_parse`"""
     cfuncs_parsed_list = [cfdec_parse(cfstr) for cfstr in cfuncs]
@@ -491,26 +461,25 @@ class MetaSimObject(type):
     """
 
     def __new__(cls, clsname, bases, attrs):
-        # FIXME: Remove `attr_from_attrs_or_bases` and let `type.__new__`
-        #        do the job.
-        clibdir = attr_from_attrs_or_bases(bases, attrs, '_clibdir_')
-        clibname = attr_from_attrs_or_bases(bases, attrs, '_clibname_')
-        cmembers = attr_from_attrs_or_bases(bases, attrs, '_cmembers_')
-        cfuncs = attr_from_attrs_or_bases(bases, attrs, '_cfuncs_')
-
-        if any(c is None for c in [clibdir, clibname, cmembers, cfuncs]):
+        normal = super(MetaSimObject, cls).__new__(cls, clsname, bases, attrs)
+        try:
+            clibdir = normal._clibdir_
+            clibname = normal._clibname_
+            cmembers = normal._cmembers_
+            cfuncs = normal._cfuncs_
+        except AttributeError:
             # Required attributes are not set.  It is not possible to
             # setup C wrappers.  So, do not process anything at this
             # point.  This class is like abstract base class.
-            return type.__new__(cls, clsname, bases, attrs)
+            return normal
 
         mandatory_attrs = ['_clibdir_', '_clibname_', '_cmembers_', '_cfuncs_']
         if (all(name not in attrs for name in  mandatory_attrs) and
-            attr_from_attrs_or_bases(bases, attrs, 'cinfo')):
+            hasattr(normal, 'cinfo')):
             # All required attributes already exist in base classes.
             # Therefore, C wrappers are already ready.  There is
             # nothing to do other than the normal inheritance.
-            return type.__new__(cls, clsname, bases, attrs)
+            return normal
         # Otherwise, (1) at least one of the mandatory attribute is
         # *newly* specified or (2) the following code is not executed
         # against one of the super classes.
@@ -519,11 +488,9 @@ class MetaSimObject(type):
         #        enough, unless new functions are added in the current
         #        `_cfuncs_`.
 
-        cstructname = attr_from_attrs_or_bases(
-            bases, attrs, '_cstructname_', clsname)
-        cfuncprefix = attr_from_attrs_or_bases(
-            bases, attrs, '_cfuncprefix_', cstructname + CJOINSTR)
-        cmemsubsets = attr_from_attrs_or_bases(bases, attrs, '_cmemsubsets_')
+        cstructname = getattr(normal, '_cstructname_', clsname)
+        cfuncprefix = getattr(normal, '_cfuncprefix_', cstructname + CJOINSTR)
+        cmemsubsets = getattr(normal, '_cmemsubsets_', None)
 
         ## parse _cfuncs_
         cfuncs_parsed = parse_cfuncs(cfuncs)
