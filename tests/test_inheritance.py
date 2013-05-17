@@ -29,6 +29,23 @@ class VectCalcFullCFuncs(MixinFullCFuncs, MixInEmptyCFuncs, VectCalcNoCFuncs):
 
 class TestInheritanceFullCFuncs(unittest.TestCase):
 
+    r"""
+    Test that SimObject works with multiple mixin classes.
+
+    Inheritance diagram::
+
+        .                                      SimObject
+                                                   |
+        MixinFullCFuncs   MixInEmptyCFuncs  VectCalcNoCFuncs
+                       \         |         /
+                        \        |        /
+                         \       |       /
+                        VectCalcEmptyCFuncs
+
+    In this case, ``MixInEmptyCFuncs._cfuncs_`` must be *ignored*.
+
+    """
+
     simclass = VectCalcFullCFuncs
     cfuncs = VectCalc._cfuncs_
     cfunc_names = ['vec', 'subvec', 'fill', 'subvec_dot']
