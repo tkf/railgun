@@ -1,3 +1,6 @@
+*.pyc
+*.so
+
 .tox/
 build/
 dist/
