@@ -33,4 +33,8 @@ setup(
             extra_compile_args=["-fPIC", "-Wall"],
             ),
         ],
+    install_requires=[
+        'numpy',
+        'six',
+    ],
     )
