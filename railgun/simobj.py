@@ -64,7 +64,7 @@ CDT2CTYPE = dict(char=c_char,
                  longdouble=c_longdouble,
                  bool=c_bool, size_t=c_size_t,
                  )
-DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.iteritems())
+DTYPE2CDT = dict((numpy.dtype(v), k) for (k, v) in CDT2DTYPE.items())
 DTYPE2CDT.update({
     numpy.dtype(numpy.int32): 'int',  # otherwise 'long' can override this val
     numpy.dtype('|S1'): 'char',
@@ -227,7 +227,7 @@ def get_cargs(self, defaults, kwds, keyorder):
 
     """
     cargs_dict = {}
-    for (k, v) in defaults.iteritems():
+    for (k, v) in defaults.items():
         if hasattr(self, v):
             cargs_dict[k] = getattr(self, v)
         else:
@@ -353,7 +353,7 @@ def default_of_cmembers(cmems_parsed_list):
 def get_struct_class(cmems_parsed_list, cstructname):
     fields = []
     for parsed in cmems_parsed_list:
-        # don't use `cmems_parsed.iteritems()` above or
+        # don't use `cmems_parsed.items()` above or
         # order of c-members will be lost!
         if parsed.valtype == 'object':
             fields.append((parsed.vname, parsed.cdt._ctype_))
@@ -371,7 +371,7 @@ def get_struct_class(cmems_parsed_list, cstructname):
 
 
 def array_alias_from_cmems_parsed(cmems_parsed):
-    array_names = [vname for (vname, parsed) in cmems_parsed.iteritems()
+    array_names = [vname for (vname, parsed) in cmems_parsed.items()
                    if parsed.valtype == 'array']
     array_alias = gene_array_alias(array_names)
     return staticmethod(array_alias)
@@ -388,7 +388,7 @@ def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
         else:
             return CDT2CTYPE[ag['cdt']]
 
-    for (fname, parsed) in cfuncs_parsed.iteritems():
+    for (fname, parsed) in cfuncs_parsed.items():
         for args in choice_combinations(parsed):
             cfname = parsed.fnget(*args)
             cf = cdll[cfuncprefix + cfname]
@@ -516,7 +516,7 @@ class MetaSimObject(type):
         attrs.update(_struct_type_=StructClass, _struct_type_p_=struct_type_p)
 
         ## set getter/setter
-        for (vname, parsed) in cmems_parsed.iteritems():
+        for (vname, parsed) in cmems_parsed.items():
             if parsed.valtype == 'array':
                 attrs[vname] = _gene_prop_array(vname)
             elif parsed.valtype == 'scalar':
@@ -537,7 +537,7 @@ class MetaSimObject(type):
                 cmemsubsets, set(cfunc_loaded), set(cmems_parsed)),
             )
         funcattrs = {}
-        for (fname, parsed) in cfuncs_parsed.iteritems():
+        for (fname, parsed) in cfuncs_parsed.items():
             funcattrs[fname] = gene_cfpywrap(attrs, parsed)
         cbase = type("DummyCBase", (object,), funcattrs)
         bases = bases + (cbase,)
@@ -722,7 +722,7 @@ class SimObject(object):
         is available.
 
         """
-        for (key, val)in kwds.iteritems():
+        for (key, val)in kwds.items():
             alias = self.array_alias(key)
             if alias:
                 (name, index) = alias
@@ -772,7 +772,7 @@ class SimObject(object):
     def _set_cdata(self):
         self._cdatastore_ = {}  # keep memory for arrays
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
-        for (vname, parsed) in self._cmems_parsed_.iteritems():
+        for (vname, parsed) in self._cmems_parsed_.items():
             if parsed.valtype == 'array' and cmem_need_alloc(vname):
                 self.__set_carray(parsed)
 

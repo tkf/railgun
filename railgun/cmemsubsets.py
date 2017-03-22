@@ -97,7 +97,7 @@ def _cmss_inverse(cmss, key):
 
     """
     inv = {}
-    for (cmss_name, mfd) in cmss.iteritems():
+    for (cmss_name, mfd) in cmss.items():
         for var in mfd[key]:
             if var in inv:
                 var_cmss_set = inv[var]
@@ -118,7 +118,7 @@ class CMemSubSets(object):
             cfuncs = set(cfuncs)
             cmems = set(cmems)
         cmss = {}
-        for (name, mfd) in data.iteritems():
+        for (name, mfd) in data.items():
             # mfd: members, funcs, default
             mfd_parsed = dict(
                 cfuncs=mfd['funcs'],
@@ -155,7 +155,7 @@ class CMemSubSets(object):
 
     def _set_flags_default(self):
         flags = {}
-        for (name, mfd) in self._cmss_.iteritems():
+        for (name, mfd) in self._cmss_.items():
             flags[name] = mfd['default']
         self._flags_ = flags
 

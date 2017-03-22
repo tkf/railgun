@@ -53,7 +53,7 @@ class HybridObj(object):
         return self.__dict__
 
     def __iter__(self):
-        return self.__dict__.iteritems()
+        return self.__dict__.items()
 
     def __delitem__(self, x):
         return self.__dict__.__delitem__(x)
@@ -238,7 +238,7 @@ def dict_override(default, override, addkeys=False):
     """
     if not addkeys:
         override = dict(
-            (k, v) for (k, v) in override.iteritems() if k in default)
+            (k, v) for (k, v) in override.items() if k in default)
     copy = default.copy()
     copy.update(override)
     return copy

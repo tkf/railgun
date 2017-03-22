@@ -283,7 +283,7 @@ class TestVectCalc(BaseTestVectCalc):
 
     def check_init_kwds(self, kwds):
         vc = self.make(**kwds)
-        for (key, desired) in kwds.iteritems():
+        for (key, desired) in kwds.items():
             if vc.array_alias(key):
                 pass
             else:
