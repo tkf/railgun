@@ -1,5 +1,7 @@
 import re
-from itertools import product, izip_longest
+from itertools import product
+
+from six.moves import zip_longest as izip_longest
 
 from railgun._helper import strset, valbykey
 
