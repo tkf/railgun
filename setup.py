@@ -1,3 +1,4 @@
+import sys
 from setuptools import setup
 import numpy
 from numpy.distutils.core import Extension
@@ -32,7 +33,7 @@ setup(
             sources=['src/cstylemodule.c'],
             extra_compile_args=["-fPIC", "-Wall"],
             ),
-        ],
+        ] if sys.version_info[0] == 2 else [],
     install_requires=[
         'numpy',
         'six',
