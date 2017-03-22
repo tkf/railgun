@@ -246,4 +246,4 @@ def dict_override(default, override, addkeys=False):
 
 def strset(s):
     """Get string like '{a, b, c}' from iterative of string"""
-    return '{%s}' % ', '.join(s)
+    return '{%s}' % ', '.join(sorted(s))
