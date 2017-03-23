@@ -778,14 +778,22 @@ class SimObject(six.with_metaclass(MetaSimObject)):
             if parsed.valtype == 'array' and cmem_need_alloc(vname):
                 self.__set_carray(parsed)
 
-    def __set_carray(self, parsed):
-        vname = parsed.vname
-        shape = tuple(
+    def __shape(self, parsed):
+        return tuple(
             int(i) if i.isdigit() else getattr(self, 'num_%s' % i)
             for i in parsed.idx)
+
+    def __set_carray(self, parsed):
+        vname = parsed.vname
+        shape = self.__shape(parsed)
         dtype = CDT2DTYPE[parsed.cdt]
         arr = numpy.zeros(shape, dtype=dtype)
         self._cdatastore_[vname] = arr
+        self.__set_array_pointer(parsed)
+
+    def __set_array_pointer(self, parsed):
+        vname = parsed.vname
+        arr = self._cdatastore_[vname]
         if parsed.carrtype == "flat":
             ptr = arr.ctypes.data_as(POINTER(CDT2CTYPE[parsed.cdt]))
         elif self._calloc_ and 1 < arr.ndim <= cstyle.MAXDIM:
@@ -835,9 +843,15 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         for (key, val) in nums.items():
             setattr(self._struct_, 'num_{0}'.format(key), val)
 
-    def reallocate(self, **nums):
+    def reallocate(self, nums=None, in_place=False, **kwds):
         """
         Reallocate arrays consistently.
+
+        If `in_place=True` is given, raise ValueError when in-place
+        `numpy.ndarray.resize` does not work.  It typically happens
+        when there is another variable referencing to the arrays to be
+        resized.  If `in_place=False` (default), a new array is
+        allocated when the original one cannot be resized.
 
         Usage:
 
@@ -848,6 +862,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         20
 
         """
+        nums = dict((nums or {}), **kwds)
         indices = set(nums)
         invalid = indices - self.cinfo.indices
         if invalid:
@@ -859,10 +874,26 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         arrays = []
         for cmem in self.cinfo.members:
             if (cmem.valtype == 'array' and
-                indices & set(cmem.idx) and
-                cmem_need_alloc(cmem.vname)):
+                    indices & set(cmem.idx) and
+                    cmem_need_alloc(cmem.vname)):
                 arrays.append(cmem)
 
         self.__set_num(**nums)
         for parsed in arrays:
-            self.__set_carray(parsed)
+            # Remove the array from _cdatastore_ to release the reference.
+            arr = self._cdatastore_.pop(parsed.vname)
+
+            shape = self.__shape(parsed)
+            try:
+                # Try in-place resize first
+                arr.resize(shape)
+            except ValueError:
+                if in_place:
+                    raise
+                arr = numpy.zeros(shape, dtype=arr.dtype)
+
+            # Put the array back to the data store:
+            self._cdatastore_[parsed.vname] = arr
+
+            # Redo the pointer allocations:
+            self.__set_array_pointer(parsed)
