@@ -7,13 +7,13 @@ import platform
 import numpy
 import six
 
-from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
-from railgun.cdata import cddec_parse
-from railgun.cmemsubsets import CMemSubSets
-from railgun._helper import (
+from .cfuncs import cfdec_parse, choice_combinations, CJOINSTR
+from .cdata import cddec_parse
+from .cmemsubsets import CMemSubSets
+from ._helper import (
     dict_override, strset, subdict_by_prefix, subdict_by_filter)
 try:
-    from railgun import cstyle
+    from . import cstyle
 except ImportError:
     cstyle = None
 
@@ -218,7 +218,7 @@ def get_cargs(self, defaults, kwds, keyorder):
 
     Value of `defaults` can be name of member of `self`
 
-    >>> from railgun._helper import HybridObj
+    >>> from ._helper import HybridObj
     >>> obj = HybridObj(a=111, b=222, c=333)
     >>> defaults = dict(A='a', B='b', C='1', D='2.0')
     >>> get_cargs(obj, defaults, {}, 'ABCD')

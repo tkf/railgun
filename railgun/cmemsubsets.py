@@ -3,7 +3,7 @@ from itertools import product
 
 from six.moves import zip_longest as izip_longest
 
-from railgun._helper import strset, valbykey
+from ._helper import strset, valbykey
 
 
 RE_BRACES = re.compile(r"{[\w, ]+}")

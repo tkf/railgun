@@ -1,7 +1,7 @@
 import itertools
 import re
 
-from railgun._helper import iteralt
+from ._helper import iteralt
 
 CJOINSTR = '_'
 
