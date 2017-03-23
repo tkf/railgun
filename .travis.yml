@@ -13,8 +13,8 @@ matrix:
 before_install:
   - pip install --quiet tox-travis
   # Install GSL (and log it's version number)
-  - apt-cache show libgsl0-dev | grep -i version
   - sudo apt-get install -qq libgsl0-dev
+  - gsl-config --version
   - if [ "$TOXENV" = doc ]; then
       sudo apt-get install -qq python-matplotlib;
     fi
