@@ -127,7 +127,11 @@ CStyle_dealloc(CStyle *self)
     self->carray = NULL;
   }
   Py_XDECREF(self->pyarray);
+#if PY_MAJOR_VERSION >= 3
+  self->ob_base.ob_type->tp_free((PyObject*)self);
+#else
   self->ob_type->tp_free((PyObject*)self);
+#endif
 }
 
 
