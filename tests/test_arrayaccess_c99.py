@@ -1,5 +1,3 @@
-import sys
-
 from arrayaccess import check_arrayaccess, check_num
 from test_arrayaccess import LIST_CDT, NDIM, LIST_NUM
 
@@ -13,8 +11,6 @@ def test_arrayaccess_c99():
     for cdt in LIST_CDT_C99:
         for dim in range(1, 1 + NDIM):
             for _calloc_ in [None, True, False]:
-                if sys.version_info[0] == 3 and _calloc_:
-                    continue
                 yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT_C99,
                        cdt, dim, _calloc_)
 
