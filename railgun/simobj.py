@@ -395,7 +395,7 @@ def load_cfunc(cdll, cfuncs_parsed, struct_type_p, cfuncprefix, idxset):
             cf = cdll[cfuncprefix + cfname]
             cf.restype = c_int
             cf.argtypes = (
-                [struct_type_p] + map(get_arg_ct, parsed.args))
+                [struct_type_p] + list(map(get_arg_ct, parsed.args)))
             cfunc_loaded[cfname] = cf
     return cfunc_loaded
 
