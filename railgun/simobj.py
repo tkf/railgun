@@ -15,7 +15,7 @@ from railgun._helper import (
 try:
     from railgun import cstyle
 except ImportError:
-    pass
+    cstyle = None
 
 """
 SimObject, its metaclass (MetaSimObject), and helper functions
@@ -610,7 +610,9 @@ class SimObject(six.with_metaclass(MetaSimObject)):
 
     """
 
-    _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
+    # If True, use cstyle.CStyle to allocate memory:
+    _calloc_ = cstyle is not None
+
     _cerrors_ = {}
 
     def __init__(self, **kwds):
