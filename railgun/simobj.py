@@ -5,6 +5,7 @@ from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
                     c_bool, c_size_t)
 import platform
 import numpy
+import six
 
 from railgun.cfuncs import cfdec_parse, choice_combinations, CJOINSTR
 from railgun.cdata import cddec_parse
@@ -586,7 +587,7 @@ class CInfo(object):
             yield mem.vname
 
 
-class SimObject(object):
+class SimObject(six.with_metaclass(MetaSimObject)):
 
     """
     Base class for wrapping simulator code written in C.
@@ -609,7 +610,6 @@ class SimObject(object):
 
     """
 
-    __metaclass__ = MetaSimObject
     _calloc_ = True  # if True, use cstyle.CStyle to allocate memory
     _cerrors_ = {}
 
