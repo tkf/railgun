@@ -83,7 +83,7 @@ def gene_array_declaration_flat(l_cdt, l_dim):
 
 
 def gene_arrayaccess(filepath, nd, l_cdt, c99, carrtype=None):
-    codefile = file(filepath, 'w')
+    codefile = open(filepath, 'w')
 
     l_dim = range(1, 1 + nd)
     l_idx = LIST_INDEX[:nd]
