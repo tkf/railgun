@@ -4,6 +4,7 @@ Change Log
 v0.1.9
 ------
 
+- Python 3.5 and 3.6 are supported now.
 - :meth:`.SimObject.reallocate` is added.
 - Changing `num_*` raises error, as it could cause segmentation fault.
 - :attr:`.SimObject.cinfo` is added.

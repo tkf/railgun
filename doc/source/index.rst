@@ -103,9 +103,10 @@ Installation::
     easy_install railgun  # using setuptools (if you must)
 
 
-Requirement:
+Requirements:
 
 - Numpy
+- six
 - (matplotlib for sample code)
 
 Contents:
