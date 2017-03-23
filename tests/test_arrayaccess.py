@@ -1,3 +1,5 @@
+import sys
+
 from arrayaccess import check_arrayaccess, check_num
 
 LIST_CDT = ['char', 'short', 'ushort', 'int', 'uint', 'long', 'ulong',
@@ -12,6 +14,8 @@ def test_arrayaccess():
     for cdt in LIST_CDT:
         for dim in range(1, 1 + NDIM):
             for _calloc_ in [None, True, False]:
+                if sys.version_info[0] == 3 and _calloc_:
+                    continue
                 yield (check_arrayaccess, clibname, LIST_NUM, LIST_CDT, cdt,
                        dim, _calloc_)
 
