@@ -53,7 +53,7 @@ class HybridObj(object):
         return self.__dict__
 
     def __iter__(self):
-        return self.__dict__.items()
+        return iter(self.__dict__.items())
 
     def __delitem__(self, x):
         return self.__dict__.__delitem__(x)
@@ -159,7 +159,7 @@ def subdict_by_filter(dct, func, remove_original=False):
     ['a', 'b_0']
 
     """
-    keylist = filter(func, dct)
+    keylist = list(filter(func, dct))
     subdict = dict((k, dct[k]) for k in keylist)
     if remove_original:
         for k in keylist:
