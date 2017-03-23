@@ -6,7 +6,7 @@ env:
   - TOXENV=py36
   - TOXENV=doc VIRTUALENV_SYSTEM_SITE_PACKAGES=true
 before_install:
-  - pip install --quiet --use-mirrors tox
+  - pip install --quiet tox
   # Install GSL (and log it's version number)
   - apt-cache show libgsl0-dev | grep -i version
   - sudo apt-get install -qq libgsl0-dev
