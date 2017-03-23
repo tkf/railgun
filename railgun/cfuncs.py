@@ -1,5 +1,7 @@
+import itertools
 import re
-from railgun._helper import iteralt, product
+
+from railgun._helper import iteralt
 
 CJOINSTR = '_'
 
@@ -106,4 +108,4 @@ cfdec_parse = _CFunctionDeclaration.from_string
 
 
 def choice_combinations(cfdec):
-    return product([c['choices'] for c in cfdec.choset])
+    return itertools.product(*(c['choices'] for c in cfdec.choset))

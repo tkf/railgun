@@ -191,28 +191,6 @@ def iteralt(l1, l2):
         pass
 
 
-def product(lists):
-    """
-    Get product of given list of list (iterative of iterative).
-
-    >>> product([['x', 'y'], [1, 2]])
-    [['x', 1], ['x', 2], ['y', 1], ['y', 2]]
-    >>> p = product(['ABCD', 'xyz', 'uvw'])
-    >>> len(p)
-    36
-    >>> p[0]
-    ['A', 'x', 'u']
-    >>> p[1]
-    ['A', 'x', 'v']
-    >>> p[2]
-    ['A', 'x', 'w']
-
-    """
-    return reduce(
-        lambda prod, list: [x + [y] for x in prod for y in list],
-        lists, [[]])
-
-
 def dict_override(default, override, addkeys=False):
     """
     Get a new dictionary with default values which is updated by `override`
