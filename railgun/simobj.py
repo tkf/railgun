@@ -851,7 +851,11 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         `numpy.ndarray.resize` does not work.  It typically happens
         when there is another variable referencing to the arrays to be
         resized.  If `in_place=False` (default), a new array is
-        allocated when the original one cannot be resized.
+        allocated when the original one cannot be resized.  If
+        `in_place='or_copy'` is given, old array is copied to the
+        newly created array.  Note that the copying happens in terms
+        of the memory location.  Thus, using `in_place` for resizing
+        multi-dimensional arrays is not meaningful.
 
         Usage:
 
@@ -863,6 +867,9 @@ class SimObject(six.with_metaclass(MetaSimObject)):
 
         """
         nums = dict((nums or {}), **kwds)
+        should_raise = in_place and in_place != 'or_copy'
+        should_copy = in_place == 'or_copy'
+
         indices = set(nums)
         invalid = indices - self.cinfo.indices
         if invalid:
@@ -888,9 +895,12 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                 # Try in-place resize first
                 arr.resize(shape)
             except ValueError:
-                if in_place:
+                if should_raise:
                     raise
+                old = arr
                 arr = numpy.zeros(shape, dtype=arr.dtype)
+                if should_copy:
+                    arr.reshape(-1)[:old.size] = old[:arr.size]
 
             # Put the array back to the data store:
             self._cdatastore_[parsed.vname] = arr

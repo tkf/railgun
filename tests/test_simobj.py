@@ -449,6 +449,13 @@ class TestVectCalc(BaseTestVectCalc):
         vc.reallocate(i=new_num_i, in_place=True)
         numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
 
+    def test_reallocation_old_values_copied_with_copy(self):
+        vc, new_num_i, v1old = self.setup_reallocation_test()
+        v1 = vc.v1  # get a ref
+        vc.reallocate(i=new_num_i, in_place='or_copy')
+        assert vc.v1 is not v1
+        numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
+
     def test_reallocation_old_values_not_copied(self):
         """
         `SimObject.reallocation` should fail to copy when referenced.
