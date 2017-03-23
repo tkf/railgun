@@ -93,7 +93,7 @@ def gene_cfuncs(nd, list_cdt):
 
 @numpy.vectorize
 def mchr(i):
-    return chr(i % 256)
+    return chr(i % 128)
 
 
 def alpharange(*args):
