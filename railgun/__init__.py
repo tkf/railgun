@@ -81,6 +81,9 @@ __version__ = "0.1.9.dev3"
 __license__ = "MIT License"
 
 import os
+
+from six import string_types as basestring
+
 from railgun.simobj import SimObject, CDT2DTYPE
 from railgun._helper import HybridObj
 from railgun.cdata import cmem
