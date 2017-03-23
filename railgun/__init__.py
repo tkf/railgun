@@ -132,7 +132,7 @@ Correction of functions to generate `_cmembers_` for same C type easily
 ['int a', 'int b', 'int c']
 >>> cm['int']('a', 'b', 'c')
 ['int a', 'int b', 'int c']
->>> print sorted(cm())  #doctest: +NORMALIZE_WHITESPACE
+>>> print(sorted(cm()))  #doctest: +NORMALIZE_WHITESPACE
 ['bool', 'char', 'double', 'float', 'int', 'long', 'longdouble',
  'longlong', 'short', 'uint', 'ulong', 'ulonglong', 'ushort']
 
