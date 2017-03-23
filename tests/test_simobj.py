@@ -178,7 +178,10 @@ class BaseTestVectCalc(unittest.TestCase):
 
     def v3_desired(self, vc=None):
         (v1, v2) = (vc or self.vc).getv('v1', 'v2')
-        return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
+        return dict(plus=v1 + v2,
+                    minus=v1 - v2,
+                    times=v1 * v2,
+                    divide=v1 // v2)
 
 
 class TestVectCalc(BaseTestVectCalc):
