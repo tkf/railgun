@@ -194,8 +194,7 @@ static PyMemberDef CStyle_members[] = {
 
 
 static PyTypeObject CStyleType = {
-  PyObject_HEAD_INIT(NULL)
-  0,                               /*ob_size*/
+  PyVarObject_HEAD_INIT(NULL, 0)
   "cstyle.CStyle",       /*tp_name*/
   sizeof(CStyle),             /*tp_basicsize*/
   0,                               /*tp_itemsize*/
@@ -238,24 +237,43 @@ static PyMethodDef module_methods[] = {
   {NULL}  /* Sentinel */
 };
 
+#if PY_MAJOR_VERSION >= 3
+static struct PyModuleDef moduledef = {
+  PyModuleDef_HEAD_INIT,
+  "cstyle",                       /* m_name */
+  "this module provides CStyle",  /* m_doc */
+  -1,                             /* m_size */
+  module_methods,                 /* m_methods */
+  NULL,                           /* m_reload */
+  NULL,                           /* m_traverse */
+  NULL,                           /* m_clear */
+  NULL,                           /* m_free */
+};
+#endif
+
 #ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
 #define PyMODINIT_FUNC void
 #endif
-PyMODINIT_FUNC
-initcstyle(void)
+
+static PyObject *
+moduleinit(void)
 {
   PyObject* m;
 
   CStyleType.tp_new = PyType_GenericNew;
   if (PyType_Ready(&CStyleType) < 0){
-    return;
+    return NULL;
   }
 
+#if PY_MAJOR_VERSION >= 3
+  m = PyModule_Create(&moduledef);
+#else
   m = Py_InitModule3("cstyle", module_methods,
                      "this module provides CStyle");
+#endif
 
   if (m == NULL){
-    return;
+    return NULL;
   }
 
   Py_INCREF(&CStyleType);
@@ -263,4 +281,19 @@ initcstyle(void)
   PyModule_AddIntConstant(m, "MAXDIM", CStyle_MAXDIM);
 
   import_array();  /* NumPy initialization */
+
+  return m;
 }
+
+PyMODINIT_FUNC
+#if PY_MAJOR_VERSION >= 3
+PyInit_cstyle(void)
+{
+  return moduleinit();
+}
+#else
+initcstyle(void)
+{
+  moduleinit();
+}
+#endif
