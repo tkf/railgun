@@ -2,6 +2,8 @@ language: python
 env:
   - TOXENV=py26
   - TOXENV=py27
+  - TOXENV=py35
+  - TOXENV=py36
   - TOXENV=doc VIRTUALENV_SYSTEM_SITE_PACKAGES=true
 before_install:
   - pip install --quiet --use-mirrors tox
