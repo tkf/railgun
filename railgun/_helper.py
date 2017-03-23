@@ -53,7 +53,7 @@ class HybridObj(object):
         return self.__dict__
 
     def __iter__(self):
-        return self.__dict__.iteritems()
+        return iter(self.__dict__.items())
 
     def __delitem__(self, x):
         return self.__dict__.__delitem__(x)
@@ -159,7 +159,7 @@ def subdict_by_filter(dct, func, remove_original=False):
     ['a', 'b_0']
 
     """
-    keylist = filter(func, dct)
+    keylist = list(filter(func, dct))
     subdict = dict((k, dct[k]) for k in keylist)
     if remove_original:
         for k in keylist:
@@ -191,28 +191,6 @@ def iteralt(l1, l2):
         pass
 
 
-def product(lists):
-    """
-    Get product of given list of list (iterative of iterative).
-
-    >>> product([['x', 'y'], [1, 2]])
-    [['x', 1], ['x', 2], ['y', 1], ['y', 2]]
-    >>> p = product(['ABCD', 'xyz', 'uvw'])
-    >>> len(p)
-    36
-    >>> p[0]
-    ['A', 'x', 'u']
-    >>> p[1]
-    ['A', 'x', 'v']
-    >>> p[2]
-    ['A', 'x', 'w']
-
-    """
-    return reduce(
-        lambda prod, list: [x + [y] for x in prod for y in list],
-        lists, [[]])
-
-
 def dict_override(default, override, addkeys=False):
     """
     Get a new dictionary with default values which is updated by `override`
@@ -238,7 +216,7 @@ def dict_override(default, override, addkeys=False):
     """
     if not addkeys:
         override = dict(
-            (k, v) for (k, v) in override.iteritems() if k in default)
+            (k, v) for (k, v) in override.items() if k in default)
     copy = default.copy()
     copy.update(override)
     return copy
@@ -246,4 +224,4 @@ def dict_override(default, override, addkeys=False):
 
 def strset(s):
     """Get string like '{a, b, c}' from iterative of string"""
-    return '{%s}' % ', '.join(s)
+    return '{%s}' % ', '.join(sorted(s))

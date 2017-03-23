@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import sys
 import numpy
 
@@ -19,12 +21,12 @@ def main(iter_num, list_num, calloc):
     num_dict = dict(zip(ArrayAccess.num_names, list_num))  # {num_i: 6, ...}
     assert ArrayAccess._calloc_ is bool(calloc)
 
-    print '[*/%d]:' % iter_num,
+    print('[*/%d]:' % iter_num, end=' ')
     sys.stdout.flush()
     for i in range(iter_num):
         ArrayAccess(**num_dict)
         if i in printnow:
-            print i,
+            print(i, end=' ')
             sys.stdout.flush()
 
 

@@ -94,7 +94,7 @@ def check_regex(regexname, regexobj, string, correct):
 
 
 def test_regex():
-    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.iteritems():
+    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.items():
         for (string, correct) in checklist:
             yield (check_regex, regexname, regexobj, string, correct)
 

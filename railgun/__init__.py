@@ -57,9 +57,10 @@ Installation
     easy_install railgun  # using setuptools (if you must)
 
 
-Requirement
------------
+Requirements
+------------
 - Numpy
+- six
 - (matplotlib for sample code)
 
 
@@ -81,6 +82,9 @@ __version__ = "0.1.9.dev3"
 __license__ = "MIT License"
 
 import os
+
+from six import string_types as basestring
+
 from railgun.simobj import SimObject, CDT2DTYPE
 from railgun._helper import HybridObj
 from railgun.cdata import cmem
@@ -132,7 +136,7 @@ Correction of functions to generate `_cmembers_` for same C type easily
 ['int a', 'int b', 'int c']
 >>> cm['int']('a', 'b', 'c')
 ['int a', 'int b', 'int c']
->>> print sorted(cm())  #doctest: +NORMALIZE_WHITESPACE
+>>> print(sorted(cm()))  #doctest: +NORMALIZE_WHITESPACE
 ['bool', 'char', 'double', 'float', 'int', 'long', 'longdouble',
  'longlong', 'short', 'uint', 'ulong', 'ulonglong', 'ushort']
 

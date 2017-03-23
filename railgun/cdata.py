@@ -1,5 +1,7 @@
 import re
 
+from six import string_types as basestring
+
 RE_CDDEC = re.compile(
     r'(?:(?P<cdt>[\w]+) )?(?P<vname>\w+)(?P<idx>\[.*\])?'
     r'(?: *= *(?P<default>[\w\.\-+]*))?$',

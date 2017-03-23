@@ -3,6 +3,8 @@ from ctypes import (POINTER, c_char_p, c_size_t, c_int, c_long, c_ulong,
                     c_double, c_void_p)
 from ctypes.util import find_library
 
+from six import string_types as basestring
+
 
 class _c_gsl_rng_type(ctypes.Structure):
     _fields_ = [('name', c_char_p),
@@ -37,7 +39,7 @@ class _GSLFuncLoader(object):
         return func
 
     def _load(self, name, argtypes=None, restype=None):
-        if isinstance(name ,basestring):
+        if isinstance(name, basestring):
             return self._load_1(name, argtypes, restype)
         else:
             try:

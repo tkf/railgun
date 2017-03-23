@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import timeit
 import numpy
 
@@ -16,9 +18,9 @@ def main(repeat, number, shape):
     results = numpy.array(timeit.repeat(
         code_stmt, code_setup % shape, repeat=repeat, number=number,
         )) / number
-    print "repeat: %d, number: %d, shape: %s" % (repeat, number, shape)
-    print "min: %.4g, max: %.4g, mean: %.4g, std: %.4g" % (
-        results.min(), results.max(), results.mean(), results.std())
+    print("repeat: %d, number: %d, shape: %s" % (repeat, number, shape))
+    print("min: %.4g, max: %.4g, mean: %.4g, std: %.4g" % (
+        results.min(), results.max(), results.mean(), results.std()))
 
 
 if __name__ == '__main__':

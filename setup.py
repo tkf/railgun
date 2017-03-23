@@ -22,7 +22,8 @@ setup(
         "Intended Audience :: Developers",
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python",
+        "Programming Language :: Python :: 2",
+        "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering",
         ],
     include_dirs = [numpy.get_include()],
@@ -33,4 +34,8 @@ setup(
             extra_compile_args=["-fPIC", "-Wall"],
             ),
         ],
+    install_requires=[
+        'numpy',
+        'six',
+    ],
     )

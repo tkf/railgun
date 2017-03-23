@@ -7,4 +7,5 @@ dist/
 *.egg-info/
 MANIFEST
 doc/source/_templates
+doc/source/samples/*/*.o
 nosetests*.xml

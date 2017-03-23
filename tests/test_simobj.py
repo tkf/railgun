@@ -178,7 +178,10 @@ class BaseTestVectCalc(unittest.TestCase):
 
     def v3_desired(self, vc=None):
         (v1, v2) = (vc or self.vc).getv('v1', 'v2')
-        return dict(plus=v1 + v2, minus=v1 - v2, times=v1 * v2, divide=v1 / v2)
+        return dict(plus=v1 + v2,
+                    minus=v1 - v2,
+                    times=v1 * v2,
+                    divide=v1 // v2)
 
 
 class TestVectCalc(BaseTestVectCalc):
@@ -283,7 +286,7 @@ class TestVectCalc(BaseTestVectCalc):
 
     def check_init_kwds(self, kwds):
         vc = self.make(**kwds)
-        for (key, desired) in kwds.iteritems():
+        for (key, desired) in kwds.items():
             if vc.array_alias(key):
                 pass
             else:

@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import numpy
 from numpy.testing import assert_equal, assert_almost_equal
 from nose.tools import raises
@@ -91,7 +93,7 @@ def gene_cfuncs(nd, list_cdt):
 
 @numpy.vectorize
 def mchr(i):
-    return chr(i % 256)
+    return chr(i % 128)
 
 
 def alpharange(*args):
@@ -240,8 +242,8 @@ if __name__ == '__main__':
     from pprint import pprint
     list_cdt = ['char', 'int', 'double']
     ndim = 3
-    print '_cfuncs_'
+    print('_cfuncs_')
     pprint(gene_cfuncs(ndim, list_cdt))
-    print
-    print '_cmembers_'
+    print()
+    print('_cmembers_')
     pprint(gene_cmembers(ndim, list_cdt))
