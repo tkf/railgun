@@ -403,71 +403,71 @@ class TestVectCalc(BaseTestVectCalc):
             v_i = getattr(vc, 'v%d' % i).arr
             assert_equal(v_i, numpy.array([i] * vc.num_i))
 
-    def setup_reallocation_test(self):
+    def setup_resize_test(self):
         vc = self.vc
         new_num_i = vc.num_i + 3
         vc.v1[:] = v1old = numpy.arange(vc.num_i) + 10
         return vc, new_num_i, v1old
 
-    def test_reallocation(self):
-        vc, new_num_i, _ = self.setup_reallocation_test()
-        vc.reallocate(i=new_num_i, in_place=True)
+    def test_resize(self):
+        vc, new_num_i, _ = self.setup_resize_test()
+        vc.resize(i=new_num_i, in_place=True)
         self.assertEqual(vc.num_i, new_num_i)
         self.assertEqual(vc.v1.shape, (new_num_i,))
         self.assertEqual(vc.v2.shape, (new_num_i,))
         self.assertEqual(vc.v3.shape, (new_num_i,))
 
-    def test_reallocation_cmemobject(self):
+    def test_resize_cmemobject(self):
         vc = self.new(self.VectCalcCMemObject)
         new_num_i = vc.num_i + 3
-        vc.reallocate(i=new_num_i, in_place=True)
+        vc.resize(i=new_num_i, in_place=True)
         self.assertEqual(vc.num_i, new_num_i)
         # NOTE: vc.v*.arr are uncharged, but that's ok.
-        #       It is just to check `vc.reallocate` doesn't fail.
+        #       It is just to check `vc.resize` doesn't fail.
 
-    def test_reallocation_in_place_true(self):
-        vc, new_num_i, _ = self.setup_reallocation_test()
+    def test_resize_in_place_true(self):
+        vc, new_num_i, _ = self.setup_resize_test()
 
         v1 = vc.v1  # get a ref
         with self.assertRaises(ValueError):
-            vc.reallocate(i=new_num_i, in_place=True)
+            vc.resize(i=new_num_i, in_place=True)
         del v1
-        # vc.reallocate(i=new_num_i, in_place=True)
+        # vc.resize(i=new_num_i, in_place=True)
 
-    def test_reallocation_in_place_default(self):
-        vc, new_num_i, _ = self.setup_reallocation_test()
+    def test_resize_in_place_default(self):
+        vc, new_num_i, _ = self.setup_resize_test()
 
         v1 = vc.v1  # get a ref
-        vc.reallocate(i=new_num_i)
+        vc.resize(i=new_num_i)
         assert vc.v1 is not v1
 
-    def test_reallocation_old_values_copied_with_in_place(self):
+    def test_resize_old_values_copied_with_in_place(self):
         """
-        `SimObject.reallocation` should copy old values when `in_place=True`.
+        `SimObject.resize` should copy old values when `in_place=True`.
         """
-        vc, new_num_i, v1old = self.setup_reallocation_test()
-        vc.reallocate(i=new_num_i, in_place=True)
+        vc, new_num_i, v1old = self.setup_resize_test()
+        vc.resize(i=new_num_i, in_place=True)
         numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
 
-    def test_reallocation_old_values_copied_with_copy(self):
-        vc, new_num_i, v1old = self.setup_reallocation_test()
+    def test_resize_old_values_copied_with_copy(self):
+        vc, new_num_i, v1old = self.setup_resize_test()
         v1 = vc.v1  # get a ref
-        vc.reallocate(i=new_num_i, in_place='or_copy')
+        vc.resize(i=new_num_i, in_place='or_copy')
         assert vc.v1 is not v1
         numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
 
-    def test_reallocation_old_values_not_copied(self):
+    def test_resize_old_values_not_copied(self):
         """
-        `SimObject.reallocation` should fail to copy when referenced.
+        `SimObject.resize` should fail to copy when referenced.
 
         When vc.v1.resize cannot be invoked because of an existing
         external reference to vc.v1, the new array would be created.
         In this case, old value would NOT be copied.
         """
-        vc, new_num_i, v1old = self.setup_reallocation_test()
+        vc, new_num_i, v1old = self.setup_resize_test()
 
         v1 = vc.v1  # get a ref
-        vc.reallocate(i=new_num_i)
+        vc.resize(i=new_num_i)
         del v1
         with self.assertRaises(AssertionError):
             numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)

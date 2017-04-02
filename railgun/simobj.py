@@ -122,7 +122,7 @@ def _gene_prop_scalar(key):
             raise AttributeError(
                 'Trying to change index length: {0}.'
                 'Attribute starts with `num_` cannot be changed directly. '
-                'Use `.reallocate({1}={2})` to reallocate arrays consistently.'
+                'Use `.resize({1}={2})` to resize arrays consistently.'
                 .format(key, key[len('num_'):], val))
     else:
         def fset(self, val):
@@ -843,9 +843,9 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         for (key, val) in nums.items():
             setattr(self._struct_, 'num_{0}'.format(key), val)
 
-    def reallocate(self, nums=None, in_place=False, **kwds):
+    def resize(self, nums=None, in_place=False, **kwds):
         """
-        Reallocate arrays consistently.
+        Resize arrays consistently.
 
         If `in_place=True` is given, raise ValueError when in-place
         `numpy.ndarray.resize` does not work.  It typically happens
@@ -859,7 +859,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
 
         Usage:
 
-        >>> obj.reallocate(i=10, j=20)                     # doctest: +SKIP
+        >>> obj.resize(i=10, j=20)                         # doctest: +SKIP
         >>> obj.num_i                                      # doctest: +SKIP
         10
         >>> obj.num_j                                      # doctest: +SKIP
@@ -907,3 +907,5 @@ class SimObject(six.with_metaclass(MetaSimObject)):
 
             # Redo the pointer allocations:
             self.__set_array_pointer(parsed)
+
+    reallocate = resize
