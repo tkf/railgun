@@ -560,3 +560,10 @@ class TestVectCalc(BaseTestVectCalc):
         array shape do not match with specified fixed num {fixed}:
           v2.shape[0] = {new}
         """).strip().format(new=new_num_i, fixed=vc.v2.size))
+
+
+def test_init_in_place():
+    num_i = 10
+    v1 = numpy.arange(num_i, dtype=numpy.intc)
+    vc = VectCalc(num_i=num_i, v1=v1, in_place=True)
+    assert vc.v1 is v1

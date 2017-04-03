@@ -37,7 +37,7 @@ VALTYPE : Value Type
 
 """
 
-CDT2DTYPE = dict(char=numpy.character,
+CDT2DTYPE = dict(char=numpy.dtype('S1'),
                  short=numpy.short, ushort=numpy.ushort,
                  int=numpy.int32, uint=numpy.uint32,
                  longlong=numpy.longlong, ulonglong=numpy.ulonglong,
@@ -686,7 +686,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
 
     def __copy__(self):
         clone = self.__class__.__new__(self.__class__)
-        clone.__dict__.update(self.__dict__)
+        clone.__setstate__(self.__getstate__())
         return clone
 
     def _is_cmem_scalar(self, name):
@@ -726,16 +726,16 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                                  if k not in numkeyset)
         self.__set_num(**nums)
         self.setv(**nonnum_scalarvals)
+
         # allocate C array data and set the defaults
-        self._set_cdata()
-        cmems_default_array = self._cmems_default_array_
-        array_allocated = filter(  # remove if not allocated
-            self._cmemsubsets_parsed_.cmem_need_alloc, cmems_default_array)
-        cmems_default_array_allocated = dict((k, cmems_default_array[k])
-                                             for k in array_allocated)
-        self.setv(**dict_override(
-            cmems_default_array_allocated, kwds_array, addkeys=True))
-        self.setv(kwds_array_alias, in_place=in_place)
+        self._set_cdata(kwds_array if in_place is True else {})
+        self.setv({k: v for k, v in self._cmems_default_array_.items()
+                   if self._cmemsubsets_parsed_.cmem_need_alloc(k) and
+                   k not in kwds_array})
+        if in_place is not True:
+            self.setv(kwds_array)
+        self.setv(kwds_array_alias)
+
         self.setv(**kwds_object)
 
     def setv(self, data=None, in_place=False, **kwds):
@@ -864,12 +864,15 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         else:
             return nums
 
-    def _set_cdata(self):
+    def _set_cdata(self, data={}):
         self._cdatastore_ = {}  # keep memory for arrays
         cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
         for (vname, parsed) in self._cmems_parsed_.items():
             if parsed.valtype == 'array' and cmem_need_alloc(vname):
-                self.__set_carray(parsed)
+                if vname in data:
+                    self._set_carray_inplace(vname, data[vname])
+                else:
+                    self.__set_carray(parsed)
 
     def __shape(self, parsed):
         return tuple(

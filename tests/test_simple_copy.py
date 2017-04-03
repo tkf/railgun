@@ -2,6 +2,7 @@ import copy
 import unittest
 
 from numpy.testing import assert_equal
+import numpy
 
 from test_simobj import VectCalc
 from arrayaccess import DefaultArrayAccess
@@ -69,3 +70,13 @@ class TestCopy3D(MixinTestCopy3D, TestCopy):
 
 class TestDeepCopy3D(MixinTestCopy3D, TestDeepCopy):
     clone_int2d = [[10] * 2] * 2
+
+
+def test_dont_copy_cdatastore():
+    vc1 = VectCalc()
+    vc2 = copy.copy(vc1)
+    v1 = numpy.zeros_like(vc1.v1)
+    vc1.setv(v1=v1, in_place=True)
+    assert vc1.v1 is v1
+    assert vc2.v1 is not v1
+    assert vc1._cdatastore_ is not vc2._cdatastore_
