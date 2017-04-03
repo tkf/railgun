@@ -652,6 +652,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         "array alias" of array C member.
 
         """
+        in_place = kwds.pop('in_place', False)
         if '_calloc_' in kwds:
             self._calloc_ = kwds['_calloc_']
             del kwds['_calloc_']
@@ -663,12 +664,12 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                                              remove_original=True)
         self._cmemsubsets_parsed_.set(**cmemsubsets_kwds)
 
-        self._set_all(**kwds)
+        self._set_all(kwds, in_place=in_place)
 
     def __setstate__(self, state):
         (attrs, kwds) = state
         self._cmemsubsets_parsed_ = attrs.pop('_cmemsubsets_parsed_')
-        self._set_all(**kwds)
+        self._set_all(kwds, in_place=True)
         self.__dict__.update(attrs)
 
     def __getstate__(self):
@@ -700,7 +701,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         return (name in self._cmems_parsed_ and
                 self._cmems_parsed_[name].valtype == 'object')
 
-    def _set_all(self, **kwds):
+    def _set_all(self, kwds, in_place):
         # decompose keyword arguments into its disjoint subsets
         kwds_scalar = subdict_by_filter(kwds, self._is_cmem_scalar, True)
         kwds_array = subdict_by_filter(kwds, self._is_cmem_array, True)
@@ -734,7 +735,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                                              for k in array_allocated)
         self.setv(**dict_override(
             cmems_default_array_allocated, kwds_array, addkeys=True))
-        self.setv(**kwds_array_alias)
+        self.setv(kwds_array_alias, in_place=in_place)
         self.setv(**kwds_object)
 
     def setv(self, data=None, in_place=False, **kwds):
