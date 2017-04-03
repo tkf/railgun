@@ -1,6 +1,7 @@
 *.pyc
 *.so
 
+/.cache
 .tox/
 build/
 dist/
