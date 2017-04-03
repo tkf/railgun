@@ -474,6 +474,19 @@ class TestVectCalc(BaseTestVectCalc):
         with self.assertRaises(AssertionError):
             numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
 
+    def test_setv_in_place_non_resize(self):
+        vc = self.vc
+        v1 = numpy.zeros_like(vc.v1)
+        vc.setv(v1=v1, in_place=True)
+        assert vc.v1 is v1
+
+    def test_setv_non_in_place_non_resize(self):
+        vc = self.vc
+        v1 = numpy.zeros_like(vc.v1)
+        vc.setv(v1=v1)
+        assert vc.v1 is not v1
+        numpy.testing.assert_equal(vc.v1, v1)
+
     def test_setv_non_in_place(self):
         vc, new_num_i, v1old = self.setup_resize_test()
         v1 = numpy.arange(new_num_i, dtype=vc.v1.dtype)

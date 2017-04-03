@@ -798,12 +798,12 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                                             num=val.shape[pos]))
             raise ValueError("\n".join(errlines))
 
-        newnums, arrays_to_be_resized = self.__required_resize(nums)
+        newnums, _ = self.__required_resize(nums)
         handled = []
         if in_place:
             self.__set_num(**newnums)
-            for cmem in arrays_to_be_resized:
-                val = data[cmem.vname]
+            for key, val in arrays.items():
+                cmem, = self.cinfo.member_get(vname=key)
                 try:
                     self._set_carray_inplace(cmem.vname, val)
                 except ValueError:
@@ -811,7 +811,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                         raise
                     self.__set_carray(cmem)
                     getattr(self, cmem.vname)[:] = val
-            handled.extend(cmem.vname for cmem in arrays_to_be_resized)
+            handled.extend(arrays)
         else:
             self.resize(nums=newnums)
 
