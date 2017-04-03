@@ -471,3 +471,51 @@ class TestVectCalc(BaseTestVectCalc):
         del v1
         with self.assertRaises(AssertionError):
             numpy.testing.assert_equal(vc.v1[:len(v1old)], v1old)
+
+    def test_setv_non_in_place(self):
+        vc, new_num_i, v1old = self.setup_resize_test()
+        v1 = numpy.arange(new_num_i, dtype=vc.v1.dtype)
+        v2 = v1.copy()
+        v3 = v1.copy()
+        vc.setv(v1=v1, v2=v2, v3=v3)
+        self.assertIsNot(vc.v1, v1)
+        self.assertIsNot(vc.v2, v2)
+        self.assertIsNot(vc.v3, v3)
+        numpy.testing.assert_equal(vc.v1, v1)
+        numpy.testing.assert_equal(vc.v2, v2)
+        numpy.testing.assert_equal(vc.v3, v3)
+        self.assertEqual(vc.num_i, new_num_i)
+
+    def test_setv_in_place(self):
+        vc, new_num_i, v1old = self.setup_resize_test()
+        v1 = numpy.arange(new_num_i, dtype=vc.v1.dtype)
+        v2 = v1.copy()
+        v3 = v1.copy()
+        vc.setv(v1=v1, v2=v2, v3=v3, in_place=True)
+        self.assertIs(vc.v1, v1)
+        self.assertIs(vc.v2, v2)
+        self.assertIs(vc.v3, v3)
+        self.assertEqual(vc.num_i, new_num_i)
+
+    def test_setv_in_place_with_non_contiguous_array(self):
+        vc, new_num_i, v1old = self.setup_resize_test()
+        v1 = numpy.arange(new_num_i * 2, dtype=vc.v1.dtype)[::2]
+        v2 = v1.copy()
+        v3 = v1.copy()
+        self.assertEqual(v1.shape, (new_num_i,))
+        self.assert_(not v1.flags['C_CONTIGUOUS'])
+        with self.assertRaises(ValueError):
+            vc.setv(v1=v1, v2=v2, v3=v3, in_place=True)
+
+    def test_setv_in_place_or_copy_with_non_contiguous_array(self):
+        vc, new_num_i, v1old = self.setup_resize_test()
+        v1 = numpy.arange(new_num_i * 2, dtype=vc.v1.dtype)[::2]
+        v2 = v1.copy()
+        v3 = v1.copy()
+        self.assertEqual(v1.shape, (new_num_i,))
+        self.assert_(not v1.flags['C_CONTIGUOUS'])
+        vc.setv(v1=v1, v2=v2, v3=v3, in_place='or_copy')
+        numpy.testing.assert_equal(vc.v1, v1)
+        self.assertIs(vc.v2, v2)
+        self.assertIs(vc.v3, v3)
+        self.assertEqual(vc.num_i, new_num_i)

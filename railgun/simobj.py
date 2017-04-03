@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 from ctypes import Structure, POINTER, pointer, cast
 from ctypes import (c_char, c_short, c_ushort, c_int, c_uint, c_long, c_ulong,
                     c_longlong, c_ulonglong, c_float, c_double, c_longdouble,
@@ -136,6 +137,19 @@ def _gene_prop_array(key):
         return self._cdatastore_[key]
 
     def fset(self, v):
+        # Maybe make in-place substitution the default behavior?  I'm
+        # not using the following code since sharing data depending on
+        # the state of array `v` (e.g., is it C_CONTIGUOUS?) is a bit
+        # awkward, especially when it is an output array of the
+        # computation.  Explicitly specifying behavior (for example)
+        # by .setv(..., in_place=True) is much better.
+        """
+        try:
+            self._set_carray_inplace(key, v)
+            return
+        except ValueError:
+            pass
+        """
         self._cdatastore_[key][:] = v
     return property(fget, fset)
 
@@ -586,6 +600,13 @@ class CInfo(object):
         for mem in self.member_get(**kwds):
             yield mem.vname
 
+    def has_member(self, **kwds):
+        try:
+            next(self.member_get(**kwds))
+            return True
+        except StopIteration:
+            return False
+
 
 class SimObject(six.with_metaclass(MetaSimObject)):
 
@@ -716,7 +737,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         self.setv(**kwds_array_alias)
         self.setv(**kwds_object)
 
-    def setv(self, **kwds):
+    def setv(self, data=None, in_place=False, **kwds):
         """
         Set variable named 'VAR' by ``set(VAR=VALUE)``
 
@@ -724,7 +745,78 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         is available.
 
         """
-        for (key, val)in kwds.items():
+        data = dict((data or {}), **kwds)
+        del kwds
+
+        arrays = {key: val for key, val in data.items()
+                  if (isinstance(val, numpy.ndarray) and
+                      self.cinfo.has_member(vname=key, valtype='array'))}
+        numsets = defaultdict(set)
+        for key, val in arrays.items():
+            cmem, = self.cinfo.member_get(vname=key)
+            for i, n in zip(cmem.idx, val.shape):
+                numsets[i].add(n)
+        nums = {i: list(ns)[0] for i, ns in numsets.items()}
+        # If given arrays have overlapping indices with existing
+        # arrays, add them to numsets to check consistency:
+        for cmem in self.cinfo.member_get(valtype='array'):
+            if cmem.vname not in arrays:
+                for i in set(cmem.idx) & set(numsets):
+                    numsets[i].add(self.num(i))
+        for i in numsets:
+            if i.isdigit():
+                numsets[i].add(int(i))
+                nums.pop(i)
+
+        inconsistent = sorted(i for i, ns in numsets.items() if len(ns) > 1)
+        if inconsistent:
+            errlines = ["** Inconsistent shape **"]
+            for i in inconsistent:
+                if i.isdigit():
+                    errlines.append(
+                        "num_{} specified by these arrays are inconsistent:"
+                        .format(i))
+                else:
+                    errlines.append(
+                        "Array shape do not match with specified fixed num {}:"
+                        .format(i))
+                for cmem in self.cinfo.member_get(valtype='array'):
+                    key = cmem.vname
+                    try:
+                        pos = cmem.idx.index(i)
+                    except ValueError:
+                        continue
+                    prefix = ''
+                    try:
+                        val = arrays[key]
+                    except KeyError:
+                        val = getattr(self, key)
+                        prefix = 'self.'
+                    errlines.append("  {prefix}{key}.shape[{pos}] = {num}"
+                                    .format(prefix=prefix, key=key, pos=pos,
+                                            num=val.shape[pos]))
+            raise ValueError("\n".join(errlines))
+
+        newnums, arrays_to_be_resized = self.__required_resize(nums)
+        handled = []
+        if in_place:
+            self.__set_num(**newnums)
+            for cmem in arrays_to_be_resized:
+                val = data[cmem.vname]
+                try:
+                    self._set_carray_inplace(cmem.vname, val)
+                except ValueError:
+                    if in_place != 'or_copy':
+                        raise
+                    self.__set_carray(cmem)
+                    getattr(self, cmem.vname)[:] = val
+            handled.extend(cmem.vname for cmem in arrays_to_be_resized)
+        else:
+            self.resize(nums=newnums)
+
+        for (key, val) in data.items():
+            if key in handled:
+                continue
             alias = self.array_alias(key)
             if alias:
                 (name, index) = alias
@@ -789,6 +881,19 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         dtype = CDT2DTYPE[parsed.cdt]
         arr = numpy.zeros(shape, dtype=dtype)
         self._cdatastore_[vname] = arr
+        self.__set_array_pointer(parsed)
+
+    def _set_carray_inplace(self, vname, value):
+        parsed = self._cmems_parsed_[vname]
+        shape = self.__shape(parsed)
+        dtype = CDT2DTYPE[parsed.cdt]
+        if not (isinstance(value, numpy.ndarray) and
+                shape == value.shape and
+                dtype == value.dtype and
+                value.flags['C_CONTIGUOUS']):
+            raise ValueError('{} cannot be set to {} in-place'
+                             .format(vname, value))
+        self._cdatastore_[vname] = value
         self.__set_array_pointer(parsed)
 
     def __set_array_pointer(self, parsed):
