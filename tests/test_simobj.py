@@ -2,9 +2,7 @@ import unittest
 
 import numpy
 from numpy.testing import assert_equal
-from nose.tools import raises, ok_  # , with_setup
 
-from tsutils import eq_
 from railgun import SimObject, relpath, cmem
 from railgun.simobj import CDT2CTYPE, CDT2DTYPE, POINTER
 
@@ -268,13 +266,15 @@ class TestVectCalc(BaseTestVectCalc):
         vc = self.vc
         for (v1, v2, v3) in [vc.getv('v1', 'v2', 'v3'),
                              vc.getv('v1, v2, v3')]:
-            ok_(v1 is vc.v1)
-            ok_(v2 is vc.v2)
-            ok_(v3 is vc.v3)
+            self.assert_(v1 is vc.v1)
+            self.assert_(v2 is vc.v2)
+            self.assert_(v3 is vc.v3)
 
     def test_check_argument_validity(self):
         (vc, num_i, _, _, _) = self.mems()
-        subvec_error = raises(ValueError)(vc.subvec)
+
+        def subvec_error(**kwds):
+            self.assertRaises(ValueError, vc.subvec, **kwds)
         # no error
         vc.subvec()
         vc.subvec(i1=1, i2=num_i - 2)
@@ -306,11 +306,12 @@ class TestVectCalc(BaseTestVectCalc):
         self.check_init_kwds(dict(v1=0))
         self.check_init_kwds(dict(num_i=5, v1=[2, 3, 5, 7, 11]))
         self.check_init_kwds(dict(v1_0=0, v2_0=0, v3_0=0))
-        raises(ValueError)(self.check_init_kwds)(dict(num_i=5, v1=[2, 3, 5]))
-        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v1_10=0))
-        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v2_10=0))
-        raises(IndexError)(self.check_init_kwds)(dict(num_i=10, v3_10=0))
-        raises(ValueError)(self.check_init_kwds)(dict(undefinedvar=0))
+        raises = self.assertRaises
+        raises(ValueError, self.check_init_kwds, dict(num_i=5, v1=[2, 3, 5]))
+        raises(IndexError, self.check_init_kwds, dict(num_i=10, v1_10=0))
+        raises(IndexError, self.check_init_kwds, dict(num_i=10, v2_10=0))
+        raises(IndexError, self.check_init_kwds, dict(num_i=10, v3_10=0))
+        raises(ValueError, self.check_init_kwds, dict(undefinedvar=0))
 
     def test_set_array_alias(self):
         vc = self.make(num_i=5)
@@ -320,7 +321,7 @@ class TestVectCalc(BaseTestVectCalc):
         vc.setv(v1_0=10, v1_1=11, v1_2=12, v1_3=13, v1_4=14)
         assert_equal(vc.v1, desired_v1)
 
-        raises(IndexError)(vc.setv)(v1_5=0)
+        self.assertRaises(IndexError, vc.setv, v1_5=0)
 
     def test_cwrap_with_subvec(self):
         self.check_subvec_ret_value(self.VectCalcWithCwrap)
@@ -357,7 +358,7 @@ class TestVectCalc(BaseTestVectCalc):
         """
         SimObject.__init__ should raise ValueError if num_* are not specified.
         """
-        raises(ValueError)(self.check_init_wo_num)()
+        self.assertRaises(ValueError, self.check_init_wo_num)
         self.check_init_wo_num(num_i=0)
         self.check_init_wo_num(num_i=1)
 
@@ -374,24 +375,24 @@ class TestVectCalc(BaseTestVectCalc):
 
     def test_cmemsubsets_default(self):
         vc = self.new(self.VectCalcCMemSubSet)
-        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=True))
+        assert vc._cmemsubsets_parsed_.getall() == dict(vec=False, dot=True)
         vc.subvec_dot()
-        raises(ValueError)(vc.vec)()
+        self.assertRaises(ValueError, vc.vec)
         vc.getv('v1, v2')
-        raises(KeyError)(vc.getv)('v3')
+        self.assertRaises(KeyError, vc.getv, 'v3')
 
     def test_cmemsubsets_dot(self):
         vc = self.new(self.VectCalcCMemSubSet, _cmemsubsets_dot=False)
-        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=False, dot=False))
-        raises(ValueError)(vc.subvec_dot)()
-        raises(ValueError)(vc.vec)()
-        raises(KeyError)(vc.getv)('v1')
-        raises(KeyError)(vc.getv)('v2')
-        raises(KeyError)(vc.getv)('v3')
+        assert vc._cmemsubsets_parsed_.getall() == dict(vec=False, dot=False)
+        self.assertRaises(ValueError, vc.subvec_dot)
+        self.assertRaises(ValueError, vc.vec)
+        self.assertRaises(KeyError, vc.getv, 'v1')
+        self.assertRaises(KeyError, vc.getv, 'v2')
+        self.assertRaises(KeyError, vc.getv, 'v3')
 
     def test_cmemsubsets_vec(self):
         vc = self.new(self.VectCalcCMemSubSet, _cmemsubsets_vec=True)
-        eq_(vc._cmemsubsets_parsed_.getall(), dict(vec=True, dot=True))
+        assert vc._cmemsubsets_parsed_.getall() == dict(vec=True, dot=True)
         vc.subvec_dot()
         vc.vec()
         vc.getv('v1, v2, v3')

@@ -1,7 +1,3 @@
-from nose.tools import ok_  #, raises, with_setup
-## from pprint import pformat
-
-from tsutils import eq_
 from railgun.simobj import CDT2CTYPE
 from railgun.cdata import (
     RE_CDDEC, INT_LIKE_CDTS, cddec_idx_parse, cddec_parse, cmem)
@@ -11,7 +7,7 @@ def dict_re_cddec(cdt, vname, idx=None, default=None):
     return dict(cdt=cdt, vname=vname, idx=idx, default=default)
 
 DATA_TEST_REGEX = dict(
-    RE_CDDEC = (
+    RE_CDDEC=(
         RE_CDDEC, [
             ("int a", dict_re_cddec('int', 'a')),
             ("int aA1", dict_re_cddec('int', 'aA1')),
@@ -84,13 +80,12 @@ def check_regex(regexname, regexobj, string, correct):
     match = regexobj.match(string)
     if match:
         dct = match.groupdict()
-        eq_(dct, correct,
-            "%s.match(%r) is not correct" % (regexname, string))
+        assert dct == correct, \
+            "%s.match(%r) is not correct" % (regexname, string)
     else:
-        ok_(correct is None,
-            msg=("%s.match(%r) should not be None\n"
-                 "desired = %r" % (regexname, string, correct)
-                 ))
+        assert correct is None, \
+            ("%s.match(%r) should not be None\n"
+             "desired = %r" % (regexname, string, correct))
 
 
 def test_regex():
@@ -101,8 +96,8 @@ def test_regex():
 
 def check_cddec_idx_parse(idxtr, dimtuple):
     ret = cddec_idx_parse(idxtr)[0]
-    eq_(ret, dimtuple,
-        msg='cddec_idx_parse(%r) = %r != %r' % (idxtr, ret, dimtuple))
+    assert ret == dimtuple, \
+        'cddec_idx_parse(%r) = %r != %r' % (idxtr, ret, dimtuple)
 
 
 def test_cddec_idx_parse():
@@ -113,8 +108,7 @@ def test_cddec_idx_parse():
 def check_cddec_parse(cdstr, correct):
     ret = cddec_parse(cdstr)
     dct = ret.as_dict()
-    eq_(dct, correct,
-        msg='cddec_parse(%s) returns incorrect value' % cdstr)
+    assert dct == correct, 'cddec_parse(%s) returns incorrect value' % cdstr
 
 
 def test_cddec_parse():

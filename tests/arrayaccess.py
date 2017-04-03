@@ -4,7 +4,6 @@ import numpy
 from numpy.testing import assert_equal, assert_almost_equal
 from nose.tools import raises
 
-from tsutils import eq_
 from railgun import SimObject, relpath
 
 LIST_IDX = list('ijklmnopqrstuvwxyz')
@@ -179,9 +178,9 @@ def check_num(clibname, list_num, list_cdt, carrtype=None):
     num_dict = dict(zip(ArrayAccess.num_names, list_num))
     aa = ArrayAccess(**num_dict)
     nd = len(list_num)
-    eq_(tuple(aa.num(*LIST_IDX[:nd])), tuple(list_num))
-    eq_(tuple(aa.num(','.join(LIST_IDX[:nd]))), tuple(list_num))
-    eq_(tuple(aa.num(', '.join(LIST_IDX[:nd]))), tuple(list_num))
+    assert tuple(aa.num(*LIST_IDX[:nd])) == tuple(list_num)
+    assert tuple(aa.num(','.join(LIST_IDX[:nd]))) == tuple(list_num)
+    assert tuple(aa.num(', '.join(LIST_IDX[:nd]))) == tuple(list_num)
 
 
 class BaseArrayAccess(SimObject):

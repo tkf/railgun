@@ -1,6 +1,3 @@
-from nose.tools import ok_  # , raises, with_setup
-
-from tsutils import eq_
 from railgun.cfuncs import (
     cfdec_parse, RE_CFDEC_FUNC, RE_CFDEC_CHOSET, RE_CFDEC_ARG,
     choice_combinations)
@@ -86,11 +83,11 @@ def check_regex(regexname, regexobj, string, correct):
     match = regexobj.match(string)
     if match:
         dct = match.groupdict()
-        eq_(dct, correct, "%s.match(%r) is not correct" % (regexname, string))
+        assert dct == correct, \
+            "%s.match(%r) is not correct" % (regexname, string)
     else:
-        ok_(correct is None,
-            msg=("%s.match(%r) should not be None\n"
-                 "desired = %r" % (regexname, string, correct)))
+        assert correct is None, ("%s.match(%r) should not be None\n"
+                                 "desired = %r" % (regexname, string, correct))
 
 
 def test_regex():
@@ -103,11 +100,11 @@ def check_cfdec_parse(cfstr, correct, fnameargslist):
     ret = cfdec_parse(cfstr)
     dct = subdict(ret.as_dict(), *list(correct))  # exclude 'fnget'
     fnget = ret.fnget
-    eq_(correct, dct, 'incorrect return for "%s"' % (cfstr))
+    assert correct == dct, 'incorrect return for "%s"' % (cfstr)
     for (fname, args) in fnameargslist:
         fname_ret = fnget(*args)
-        eq_(fname_ret, fname,
-            '%s%s returns incorrect name' % (ret.fnget.func_name, args))
+        assert fname_ret == fname, \
+            '%s%s returns incorrect name' % (ret.fnget.func_name, args)
 
 
 def test_cfdec_parse():
@@ -119,11 +116,11 @@ def check_choice_combinations(cfstr, fnameargslist):
     cfdec = cfdec_parse(cfstr)
     clist = [tuple(c) for c in choice_combinations(cfdec)]
     ret = set(clist)
-    ok_(len(ret) == len(clist),
-        'choice_combinations returns redundant element(s)')
+    assert len(ret) == len(clist), \
+        'choice_combinations returns redundant element(s)'
     correct = set(fa[1] for fa in fnameargslist)
-    eq_(ret, correct, ('choice_combinations(cfdec_parse(%s)) '
-                       'returns incorrect value' % cfstr))
+    assert ret == correct, ('choice_combinations(cfdec_parse(%s)) '
+                            'returns incorrect value' % cfstr)
 
 
 def test_choice_combinations():

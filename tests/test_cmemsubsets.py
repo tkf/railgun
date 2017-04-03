@@ -1,6 +1,3 @@
-from nose.tools import ok_  # , raises, with_setup
-
-from tsutils import eq_
 from railgun.cmemsubsets import CMemSubSets
 
 
@@ -70,8 +67,8 @@ DATA_CMEMSUBSETS = [
 
 def check_default(cmss, kwds):
     for name in kwds['data']:
-        eq_(cmss.get(name), kwds['data'][name].get('default', False),
-            msg='comparing default value of flag "%s"' % name)
+        assert cmss.get(name) == kwds['data'][name].get('default', False), \
+            'comparing default value of flag "%s"' % name
 
 
 def test_default():
@@ -84,13 +81,11 @@ def test_default():
 def check_cmemsubsets(cmss, case):
     cmss.set(**case['flags'])
     for (name, desired) in case['cfuncs'].items():
-        eq_(cmss.cfunc_is_callable(name), desired,
-            msg=('comparing cfuncs "%s" with falgs: %s' %
-                 (name, case['flags'])))
+        assert cmss.cfunc_is_callable(name) == desired, \
+            'comparing cfuncs "%s" with falgs: %s' % (name, case['flags'])
     for (name, desired) in case['cmems'].items():
-        eq_(cmss.cmem_need_alloc(name), desired,
-            msg=('comparing cmems "%s" with falgs: %s' %
-                 (name, case['flags'])))
+        assert cmss.cmem_need_alloc(name) == desired, \
+            'comparing cmems "%s" with falgs: %s' % (name, case['flags'])
 
 
 def test_cmemsubsets():
@@ -106,5 +101,5 @@ def test_cmemsubsets_copy():
         for case in data['cases']:
             cmss = CMemSubSets(**kwds)
             copy = cmss.copy()
-            ok_(cmss is not copy)
+            assert cmss is not copy
             yield (check_cmemsubsets, copy, case)
