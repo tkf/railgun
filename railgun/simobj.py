@@ -775,11 +775,11 @@ class SimObject(six.with_metaclass(MetaSimObject)):
             for i in inconsistent:
                 if i.isdigit():
                     errlines.append(
-                        "num_{} specified by these arrays are inconsistent:"
+                        "array shape do not match with specified fixed num {}:"
                         .format(i))
                 else:
                     errlines.append(
-                        "Array shape do not match with specified fixed num {}:"
+                        "num_{} specified by these arrays are inconsistent:"
                         .format(i))
                 for cmem in self.cinfo.member_get(valtype='array'):
                     key = cmem.vname

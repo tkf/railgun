@@ -1,3 +1,4 @@
+import textwrap
 import unittest
 
 import numpy
@@ -520,3 +521,29 @@ class TestVectCalc(BaseTestVectCalc):
         self.assertIs(vc.v2, v2)
         self.assertIs(vc.v3, v3)
         self.assertEqual(vc.num_i, new_num_i)
+
+    def test_setv_inconsistent(self):
+        vc, new_num_i, _ = self.setup_resize_test()
+        v1 = numpy.arange(new_num_i, dtype=vc.v1.dtype)
+        with self.assertRaises(ValueError) as cm:
+            vc.setv(v1=v1)
+        self.assertEqual(str(cm.exception).strip(), textwrap.dedent("""
+        ** Inconsistent shape **
+        num_i specified by these arrays are inconsistent:
+          v1.shape[0] = {new}
+          self.v2.shape[0] = {old}
+          self.v3.shape[0] = {old}
+        """).strip().format(new=new_num_i, old=vc.num_i))
+
+    def test_setv_inconsistent_fixed_shape(self):
+        new_num_i = 3
+        vc = self.new(self.VectCalcFixedShape)
+        v2 = numpy.arange(new_num_i, dtype=vc.v2.dtype)
+        self.assertNotEqual(vc.v2.shape, (new_num_i,))
+        with self.assertRaises(ValueError) as cm:
+            vc.setv(v2=v2)
+        self.assertEqual(str(cm.exception).strip(), textwrap.dedent("""
+        ** Inconsistent shape **
+        array shape do not match with specified fixed num {fixed}:
+          v2.shape[0] = {new}
+        """).strip().format(new=new_num_i, fixed=vc.v2.size))
