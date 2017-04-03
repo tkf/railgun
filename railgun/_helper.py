@@ -89,10 +89,8 @@ def subdict(d, *args):
 
     Usage
     >>> d = dict(a=1, b=2, d=3, e=4)
-    >>> subdict(d, 'a', 'b')
-    {'a': 1, 'b': 2}
-    >>> subdict(d, 'a, b')
-    {'a': 1, 'b': 2}
+    >>> assert subdict(d, 'a', 'b') == {'a': 1, 'b': 2}
+    >>> assert subdict(d, 'a, b') == {'a': 1, 'b': 2}
 
     """
     keys = _parse_csk_args(args)
