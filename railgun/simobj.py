@@ -806,6 +806,30 @@ class SimObject(six.with_metaclass(MetaSimObject)):
             ptr = ctype_getter(arr)
         setattr(self._struct_, vname, ptr)
 
+    def __required_resize(self, nums):
+        indices = set(nums)
+        invalid = indices - self.cinfo.indices
+        if invalid:
+            raise ValueError(
+                'Indices {0} are invalid.  Must be one of {1}'
+                .format(indices, self.cinfo.indices))
+
+        newnums = {}
+        for i, n in nums.items():
+            if self.num(i) != n:
+                newnums[i] = n
+        indices = set(newnums)
+
+        cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
+        arrays = []
+        for cmem in self.cinfo.members:
+            if (cmem.valtype == 'array' and
+                    indices & set(cmem.idx) and
+                    cmem_need_alloc(cmem.vname)):
+                arrays.append(cmem)
+
+        return newnums, arrays
+
     def _check_index_in_range(self, arg_val_list):
         """
         Raise ValueError if index 'i' is bigger than 0 and less than num_'i'
@@ -869,23 +893,8 @@ class SimObject(six.with_metaclass(MetaSimObject)):
         nums = dict((nums or {}), **kwds)
         should_raise = in_place and in_place != 'or_copy'
         should_copy = in_place == 'or_copy'
-
-        indices = set(nums)
-        invalid = indices - self.cinfo.indices
-        if invalid:
-            raise ValueError(
-                'Indices {0} are invalid.  Must be one of {1}'
-                .format(indices, self.cinfo.indices))
-
-        cmem_need_alloc = self._cmemsubsets_parsed_.cmem_need_alloc
-        arrays = []
-        for cmem in self.cinfo.members:
-            if (cmem.valtype == 'array' and
-                    indices & set(cmem.idx) and
-                    cmem_need_alloc(cmem.vname)):
-                arrays.append(cmem)
-
-        self.__set_num(**nums)
+        newnums, arrays = self.__required_resize(nums)
+        self.__set_num(**newnums)
         for parsed in arrays:
             # Remove the array from _cdatastore_ to release the reference.
             arr = self._cdatastore_.pop(parsed.vname)
