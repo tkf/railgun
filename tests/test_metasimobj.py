@@ -1,9 +1,13 @@
-from nose.tools import raises
+import pytest
 
 from railgun import SimObject, relpath
 
 
-def check_cstructname_and_cfuncprefix(cstructname, cfuncprefix):
+@pytest.mark.parametrize('cstructname, cfuncprefix', [
+    ('VectCalc', None),
+    (None, 'VectCalc_'),
+])
+def test_cstructname_and_cfuncprefix(cstructname, cfuncprefix):
     class ClassNameIsNotVectCalc(SimObject):
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
@@ -29,17 +33,17 @@ def check_cstructname_and_cfuncprefix(cstructname, cfuncprefix):
             _cfuncprefix_ = cfuncprefix
 
 
-def test_cstructname_and_cfuncprefix():
-    raises_nothing = check_cstructname_and_cfuncprefix
-    raises_AttributeError = raises(AttributeError)(raises_nothing)
-    yield (raises_nothing, 'VectCalc', None)
-    yield (raises_AttributeError, None, None)
-    yield (raises_AttributeError, 'WrongClassName', None)
-    yield (raises_AttributeError, 'VectCalc', 'WrongPrefix_')
-    yield (raises_nothing, None, 'VectCalc_')
+@pytest.mark.parametrize('raises, cstructname, cfuncprefix', [
+    (AttributeError, None, None),
+    (AttributeError, 'WrongClassName', None),
+    (AttributeError, 'VectCalc', 'WrongPrefix_'),
+])
+def test_cstructname_and_cfuncprefix_raises(raises, cstructname, cfuncprefix):
+    with pytest.raises(raises):
+        test_cstructname_and_cfuncprefix(cstructname, cfuncprefix)
 
 
-def check_empty_cfuncprefix(cfuncprefix):
+def test_empty_cfuncprefix(cfuncprefix=''):
     class ClassNameIsNotVectCalc(SimObject):
         _clibname_ = 'vectclac.so'
         _clibdir_ = relpath('ext/build', __file__)
@@ -63,8 +67,6 @@ def check_empty_cfuncprefix(cfuncprefix):
             _cfuncprefix_ = cfuncprefix
 
 
-def test_empty_cfuncprefix():
-    raises_nothing = check_empty_cfuncprefix
-    raises_AttributeError = raises(AttributeError)(raises_nothing)
-    yield (raises_nothing, '')
-    yield (raises_AttributeError, None)
+def test_empty_cfuncprefix_raises():
+    with pytest.raises(AttributeError):
+        test_empty_cfuncprefix(None)

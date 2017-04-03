@@ -1,3 +1,5 @@
+import pytest
+
 from railgun.cfuncs import (
     cfdec_parse, RE_CFDEC_FUNC, RE_CFDEC_CHOSET, RE_CFDEC_ARG,
     choice_combinations)
@@ -79,7 +81,12 @@ DATA_CFDEC_PARSE = [
     ]
 
 
-def check_regex(regexname, regexobj, string, correct):
+@pytest.mark.parametrize('regexname, regexobj, string, correct', [
+    (regexname, regexobj, string, correct)
+    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.items()
+    for (string, correct) in checklist
+])
+def test_regex(regexname, regexobj, string, correct):
     match = regexobj.match(string)
     if match:
         dct = match.groupdict()
@@ -90,13 +97,8 @@ def check_regex(regexname, regexobj, string, correct):
                                  "desired = %r" % (regexname, string, correct))
 
 
-def test_regex():
-    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.items():
-        for (string, correct) in checklist:
-            yield (check_regex, regexname, regexobj, string, correct)
-
-
-def check_cfdec_parse(cfstr, correct, fnameargslist):
+@pytest.mark.parametrize('cfstr, correct, fnameargslist', DATA_CFDEC_PARSE)
+def test_cfdec_parse(cfstr, correct, fnameargslist):
     ret = cfdec_parse(cfstr)
     dct = subdict(ret.as_dict(), *list(correct))  # exclude 'fnget'
     fnget = ret.fnget
@@ -107,12 +109,9 @@ def check_cfdec_parse(cfstr, correct, fnameargslist):
             '%s%s returns incorrect name' % (ret.fnget.func_name, args)
 
 
-def test_cfdec_parse():
-    for (cfstr, correct, fnameargslist) in DATA_CFDEC_PARSE:
-        yield (check_cfdec_parse, cfstr, correct, fnameargslist)
-
-
-def check_choice_combinations(cfstr, fnameargslist):
+@pytest.mark.parametrize('cfstr, correct, fnameargslist', DATA_CFDEC_PARSE)
+def test_choice_combinations(cfstr, correct, fnameargslist):
+    del correct
     cfdec = cfdec_parse(cfstr)
     clist = [tuple(c) for c in choice_combinations(cfdec)]
     ret = set(clist)
@@ -121,8 +120,3 @@ def check_choice_combinations(cfstr, fnameargslist):
     correct = set(fa[1] for fa in fnameargslist)
     assert ret == correct, ('choice_combinations(cfdec_parse(%s)) '
                             'returns incorrect value' % cfstr)
-
-
-def test_choice_combinations():
-    for (cfstr, correct, fnameargslist) in DATA_CFDEC_PARSE:
-        yield (check_choice_combinations, cfstr, fnameargslist)

@@ -1,3 +1,5 @@
+import pytest
+
 from railgun.cmemsubsets import CMemSubSets
 
 
@@ -71,11 +73,10 @@ def check_default(cmss, kwds):
             'comparing default value of flag "%s"' % name
 
 
-def test_default():
-    for data in DATA_CMEMSUBSETS:
-        kwds = data['kwds']
-        if 'data' in kwds:  # no test for empty `kwds`
-            yield (check_default, CMemSubSets(**kwds), kwds)
+@pytest.mark.parametrize('kwds', [data['kwds'] for data in DATA_CMEMSUBSETS
+                                  if 'data' in data['kwds']])
+def test_default(kwds):
+    check_default(CMemSubSets(**kwds), kwds)
 
 
 def check_cmemsubsets(cmss, case):
@@ -88,18 +89,18 @@ def check_cmemsubsets(cmss, case):
             'comparing cmems "%s" with falgs: %s' % (name, case['flags'])
 
 
-def test_cmemsubsets():
-    for data in DATA_CMEMSUBSETS:
-        kwds = data['kwds']
-        for case in data['cases']:
-            yield (check_cmemsubsets, CMemSubSets(**kwds), case)
+@pytest.mark.parametrize('kwds, case', [
+    (data['kwds'], case) for data in DATA_CMEMSUBSETS for case in data['cases']
+])
+def test_cmemsubsets(kwds, case):
+    check_cmemsubsets(CMemSubSets(**kwds), case)
 
 
-def test_cmemsubsets_copy():
-    for data in DATA_CMEMSUBSETS:
-        kwds = data['kwds']
-        for case in data['cases']:
-            cmss = CMemSubSets(**kwds)
-            copy = cmss.copy()
-            assert cmss is not copy
-            yield (check_cmemsubsets, copy, case)
+@pytest.mark.parametrize('kwds, case', [
+    (data['kwds'], case) for data in DATA_CMEMSUBSETS for case in data['cases']
+])
+def test_cmemsubsets_copy(kwds, case):
+    cmss = CMemSubSets(**kwds)
+    copy = cmss.copy()
+    assert cmss is not copy
+    check_cmemsubsets(copy, case)

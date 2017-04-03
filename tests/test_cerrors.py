@@ -1,4 +1,5 @@
-from nose.tools import assert_raises # , raises, ok_, with_setup
+import pytest
+
 from railgun import SimObject, relpath
 
 
@@ -31,6 +32,7 @@ def check_error(vc, exception):
     # at least one 0 raises error
     vc.v2[-1] = 0
     # error will be raised
+    assert_raises = pytest.raises
     assert_raises(exception, vc.vec, op='divide')
     assert_raises(exception, vc.subvec, op='divide')
 

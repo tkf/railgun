@@ -1,3 +1,5 @@
+import pytest
+
 from railgun.simobj import CDT2CTYPE
 from railgun.cdata import (
     RE_CDDEC, INT_LIKE_CDTS, cddec_idx_parse, cddec_parse, cmem)
@@ -76,7 +78,12 @@ DATA_TEST_CDEC_PARSE = [
     ]
 
 
-def check_regex(regexname, regexobj, string, correct):
+@pytest.mark.parametrize('regexname, regexobj, string, correct', [
+    (regexname, regexobj, string, correct)
+    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.items()
+    for (string, correct) in checklist
+])
+def test_regex(regexname, regexobj, string, correct):
     match = regexobj.match(string)
     if match:
         dct = match.groupdict()
@@ -88,32 +95,18 @@ def check_regex(regexname, regexobj, string, correct):
              "desired = %r" % (regexname, string, correct))
 
 
-def test_regex():
-    for (regexname, (regexobj, checklist)) in DATA_TEST_REGEX.items():
-        for (string, correct) in checklist:
-            yield (check_regex, regexname, regexobj, string, correct)
-
-
-def check_cddec_idx_parse(idxtr, dimtuple):
+@pytest.mark.parametrize('idxtr, dimtuple', DATA_TEST_IDX)
+def test_cddec_idx_parse(idxtr, dimtuple):
     ret = cddec_idx_parse(idxtr)[0]
     assert ret == dimtuple, \
         'cddec_idx_parse(%r) = %r != %r' % (idxtr, ret, dimtuple)
 
 
-def test_cddec_idx_parse():
-    for (idxtr, dimtuple) in DATA_TEST_IDX:
-        yield (check_cddec_idx_parse, idxtr, dimtuple)
-
-
-def check_cddec_parse(cdstr, correct):
+@pytest.mark.parametrize('cdstr, correct', DATA_TEST_CDEC_PARSE)
+def test_cddec_parse(cdstr, correct):
     ret = cddec_parse(cdstr)
     dct = ret.as_dict()
     assert dct == correct, 'cddec_parse(%s) returns incorrect value' % cdstr
-
-
-def test_cddec_parse():
-    for (cdstr, correct) in DATA_TEST_CDEC_PARSE:
-        yield (check_cddec_parse, cdstr, correct)
 
 
 def test_int_like_cdts():

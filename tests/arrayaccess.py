@@ -1,8 +1,8 @@
 from __future__ import print_function
 
+import pytest
 import numpy
 from numpy.testing import assert_equal, assert_almost_equal
-from nose.tools import raises
 
 from railgun import SimObject, relpath
 
@@ -165,7 +165,8 @@ def check_arrayaccess(clibname, list_num, list_cdt, cdt, dim,
         arr[:] = -arr
     else:
         arr += 100
-    raises(AssertionError)(assert_equal)(garr, arr)
+    with pytest.raises(AssertionError):
+        assert_equal(garr, arr)
     # get array (garr2) via arr_via_ret again
     garr2 = aa.arr_via_ret(cdt, dim)
     assert_equal(garr2, arr)
