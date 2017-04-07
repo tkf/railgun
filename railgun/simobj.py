@@ -1018,7 +1018,7 @@ class SimObject(six.with_metaclass(MetaSimObject)):
                 old = arr
                 arr = numpy.zeros(shape, dtype=arr.dtype)
                 if should_copy:
-                    arr.reshape(-1)[:old.size] = old[:arr.size]
+                    arr.reshape(-1)[:old.size] = old.reshape(-1)[:arr.size]
 
             # Put the array back to the data store:
             self._cdatastore_[parsed.vname] = arr
