@@ -168,6 +168,18 @@ def _gene_prop_object(key):
     return property(fget, fset)
 
 
+class CFuncError(RuntimeError):
+    # Derived from RuntimeError, since it was used in older versions.
+
+    def __init__(self, name, code, message=None):
+        if message is None:
+            message = ('c-function {}() terminates with code {}'
+                       .format(self.name, self.code))
+        super(CFuncError, self).__init__(message)
+        self.name = name
+        self.code = code
+
+
 def check_num_args_kwds(args, kwds, keyorder, func_name, plus=0):
     """
     Raise ValueError if number of arguments is too much
@@ -294,8 +306,7 @@ def gene_cfpywrap(attrs, cfdec):
             if rcode in self._cerrors_:
                 raise self._cerrors_[rcode]
             else:
-                raise RuntimeError('c-function %s() terminates with code %d'
-                                   % (cfname, rcode))
+                raise CFuncError(cfname, rcode)
     cfpywrap.func_name = cfdec.fname
     # wrap it if there is wrap function
     wrap_name = '_cwrap_%s' % cfdec.fname
