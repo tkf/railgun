@@ -36,4 +36,6 @@ src/$(PROJECT)/__init__.py: README.rst
 
 ## Upload to PyPI
 upload: inject-readme
-	python setup.py register sdist upload
+	rm -rf dist/
+	python setup.py sdist
+	twine upload dist/*
