@@ -15,7 +15,7 @@ test-ext:
 	make --directory=tests/ext/
 
 clean: clean-pycache
-	rm -rf *.egg-info .tox MANIFEST
+	rm -rf src/*.egg-info .tox MANIFEST
 
 clean-pycache:
 	find src tests -name __pycache__ -o -name '*.pyc' -print0 \
