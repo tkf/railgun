@@ -29,7 +29,7 @@ setup(
     ext_modules=[
         Extension(
             'railgun.cstyle',
-            sources=['src/cstylemodule.c'],
+            sources=['src/railgun/cstylemodule.c'],
             extra_compile_args=["-fPIC", "-Wall"],
             ),
         ],
