@@ -1,21 +1,19 @@
 from setuptools import setup
 import numpy
 from numpy.distutils.core import Extension
-import railgun
-from railgun import __author__, __version__, __license__
 
 setup(
     name='railgun',
-    version=__version__,
+    version="0.1.9.dev3",
     packages=['railgun'],
     description=('ctypes utilities for faster and easier '
                  'simulation programming in C and Python'),
-    long_description=railgun.__doc__,
-    author=__author__,
+    long_description=open("README.rst").read(),
+    author="Takafumi Arakaki",
     author_email='aka.tkf@gmail.com',
     url='https://github.com/tkf/railgun',
     keywords='numerical simulation, research, ctypes, numpy, c',
-    license=__license__,
+    license="MIT License",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
@@ -26,7 +24,7 @@ setup(
         "Programming Language :: Python :: 3",
         "Topic :: Scientific/Engineering",
         ],
-    include_dirs = [numpy.get_include()],
+    include_dirs=[numpy.get_include()],
     ext_modules=[
         Extension(
             'railgun.cstyle',
