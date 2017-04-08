@@ -1,4 +1,3 @@
-# [[[cog import cog; cog.outl('"""\n%s\n"""' % file('../README.rst').read())]]]
 """
 RailGun: Accelerate your simulation programing
 ==============================================
@@ -73,9 +72,7 @@ See LICENSE.
    image:: https://secure.travis-ci.org/tkf/railgun.png?branch=master
    :target: http://travis-ci.org/tkf/railgun
    :alt: Build Status
-
 """
-# [[[end]]]
 
 from .utils import *
 from .simobj import SimObject, CDT2DTYPE
