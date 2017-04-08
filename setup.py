@@ -1,11 +1,12 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import numpy
 from numpy.distutils.core import Extension
 
 setup(
     name='railgun',
     version="0.1.9.dev3",
-    packages=['railgun'],
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
     description=('ctypes utilities for faster and easier '
                  'simulation programming in C and Python'),
     long_description=open("README.rst").read(),
