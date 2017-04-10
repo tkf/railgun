@@ -170,11 +170,25 @@ def _gene_prop_object(key):
 
 class CFuncError(RuntimeError):
     # Derived from RuntimeError, since it was used in older versions.
+    """
+    Default exception for errors from C functions.
+
+    >>> err = CFuncError('spam', 1)
+    >>> print(err)
+    c-function spam() terminates with code 1
+    >>> err.name
+    'spam'
+    >>> err.code
+    1
+    >>> print(CFuncError('spam', 1, message='custom message'))
+    custom message
+
+    """
 
     def __init__(self, name, code, message=None):
         if message is None:
             message = ('c-function {}() terminates with code {}'
-                       .format(self.name, self.code))
+                       .format(name, code))
         super(CFuncError, self).__init__(message)
         self.name = name
         self.code = code
